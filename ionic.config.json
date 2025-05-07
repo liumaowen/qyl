@@ -1,0 +1,8 @@
+{
+  "name": "qyl",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite",
+  "id": "c0d2de05"
+}
