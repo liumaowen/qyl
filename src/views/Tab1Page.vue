@@ -1,10 +1,20 @@
 <template>
   <ion-page>
-    <ion-content :fullscreen="true">
+    <ion-content ref="contentRef" :fullscreen="true" style="width:100%;height: 100%;">
       <swiper style="border: 1px solid red;" :modules="[Virtual]" :direction="'vertical'" :virtual="true"
         @swiper="setSwiperRef" @slideChange="onSlideChange">
-        <swiper-slide v-for="(slideContent, index) in visibleList" :key="index" :virtualIndex="index">
-          <div :id="'fullscreen'"></div>
+        <swiper-slide v-for="(ele, index) in visibleList" :key="index" :virtualIndex="index">
+          <video-player class="video-player vjs-big-play-centered" :src="ele.playurl"
+            :poster="ele.picurl" crossorigin="anonymous" playsinline controls :width="contentWidth" :height="contentHeight"
+            webkit-playsinline="true" 
+            x5-video-player-type="h5" 
+            x5-video-player-fullscreen="portraint"
+            x-webkit-airplay="true"
+            x5-playsinline="" @mounted="handleMounted" @ready="handleEvent($event)"
+            @play="handleEvent($event)" @pause="handleEvent($event)" @ended="handleEvent($event)"
+            @loadeddata="handleEvent($event)" @waiting="handleEvent($event)" @playing="handleEvent($event)"
+            @canplay="handleEvent($event)" @canplaythrough="handleEvent($event)"
+            @timeupdate="handleEvent(player?.currentTime())" />
         </swiper-slide>
       </swiper>
     </ion-content>
@@ -12,9 +22,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive,shallowRef  } from 'vue';
 import axios from 'axios';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, onIonViewWillEnter } from '@ionic/vue';
+import { IonPage,IonTabs, IonHeader, IonToolbar, IonTitle, IonContent, onIonViewWillEnter,onIonViewDidEnter,onIonViewWillLeave } from '@ionic/vue';
 import ExploreContainer from '@/components/ExploreContainer.vue';
 // Import Swiper Vue.js components
 import { Swiper, SwiperSlide } from 'swiper/vue';
@@ -23,14 +33,20 @@ import { Swiper as SwiperInstance } from 'swiper/types';
 import { Virtual } from 'swiper/modules';
 // Import Swiper styles
 import 'swiper/css';
-import { useVideoPlayer, VideoPlayerHook, VideoPlayerProps, VideoPlayerOuput } from '../composables/videoplayer';
+import { VideoPlayer } from '@videojs-player/vue'
+import videojs from 'video.js'
+import 'video.js/dist/video-js.css'
 
 let swiperRef: SwiperInstance;
 let visibleList: any[] = reactive([]);
 let ind = ref(0);
 let appendNumber = 0;
-const onVPEvents: VideoPlayerProps = {} as VideoPlayerProps;
-let vpHook: VideoPlayerHook = useVideoPlayer(onVPEvents);
+type VideoJsPlayer = ReturnType<typeof videojs>
+// 新增：定义 contentRef 和尺寸变量
+// 调整 contentRef 的类型为 Ionic 组件实例或 null
+const contentRef = ref<InstanceType<typeof IonContent> | null>(null);
+const contentWidth = ref(0);
+const contentHeight = ref(0);
 
 onIonViewWillEnter(async () => {
   visibleList.length = 0; // 清空数组
@@ -42,30 +58,37 @@ onIonViewWillEnter(async () => {
   }
   // visibleList.push(...Array.from({ length: 3 }).map((_, index) => `Slide ${index + 1}`));
   appendNumber = visibleList.length;
-  console.log(visibleList)
-  playVideo(response[0],'fullscreen')
 });
-const playerLeave = async () => {
-  await vpHook.removeListeners();
-  await vpHook.stopAllPlayers();
-}
-onVPEvents.onPlay = async (fromPlayerId: string, currentTime: number | undefined) => {
-  console.log(`<<<< onPlay in ViewVideo ${fromPlayerId} ct: ${currentTime}`);
-}
-onVPEvents.onPause = async (fromPlayerId: string, currentTime: number | undefined) => {
-  console.log(`<<<< onPause in ViewVideo ${fromPlayerId} ct: ${currentTime}`)
-}
-onVPEvents.onEnded = async (fromPlayerId: string, currentTime: number | undefined) => {
-  console.log(`<<<< onEnded in ViewVideo ${fromPlayerId} ct: ${currentTime}`)
-  await playerLeave();
-}
-onVPEvents.onExit = async (dismiss: boolean) => {
-  console.log(`<<<< onExit in ViewVideo ${dismiss}`)
-  await playerLeave();
-}
-onVPEvents.onReady = async (fromPlayerId: string, currentTime: number | undefined) => {
-  console.log(`<<<< onReady in ViewVideo ${fromPlayerId} ct: ${currentTime}`)
-}
+onIonViewDidEnter(async () => {
+setTimeout(() => {
+  getContentSize();
+}, 0);
+  
+  // 监听窗口 resize 动态更新尺寸
+  window.addEventListener('resize', getContentSize);
+});
+// Ionic 视图即将离开时：移除 resize 监听（避免内存泄漏）
+onIonViewWillLeave(() => {
+  window.removeEventListener('resize', getContentSize);
+});
+// 新增：获取 ion-content 尺寸的方法
+const getContentSize = () => {
+  // 1. 处理 Ionic 组件实例（通过 $el 获取实际 DOM 元素）
+  const domElement = contentRef.value?.$el ?? contentRef.value;
+  
+  // 2. 类型断言：明确 domElement 为 HTMLElement（或 null）
+  const htmlElement = domElement as HTMLElement | null;
+  // 3. 检查元素存在且方法存在
+  if (htmlElement && typeof htmlElement.getBoundingClientRect === 'function') {
+    // 4. 调用方法并获取尺寸（TypeScript 会自动推断 rect 类型为 DOMRect）
+    const rect = htmlElement.getBoundingClientRect();
+    contentWidth.value = rect.width;
+    contentHeight.value = rect.height;
+    console.log('ion-content 高度:', contentHeight.value);
+  } else {
+    console.warn('未找到有效的 ion-content DOM 元素');
+  }
+};
 const setSwiperRef: (swiper: SwiperInstance) => void = (swiper: SwiperInstance) => {
   swiperRef = swiper;
   console.log('swiperRef', swiperRef.activeIndex)
@@ -87,15 +110,18 @@ const append = () => {
   appendNumber++;
 };
 const fetchData = async () => {
-  const response = await axios.get('https://api.apiopen.top/api/getMiniVideo?page=1&size=3');
+  const response = await axios.get('https://api.apiopen.top/api/getMiniVideo?page=1&size=6');
   return response['data']['result']['list'];
 }
-    let ret: any = {};
-    const playVideo = async (videoData:any,id:string) => {
-      var params = ["fullscreen",videoData['playurl'],id,"div"];
-      ret = await vpHook.initPlayer(params[0], params[1], params[2], params[3]);
-      console.log(`ret : ${JSON.stringify(ret)}`)
-    } 
+const player = shallowRef<VideoJsPlayer>()
+const handleMounted = (payload: any) => {
+  player.value = payload.player
+  console.log('Basic player mounted', payload)
+}
+
+const handleEvent = (log: any) => {
+  console.log('Basic player event', log)
+}
 </script>
 <style lang="css" scoped>
 .swiper {
