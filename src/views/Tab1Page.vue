@@ -1,16 +1,13 @@
 <template>
   <ion-page>
     <ion-content ref="contentRef" :fullscreen="true" style="width:100%;height: 100%;">
-      <swiper style="border: 1px solid red;" :modules="[Virtual]" :direction="'vertical'" :virtual="true"
+      <swiper style="" :modules="[Virtual]" :direction="'vertical'" :virtual="true"
         @swiper="setSwiperRef" @slideChange="onSlideChange">
         <swiper-slide v-for="(ele, index) in visibleList" :key="index" :virtualIndex="index">
-          <video-player class="video-player vjs-big-play-centered" :src="ele.playurl"
-            :poster="ele.picurl" crossorigin="anonymous" playsinline controls :width="contentWidth" :height="contentHeight"
-            webkit-playsinline="true" 
-            x5-video-player-type="h5" 
-            x5-video-player-fullscreen="portraint"
-            x-webkit-airplay="true"
-            x5-playsinline="" @mounted="handleMounted" @ready="handleEvent($event)"
+          <video-player class="video-player vjs-big-play-centered" :src="ele.playurl" :poster="ele.picurl"
+            crossorigin="anonymous" playsinline controls :width="contentWidth" :height="contentHeight"
+            webkit-playsinline="true" x5-video-player-type="h5" x5-video-player-fullscreen="portraint"
+            x-webkit-airplay="true" x5-playsinline="" @mounted="handleMounted" @ready="handleEvent($event)"
             @play="handleEvent($event)" @pause="handleEvent($event)" @ended="handleEvent($event)"
             @loadeddata="handleEvent($event)" @waiting="handleEvent($event)" @playing="handleEvent($event)"
             @canplay="handleEvent($event)" @canplaythrough="handleEvent($event)"
@@ -22,9 +19,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive,shallowRef  } from 'vue';
+import { ref, reactive, shallowRef, onMounted } from 'vue';
 import axios from 'axios';
-import { IonPage,IonTabs, IonHeader, IonToolbar, IonTitle, IonContent, onIonViewWillEnter,onIonViewDidEnter,onIonViewWillLeave } from '@ionic/vue';
+import { IonPage, IonTabs, IonHeader, IonToolbar, IonTitle, IonContent, onIonViewWillEnter, onIonViewDidEnter, onIonViewWillLeave } from '@ionic/vue';
 import ExploreContainer from '@/components/ExploreContainer.vue';
 // Import Swiper Vue.js components
 import { Swiper, SwiperSlide } from 'swiper/vue';
@@ -48,7 +45,8 @@ const contentRef = ref<InstanceType<typeof IonContent> | null>(null);
 const contentWidth = ref(0);
 const contentHeight = ref(0);
 
-onIonViewWillEnter(async () => {
+onMounted(async () => {
+  console.log('第一次进入');
   visibleList.length = 0; // 清空数组
   const response = await fetchData();
   console.log(response);
@@ -56,14 +54,15 @@ onIonViewWillEnter(async () => {
     const element = response[index];
     visibleList.push(element);
   }
-  // visibleList.push(...Array.from({ length: 3 }).map((_, index) => `Slide ${index + 1}`));
   appendNumber = visibleList.length;
 });
+onIonViewWillEnter(() => {
+});
 onIonViewDidEnter(async () => {
-setTimeout(() => {
-  getContentSize();
-}, 0);
-  
+  setTimeout(() => {
+    getContentSize();
+  }, 0);
+
   // 监听窗口 resize 动态更新尺寸
   window.addEventListener('resize', getContentSize);
 });
@@ -75,7 +74,7 @@ onIonViewWillLeave(() => {
 const getContentSize = () => {
   // 1. 处理 Ionic 组件实例（通过 $el 获取实际 DOM 元素）
   const domElement = contentRef.value?.$el ?? contentRef.value;
-  
+
   // 2. 类型断言：明确 domElement 为 HTMLElement（或 null）
   const htmlElement = domElement as HTMLElement | null;
   // 3. 检查元素存在且方法存在
