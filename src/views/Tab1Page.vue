@@ -1,16 +1,16 @@
 <template>
   <ion-page>
     <ion-content ref="contentRef" :fullscreen="true" style="width:100%;height: 100%;">
-      <swiper style="" :modules="[Virtual]" :direction="'vertical'" :virtual="true"
-        @swiper="setSwiperRef" @slideChange="onSlideChange">
+      <swiper style="" :modules="[Virtual]" :direction="'vertical'" :virtual="true" @swiper="setSwiperRef"
+        @slideChange="onSlideChange">
         <swiper-slide v-for="(ele, index) in visibleList" :key="index" :virtualIndex="index">
-          <video-player class="video-player vjs-big-play-centered" :src="ele.playurl" :poster="ele.picurl"
-            crossorigin="anonymous" playsinline controls :width="contentWidth" :height="contentHeight"
-            webkit-playsinline="true" x5-video-player-type="h5" x5-video-player-fullscreen="portraint"
-            x-webkit-airplay="true" x5-playsinline="" @mounted="handleMounted" @ready="handleEvent($event)"
-            @play="handleEvent($event)" @pause="handleEvent($event)" @ended="handleEvent($event)"
-            @loadeddata="handleEvent($event)" @waiting="handleEvent($event)" @playing="handleEvent($event)"
-            @canplay="handleEvent($event)" @canplaythrough="handleEvent($event)"
+          <video-player :id="'video_' + index" class="video-player vjs-big-play-centered" :src="ele.playurl"
+            :options="options" :poster="ele.picurl" crossorigin="anonymous" :width="contentWidth"
+            :height="contentHeight" webkit-playsinline="true" x5-video-player-type="h5"
+            x5-video-player-fullscreen="portraint" x-webkit-airplay="true" x5-playsinline="" @mounted="handleMounted"
+            @ready="handleEvent($event)" @play="handleEvent($event)" @pause="handleEvent($event)"
+            @ended="handleEvent($event)" @loadeddata="handleEvent($event)" @waiting="handleEvent($event)"
+            @playing="handleEvent($event)" @canplay="handleEvent($event)" @canplaythrough="handleEvent($event)"
             @timeupdate="handleEvent(player?.currentTime())" />
         </swiper-slide>
       </swiper>
@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, shallowRef, onMounted } from 'vue';
+import { ref, reactive, shallowRef,shallowReactive, onMounted } from 'vue';
 import axios from 'axios';
 import { IonPage, IonTabs, IonHeader, IonToolbar, IonTitle, IonContent, onIonViewWillEnter, onIonViewDidEnter, onIonViewWillLeave } from '@ionic/vue';
 import ExploreContainer from '@/components/ExploreContainer.vue';
@@ -30,7 +30,7 @@ import { Swiper as SwiperInstance } from 'swiper/types';
 import { Virtual } from 'swiper/modules';
 // Import Swiper styles
 import 'swiper/css';
-import { VideoPlayer } from '@videojs-player/vue'
+import { VideoPlayer,VideoPlayerProps } from '@videojs-player/vue'
 import videojs from 'video.js'
 import 'video.js/dist/video-js.css'
 
@@ -38,12 +38,23 @@ let swiperRef: SwiperInstance;
 let visibleList: any[] = reactive([]);
 let ind = ref(0);
 let appendNumber = 0;
-type VideoJsPlayer = ReturnType<typeof videojs>
+type VideoJsPlayer = ReturnType<typeof videojs>  // ReturnType 函数的返回值
 // 新增：定义 contentRef 和尺寸变量
 // 调整 contentRef 的类型为 Ionic 组件实例或 null
 const contentRef = ref<InstanceType<typeof IonContent> | null>(null);
 const contentWidth = ref(0);
 const contentHeight = ref(0);
+const player = shallowRef<VideoJsPlayer>()
+let players = shallowRef<{ [key: string]: VideoJsPlayer }>();
+      const options = shallowReactive<VideoPlayerProps>({
+        autoplay: false,
+        volume: 0.8,
+        controls: true,
+        fluid: false,
+        muted: false,
+        loop: true,
+        playsinline: true,
+      })
 
 onMounted(async () => {
   console.log('第一次进入');
@@ -54,6 +65,7 @@ onMounted(async () => {
     const element = response[index];
     visibleList.push(element);
   }
+  players.value = getPlayers();
   appendNumber = visibleList.length;
 });
 onIonViewWillEnter(() => {
@@ -61,8 +73,8 @@ onIonViewWillEnter(() => {
 onIonViewDidEnter(async () => {
   setTimeout(() => {
     getContentSize();
-  }, 0);
 
+  }, 0);
   // 监听窗口 resize 动态更新尺寸
   window.addEventListener('resize', getContentSize);
 });
@@ -99,10 +111,12 @@ const onProgress = (e: any) => {
 
 const onSlideChange = (e: SwiperInstance) => {
   console.log('onSlideChange', e.activeIndex);
-  console.log({ end: e.isEnd })
+  console.log({ end: e })
   // if (e.isEnd) {
   //   append();
   // }
+  players.value?.['video_' + e.previousIndex].pause();
+  players.value?.['video_' + e.activeIndex].play();
 };
 const append = () => {
   visibleList.push(...Array.from({ length: 1 }).map((_, index) => `Slide ${appendNumber + 1}`));
@@ -112,10 +126,17 @@ const fetchData = async () => {
   const response = await axios.get('https://api.apiopen.top/api/getMiniVideo?page=1&size=6');
   return response['data']['result']['list'];
 }
-const player = shallowRef<VideoJsPlayer>()
 const handleMounted = (payload: any) => {
   player.value = payload.player
+  console.log('player', player)
   console.log('Basic player mounted', payload)
+  const all = videojs.getAllPlayers();
+  console.log('all', all)
+  const Players = videojs.getPlayers();
+  console.log('Players', Players)
+}
+const getPlayers = (): { [key: string]: VideoJsPlayer } => {
+  return videojs.getPlayers();
 }
 
 const handleEvent = (log: any) => {
