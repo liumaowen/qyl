@@ -4,7 +4,7 @@
       <swiper style="" :modules="[Virtual]" :direction="'vertical'" :virtual="true" @swiper="setSwiperRef"
         @slideChange="onSlideChange">
         <swiper-slide v-for="(ele, index) in visibleList" :key="index" :virtualIndex="index">
-          <video-player :id="'video_' + index" class="video-player vjs-big-play-centered" :src="ele.playurl"
+          <video-player :id="'video_' + index" class="video-player vjs-theme-fantasy" :src="ele.playurl"
             :options="options" :poster="ele.picurl" crossorigin="anonymous" :width="contentWidth"
             :height="contentHeight" webkit-playsinline="true" x5-video-player-type="h5"
             x5-video-player-fullscreen="portraint" x-webkit-airplay="true" x5-playsinline="" @mounted="handleMounted"
@@ -33,6 +33,8 @@ import 'swiper/css';
 import { VideoPlayer,VideoPlayerProps } from '@videojs-player/vue'
 import videojs from 'video.js'
 import 'video.js/dist/video-js.css'
+// Fantasy
+import '@videojs/themes/dist/fantasy/index.css';
 
 let swiperRef: SwiperInstance;
 let visibleList: any[] = reactive([]);
