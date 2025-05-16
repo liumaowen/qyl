@@ -46,7 +46,7 @@ type VideoJsPlayer = ReturnType<typeof videojs>  // ReturnType 函数的返回�
 const contentRef = ref<InstanceType<typeof IonContent> | null>(null);
 const contentWidth = ref(0);
 const contentHeight = ref(0);
-const player = shallowRef<VideoJsPlayer>()
+let player = shallowRef<VideoJsPlayer>()
 let players = shallowRef<{ [key: string]: VideoJsPlayer }>();
       const options = shallowReactive<VideoPlayerProps>({
         autoplay: false,
@@ -75,7 +75,10 @@ onIonViewWillEnter(() => {
 onIonViewDidEnter(async () => {
   setTimeout(() => {
     getContentSize();
-
+    // 预加载第一个视频
+    if (player.value) {
+      player.value?.play();
+    }
   }, 0);
   // 监听窗口 resize 动态更新尺寸
   window.addEventListener('resize', getContentSize);
@@ -83,6 +86,10 @@ onIonViewDidEnter(async () => {
 // Ionic 视图即将离开时：移除 resize 监听（避免内存泄漏）
 onIonViewWillLeave(() => {
   window.removeEventListener('resize', getContentSize);
+  if(player.value) {
+    // 释放所有视频播放器实例
+    player.value?.pause();
+  }
 });
 // 新增：获取 ion-content 尺寸的方法
 const getContentSize = () => {
