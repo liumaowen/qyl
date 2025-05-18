@@ -1,7 +1,7 @@
 <template>
   <ion-page>
     <ion-content ref="contentRef" :fullscreen="true" style="width:100%;height: 100%;">
-      <swiper style="" :modules="[Virtual]" :direction="'vertical'" :virtual="true" @swiper="setSwiperRef"
+      <swiper style="" :modules="[Virtual]" :preventClicksPropagation="true" :preventClicks="true" :direction="'vertical'" :virtual="true" @swiper="setSwiperRef"
         @slideChange="onSlideChange">
         <swiper-slide v-for="(ele, index) in visibleList" :key="index" :virtualIndex="index">
           <video-player :id="'video_' + index" class="video-player vjs-theme-fantasy" :src="ele.playurl"
@@ -9,9 +9,15 @@
             :height="contentHeight" webkit-playsinline="true" x5-video-player-type="h5"
             x5-video-player-fullscreen="portraint" x-webkit-airplay="true" x5-playsinline="" @mounted="handleMounted"
             @ready="handleEvent($event)" @play="handleEvent($event)" @pause="handleEvent($event)"
-            @ended="handleEvent($event)" @loadeddata="handleEvent($event)" @waiting="handleEvent($event)"
-            @playing="handleEvent($event)" @canplay="handleEvent($event)" @canplaythrough="handleEvent($event)"
-            @timeupdate="handleEvent(player?.currentTime())" />
+            @ended="handleEvent($event)" @loadeddata="loadeddata($event)" @waiting="handleEvent($event)"
+            @playing="playingEvent($event)" @canplay="handleEvent($event)" @canplaythrough="handleEvent($event)"
+            @timeupdate="timeupdateEvent($event)" data-setup="{}" >
+            <template v-slot="{ player, state }">
+              <div class="player-custom-controls">
+                <player-custom-controls :player="player" :state="state" :config="config" />
+              </div>
+            </template>
+          </video-player>
         </swiper-slide>
       </swiper>
     </ion-content>
@@ -19,7 +25,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, shallowRef,shallowReactive, onMounted } from 'vue';
+import { ref, reactive, shallowRef, shallowReactive, onMounted,computed } from 'vue';
+import PlayerCustomControls from './01-advanced-player/advanced.vue';
 import axios from 'axios';
 import { IonPage, IonTabs, IonHeader, IonToolbar, IonTitle, IonContent, onIonViewWillEnter, onIonViewDidEnter, onIonViewWillLeave } from '@ionic/vue';
 import ExploreContainer from '@/components/ExploreContainer.vue';
@@ -30,12 +37,23 @@ import { Swiper as SwiperInstance } from 'swiper/types';
 import { Virtual } from 'swiper/modules';
 // Import Swiper styles
 import 'swiper/css';
-import { VideoPlayer,VideoPlayerProps } from '@videojs-player/vue'
+import { VideoPlayer, VideoPlayerProps, VideoPlayerState } from '@videojs-player/vue'
 import videojs from 'video.js'
 import 'video.js/dist/video-js.css'
 // Fantasy
 import '@videojs/themes/dist/fantasy/index.css';
 
+      const config = shallowReactive<VideoPlayerProps>({
+        // autoplay: false,
+        height:  380,
+        // volume: 0.8,
+        // playbackRate: 1,
+        // playbackRates: playbackRatesOptions[0],
+        controls: false,
+        // fluid: false,
+        // muted: false,
+        // loop: false
+      })
 let swiperRef: SwiperInstance;
 let visibleList: any[] = reactive([]);
 let ind = ref(0);
@@ -47,16 +65,28 @@ const contentRef = ref<InstanceType<typeof IonContent> | null>(null);
 const contentWidth = ref(0);
 const contentHeight = ref(0);
 let player = shallowRef<VideoJsPlayer>()
+let state = shallowRef<VideoPlayerState>()
 let players = shallowRef<{ [key: string]: VideoJsPlayer }>();
-      const options = shallowReactive<VideoPlayerProps>({
-        autoplay: false,
-        volume: 0.8,
-        controls: true,
-        fluid: false,
-        muted: false,
-        loop: true,
-        playsinline: true,
-      })
+const options = shallowReactive<VideoPlayerProps>({
+  autoplay: false,
+  volume: 0.8,
+  controls: false,
+  fluid: false,
+  muted: false,
+  loop: true,
+  playsinline: true,
+  crossorigin: "anonymous",
+  controlBar: {
+    children: [
+      // 'playToggle',
+      // 'volumePanel',
+      'progressControl'
+      // 'currentTimeDisplay',
+      // 'durationDisplay',
+      // 'fullscreenToggle'
+    ]
+  }
+})
 
 onMounted(async () => {
   console.log('第一次进入');
@@ -86,7 +116,7 @@ onIonViewDidEnter(async () => {
 // Ionic 视图即将离开时：移除 resize 监听（避免内存泄漏）
 onIonViewWillLeave(() => {
   window.removeEventListener('resize', getContentSize);
-  if(player.value) {
+  if (player.value) {
     // 释放所有视频播放器实例
     player.value?.pause();
   }
@@ -125,6 +155,7 @@ const onSlideChange = (e: SwiperInstance) => {
   //   append();
   // }
   players.value?.['video_' + e.previousIndex].pause();
+  // players.value?.['video_' + e.activeIndex].src('https://vjs.zencdn.net/v/oceans.mp4')
   players.value?.['video_' + e.activeIndex].play();
 };
 const append = () => {
@@ -136,7 +167,9 @@ const fetchData = async () => {
   return response['data']['result']['list'];
 }
 const handleMounted = (payload: any) => {
+  console.log('handleMounted', payload)
   player.value = payload.player
+  state.value = payload.state
   console.log('player', player)
   console.log('Basic player mounted', payload)
   const all = videojs.getAllPlayers();
@@ -151,6 +184,29 @@ const getPlayers = (): { [key: string]: VideoJsPlayer } => {
 const handleEvent = (log: any) => {
   console.log('Basic player event', log)
 }
+const playingEvent = (log: any) => {
+  console.log('playing', log)
+  console.log('player.value', player.value)
+  console.log('state.value', state.value)
+}
+const loadeddata = (log: any) => {
+  console.log('loadeddata', getPlayers())
+}
+const timeupdateEvent = (log: any) => {
+  // console.log('timeupdate', log)
+  // console.log('player.value', player.value)
+  // console.log('state.value', state.value)
+  // console.log('state.value?.currentTime', state.value?.currentTime)
+  // console.log('state.value?.duration', state.value?.duration)
+}
+const remainingTime = computed(() => {
+  console.log('remainingTime', state.value)
+  console.log('remainingTime', state.value?.duration)
+  console.log('remainingTime', state.value?.currentTime)
+  return state.value
+    ? state.value.duration - state.value.currentTime
+    : 0
+})
 </script>
 <style lang="css" scoped>
 .swiper {
