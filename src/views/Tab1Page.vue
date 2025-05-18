@@ -12,11 +12,11 @@
             @ended="handleEvent($event)" @loadeddata="loadeddata($event)" @waiting="handleEvent($event)"
             @playing="playingEvent($event)" @canplay="handleEvent($event)" @canplaythrough="handleEvent($event)"
             @timeupdate="timeupdateEvent($event)" data-setup="{}" >
-            <template v-slot="{ player, state }">
+            <!-- <template v-slot="{ player, state }">
               <div class="player-custom-controls">
                 <player-custom-controls :player="player" :state="state" :config="config" />
               </div>
-            </template>
+            </template> -->
           </video-player>
         </swiper-slide>
       </swiper>
@@ -70,7 +70,7 @@ let players = shallowRef<{ [key: string]: VideoJsPlayer }>();
 const options = shallowReactive<VideoPlayerProps>({
   autoplay: false,
   volume: 0.8,
-  controls: false,
+  controls: true,
   fluid: false,
   muted: false,
   loop: true,
@@ -78,7 +78,7 @@ const options = shallowReactive<VideoPlayerProps>({
   crossorigin: "anonymous",
   controlBar: {
     children: [
-      // 'playToggle',
+      'playToggle',
       // 'volumePanel',
       'progressControl'
       // 'currentTimeDisplay',
