@@ -2,41 +2,24 @@
   <ion-page>
     <ion-content :fullscreen="true" class="video-container">
       <!-- 竖滑容器 -->
-      <swiper 
-        :modules="[Virtual]" 
-        :direction="'vertical'" 
-        :slides-per-view="1"
-        @slideChange="onSlideChange"
-        ref="swiperRef"
-        :style="{ height: containerHeight + 'px' }"
-      >
-        <swiper-slide v-for="(video, index) in videoList" :key="index" class="slide-item" :style="{width:containerWidth+'px',height:containerHeight+'px'}">
+      <swiper :modules="[Virtual]" :direction="'vertical'" :slides-per-view="1" @slideChange="onSlideChange"
+        ref="swiperRef" :style="{ height: containerHeight + 'px' }">
+        <swiper-slide v-for="(video, index) in videoList" :key="index" class="slide-item"
+          :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
           <!-- 视频容器 -->
-          <div class="video-wrap" :style="{width:containerWidth+'px',height:containerHeight+'px'}" >
+          <div class="video-wrap" :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
             <!-- 视频播放器 -->
-            <video :class="'video-js vjs-big-play-button-hidden '" 
-                 :id="'my-video-' + index"
-                 :src="video.src"
-                 :poster="video.poster"
-                 :ref="(el: HTMLVideoElement | null) => {
-                   if (el) {
-                     videoRefs[`videoRef_${index}`] = el;
-                   }
-                 }"
-            ></video>
-            
+            <video :class="'video-js vjs-big-play-button-hidden '" :id="'my-video-' + index" :src="video.src"
+              :poster="video.poster" :ref="el => setVideoRef(el, index)"></video>
+
             <!-- 暂停时显示的中心按钮 -->
             <div class="center-pause-btn" @click="togglePlay(index)">
               <ion-icon v-show="!isPlaying(index)" class="play" :icon="play" color="#fff"></ion-icon>
             </div>
             <!-- 进度条 -->
-            <div class="my_progress_bar"
-            @mousedown="startDrag($event, index)"
-            @touchstart="startDrag($event, index)">
-              <ion-progress-bar 
-                :value="progress[index]" 
-                :class="['custom-progress', { dragging: isDragging }]"
-              ></ion-progress-bar>
+            <div class="my_progress_bar" @mousedown="startDrag($event, index)" @touchstart="startDrag($event, index)">
+              <ion-progress-bar :value="progress[index]"
+                :class="['custom-progress', { dragging: isDragging }]"></ion-progress-bar>
             </div>
           </div>
         </swiper-slide>
@@ -46,19 +29,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted,nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import axios from 'axios';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Virtual } from 'swiper/modules';
 import 'swiper/css';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
-import { IonPage,IonContent,IonIcon,IonProgressBar } from '@ionic/vue';
-import { logoIonic,play } from 'ionicons/icons';
+import { IonPage, IonContent, IonIcon, IonProgressBar } from '@ionic/vue';
+import { play } from 'ionicons/icons';
 
-
+interface VideoItem {
+  src: string;
+  poster: string;
+}
 // 模拟视频数据（实际项目中建议从接口获取）
-const videoList = ref([]);
+const videoList = ref<VideoItem[]>([]);
 type VideoJsPlayer = ReturnType<typeof videojs>;
 import { Swiper as SwiperInstance } from 'swiper/types';
 // 当前播放的视频索引
@@ -85,6 +71,20 @@ const updateSize = () => {
   containerHeight.value = window.innerHeight - 50.8;
 }
 
+import type { ComponentPublicInstance } from 'vue';
+
+const setVideoRef = (el: Element | ComponentPublicInstance | null, index: number) => {
+  let dom: Element | null = null;
+  if (el) {
+    // If it's a Vue component instance, try to get the underlying DOM element
+    dom = (el as any)?.$el ? (el as any).$el : el;
+    videoRefs.value[`videoRef_${index}`] = dom as HTMLVideoElement;
+  } else {
+    // 组件卸载时清理
+    delete videoRefs.value[`videoRef_${index}`];
+  }
+};
+
 // 初始化视频播放器
 const initVideo = (index: number) => {
   const videoElement = videoRefs.value[`videoRef_${index}`];
@@ -93,14 +93,16 @@ const initVideo = (index: number) => {
     controls: false, // 隐藏原生控制条
     autoplay: false,
     preload: 'auto',
-    loop:true,
+    loop: true,
     fluid: true,
   });
 
   // 监听播放时间更新进度（非拖动状态时）
   player.on('timeupdate', () => {
-    if (!isDragging.value) {
-      progress.value[index] = player.currentTime() / player.duration();
+    if (!isDragging.value && player && player.currentTime()) {
+      const duration = player?.duration() || 1;
+      const currentTime = player?.currentTime() || 0;
+      progress.value[index] = currentTime / duration;
     }
   });
 
@@ -112,6 +114,7 @@ const initVideo = (index: number) => {
 const togglePlay = (index: number) => {
   console.log('togglePlay', index);
   const player = videoInstances.value[index];
+  console.log('player', player.paused());
   if (player.paused()) {
     player.play();
     playingIndex.value = index;
@@ -182,7 +185,8 @@ const startDrag = (e: MouseEvent | TouchEvent, index: number) => {
     // 更新进度条值
     progress.value[index] = ratio;
     // 更新视频播放时间（总时长 * 比例）
-    player.currentTime(player.duration() * ratio);
+    const duration = player?.duration() || 0;
+    player.currentTime(duration * ratio);
   };
 
   // 鼠标拖动处理
@@ -213,15 +217,15 @@ const startDrag = (e: MouseEvent | TouchEvent, index: number) => {
  * @param size 每页数量
  * @returns 视频列表
  */
- const fetchData = async (page: number, size: number) => {
-  let list = [];
+const fetchData = async (page: number, size: number) => {
+  let list: any[] = [];
   if (isLoading) return []; // 防止重复请求
   isLoading = true;
   try {
     const response = await axios.get('https://api.apiopen.top/api/getMiniVideo', {
       params: { page, size } // 传递分页参数
     });
-    response.data.result.list.forEach((item:any) => {
+    response.data.result.list.forEach((item: any) => {
       list.push({
         src: item.playurl,
         poster: item.picurl
@@ -229,7 +233,7 @@ const startDrag = (e: MouseEvent | TouchEvent, index: number) => {
     });
     const initialData = await fetchData_pe(currentPage, 3);
     console.log('initialData', initialData);
-    list = [...list,...initialData];
+    list = [...list, ...initialData];
     return list || [];
   } finally {
     isLoading = false; // 无论成功/失败都重置加载状态
@@ -241,18 +245,18 @@ const startDrag = (e: MouseEvent | TouchEvent, index: number) => {
  * @param size 每页数量
  * @returns
  */
- const fetchData_pe = async (page: number, per_page: number) => {
-  let list = [];
+const fetchData_pe = async (page: number, per_page: number) => {
+  let list: any[] = [];
   // if (isLoading) return []; // 防止重复请求
   isLoading = true;
   try {
     const response = await axios.get('https://api.pexels.com/videos/search', {
-      params: { query:'popular',orientation:'portrait',size:'medium',page, per_page }, // 传递分页参数
+      params: { query: 'popular', orientation: 'portrait', size: 'medium', page, per_page }, // 传递分页参数
       headers: {
         Authorization: 'I4w6vXKeN6fO5Zo4w1AK232oIN4pPs0MjCfgxnGRMxWTRmGc7eePdOAL'
       }
     });
-    response.data.videos.forEach((item:any) => {
+    response.data.videos.forEach((item: any) => {
       let targetVideo = item.video_files.find((file: any) => {
         return file.quality === 'hd';
       });
@@ -295,9 +299,10 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.ion-page{
+.ion-page {
   background: #000;
 }
+
 .video-container {
   padding: 0;
   margin: 0;
@@ -308,15 +313,23 @@ onUnmounted(() => {
   position: relative;
   background: #000;
 }
+
 /* 关键：设置视频播放器垂直居中 */
 .video-js {
-  position: absolute;  /* 相对于父容器 .video-wrap 定位 */
-  top: 50%;            /* 顶部对齐父容器中心 */
-  left: 0;             /* 左侧贴齐父容器 */
-  width: 100% !important;  /* 强制宽度占满父容器（覆盖 fluid 默认样式） */
-  height: auto !important; /* 高度自动（根据宽高比计算） */
-  transform: translateY(-50%); /* 向上偏移自身高度的 50%，实现垂直居中 */
+  position: absolute;
+  /* 相对于父容器 .video-wrap 定位 */
+  top: 50%;
+  /* 顶部对齐父容器中心 */
+  left: 0;
+  /* 左侧贴齐父容器 */
+  width: 100% !important;
+  /* 强制宽度占满父容器（覆盖 fluid 默认样式） */
+  height: auto !important;
+  /* 高度自动（根据宽高比计算） */
+  transform: translateY(-50%);
+  /* 向上偏移自身高度的 50%，实现垂直居中 */
 }
+
 /* 自定义暂停按钮样式 */
 .center-pause-btn {
   position: absolute;
@@ -326,39 +339,53 @@ onUnmounted(() => {
   height: 100%;
   display: flex;
   color: white;
-  align-items: center; /* 子元素垂直居中 */
-  justify-content: center; /* 子元素水平居中 */
+  align-items: center;
+  /* 子元素垂直居中 */
+  justify-content: center;
+  /* 子元素水平居中 */
   opacity: 0.5;
   cursor: pointer;
 }
-.play{
-  font-size: 6rem!important;
+
+.play {
+  font-size: 6rem !important;
 }
-.my_progress_bar{
+
+.my_progress_bar {
   position: absolute;
-  bottom: -1.5px; /* 距离底部 20px */
-  left: 5%; /* 左右留边距 */
-  width: 90%; /* 宽度占容器 90% */
+  bottom: -1.5px;
+  /* 距离底部 20px */
+  left: 5%;
+  /* 左右留边距 */
+  width: 90%;
+  /* 宽度占容器 90% */
   height: 20px;
   line-height: 20px;
   display: flex;
-  align-items: center; /* 垂直居中 */
+  align-items: center;
+  /* 垂直居中 */
   cursor: pointer;
 }
+
 /* 进度条容器样式 */
 .custom-progress {
   width: 100%;
-  height: 1.5px; /* 默认细进度条 */
+  height: 1.5px;
+  /* 默认细进度条 */
   transition: height 0.2s;
 }
+
 .custom-progress.dragging {
-  height: 8px; /* 拖动时变粗 */
+  height: 8px;
+  /* 拖动时变粗 */
 }
 
 /* 覆盖 Ionic 默认样式（可选） */
 ion-progress-bar {
-  --background: rgba(255, 255, 255, 0.3); /* 未播放部分颜色 */
-  --progress-background: #ffffff; /* 已播放部分颜色 */
+  --background: rgba(255, 255, 255, 0.3);
+  /* 未播放部分颜色 */
+  --progress-background: #ffffff;
+  /* 已播放部分颜色 */
 }
 
 /* 隐藏video.js默认的大播放按钮 */

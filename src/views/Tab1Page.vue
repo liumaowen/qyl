@@ -26,7 +26,6 @@
 
 <script setup lang="ts">
 import { ref, reactive, shallowRef, shallowReactive, onMounted,computed } from 'vue';
-import PlayerCustomControls from './01-advanced-player/advanced.vue';
 import axios from 'axios';
 import { IonPage, IonTabs, IonHeader, IonToolbar, IonTitle, IonContent, onIonViewWillEnter, onIonViewDidEnter, onIonViewWillLeave } from '@ionic/vue';
 import ExploreContainer from '@/components/ExploreContainer.vue';

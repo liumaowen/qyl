@@ -51,7 +51,7 @@ const tabsRef = ref<InstanceType<typeof IonTabs> | null>(null);
 </script>
 <style lang="css" scoped>
 /* 深度选择器穿透样式，修改底部导航栏主题 */
-::v-deep ion-tab-bar {
+:deep(ion-tab-bar) {
   --background: #000000; /* 黑色背景 */
   --color: rgba(255, 255, 255, 0.7); /* 未选中状态的图标/文字颜色（白色半透明） */
   --color-selected: #ffffff; /* 选中状态的图标/文字颜色（纯白） */
