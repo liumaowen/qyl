@@ -34,12 +34,10 @@ import '@ionic/vue/css/palettes/dark.system.css';
 
 /* Theme variables */
 import './theme/variables.css';
-import VueVideoPlayer from '@videojs-player/vue'
 import 'video.js/dist/video-js.css'
 
 const app = createApp(App)
   .use(IonicVue,{mode:'ios'})
-  .use(VueVideoPlayer)
   .use(router);
 
 router.isReady().then(() => {
