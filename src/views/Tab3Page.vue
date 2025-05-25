@@ -36,8 +36,9 @@ import { Virtual } from 'swiper/modules';
 import 'swiper/css';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
-import { IonPage, IonContent, IonIcon, IonProgressBar } from '@ionic/vue';
+import { IonPage, IonContent, IonIcon, IonProgressBar,onIonViewWillLeave,onIonViewDidLeave } from '@ionic/vue';
 import { play } from 'ionicons/icons';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 interface VideoItem {
   src: string;
@@ -47,6 +48,7 @@ interface VideoItem {
 const videoList = ref<VideoItem[]>([]);
 type VideoJsPlayer = ReturnType<typeof videojs>;
 import { Swiper as SwiperInstance } from 'swiper/types';
+import type { ComponentPublicInstance } from 'vue';
 // 当前播放的视频索引
 const playingIndex = ref(-1);
 // swiper实例引用
@@ -64,6 +66,12 @@ const containerHeight = ref(window.innerHeight - 50.8); // 50.8为Tab高度
 let currentPage = 1; // 当前页码
 const pageSize = 6;    // 每页数量
 let isLoading = false; // 加载状态（防止重复请求）
+let handleMouseMove: (e: MouseEvent) => void; 
+let handleMouseUp: () => void;
+let handleTouchMove: (e: TouchEvent) => void
+let handleTouchEnd: (e: TouchEvent) => void;
+// 判断是否为手机端（屏幕宽度<768px）
+const isMobile = () => window.innerWidth < 768;
 
 // 监听窗口 resize 动态更新尺寸
 const updateSize = () => {
@@ -71,7 +79,6 @@ const updateSize = () => {
   containerHeight.value = window.innerHeight - 50.8;
 }
 
-import type { ComponentPublicInstance } from 'vue';
 
 const setVideoRef = (el: Element | ComponentPublicInstance | null, index: number) => {
   let dom: Element | null = null;
@@ -93,8 +100,14 @@ const initVideo = (index: number) => {
     controls: false, // 隐藏原生控制条
     autoplay: false,
     preload: 'auto',
+    // width: containerWidth.value,
+    height: containerHeight.value,
     loop: true,
     fluid: true,
+    fullscreen: {
+      enabled: true, // 显式启用全屏功能
+      options: { native: true } // 使用浏览器原生全屏（可选）
+    }
   });
 
   // 监听播放时间更新进度（非拖动状态时）
@@ -109,6 +122,7 @@ const initVideo = (index: number) => {
   videoInstances.value[index] = player;
   return player;
 };
+
 
 // 切换播放状态
 const togglePlay = (index: number) => {
@@ -190,16 +204,16 @@ const startDrag = (e: MouseEvent | TouchEvent, index: number) => {
   };
 
   // 鼠标拖动处理
-  const handleMouseMove = (e: MouseEvent) => updateProgress(e.clientX);
-  const handleMouseUp = () => {
+  handleMouseMove = (e: MouseEvent) => updateProgress(e.clientX);
+  handleMouseUp = () => {
     isDragging.value = false; // 结束拖动状态
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
   };
 
   // 触摸拖动处理
-  const handleTouchMove = (e: TouchEvent) => updateProgress(e.touches[0].clientX);
-  const handleTouchEnd = () => {
+  handleTouchMove = (e: TouchEvent) => updateProgress(e.touches[0].clientX);
+  handleTouchEnd = () => {
     isDragging.value = false; // 结束拖动状态
     document.removeEventListener('touchmove', handleTouchMove);
     document.removeEventListener('touchend', handleTouchEnd);
@@ -232,7 +246,6 @@ const fetchData = async (page: number, size: number) => {
       });
     });
     const initialData = await fetchData_pe(currentPage, 3);
-    console.log('initialData', initialData);
     list = [...list, ...initialData];
     return list || [];
   } finally {
@@ -247,7 +260,7 @@ const fetchData = async (page: number, size: number) => {
  */
 const fetchData_pe = async (page: number, per_page: number) => {
   let list: any[] = [];
-  // if (isLoading) return []; // 防止重复请求
+  if (isLoading) return []; // 防止重复请求
   isLoading = true;
   try {
     const response = await axios.get('https://api.pexels.com/videos/search', {
@@ -275,6 +288,7 @@ const fetchData_pe = async (page: number, per_page: number) => {
 
 // 生命周期：组件挂载时初始化
 onMounted(async () => {
+  await StatusBar.setStyle({ style: Style.Light });
   window.addEventListener('resize', updateSize);
   updateSize();
   // 初始化加载第一页数据
@@ -288,6 +302,13 @@ onMounted(async () => {
   initialData.forEach((_, index) => {
     initVideo(index);
   });
+  if (isMobile()) {
+    // 移动端：自动播放第一页的第一个视频
+    if (videoInstances.value[0]) {
+      videoInstances.value[0].play();
+      playingIndex.value = 0;
+    }
+  }
 });
 
 // 生命周期：组件卸载时销毁播放器
@@ -295,11 +316,28 @@ onUnmounted(() => {
   videoInstances.value.forEach(player => {
     if (player) player.dispose();
   });
+  window.removeEventListener('resize', updateSize);
+  document.removeEventListener('mousemove', handleMouseMove);
+  document.removeEventListener('mouseup', handleMouseUp);
+  document.removeEventListener('touchmove', handleTouchMove);
+  document.removeEventListener('touchend', handleTouchEnd);
 });
+onIonViewWillLeave(() => {
+  console.log('onIonViewWillLeave');
+  videoInstances.value.forEach(player => {
+    if (player) player.pause();
+  });
+})
+onIonViewDidLeave(() => {
+  console.log('onIonViewWillLeave');
+  videoInstances.value.forEach(player => {
+    if (player) player.pause();
+  });
+})
 </script>
 
 <style scoped>
-.ion-page {
+.swiper {
   background: #000;
 }
 
@@ -312,22 +350,19 @@ onUnmounted(() => {
 .video-wrap {
   position: relative;
   background: #000;
+  overflow: hidden; /* 隐藏视频超出容器的部分 */
+  width: 100%;
+  height: 0;
 }
 
 /* 关键：设置视频播放器垂直居中 */
 .video-js {
   position: absolute;
-  /* 相对于父容器 .video-wrap 定位 */
-  top: 50%;
-  /* 顶部对齐父容器中心 */
+  top: 0;
   left: 0;
-  /* 左侧贴齐父容器 */
-  width: 100% !important;
-  /* 强制宽度占满父容器（覆盖 fluid 默认样式） */
-  height: auto !important;
-  /* 高度自动（根据宽高比计算） */
-  transform: translateY(-50%);
-  /* 向上偏移自身高度的 50%，实现垂直居中 */
+  height: 100% !important; /* 高度撑满容器 */
+  max-width: 100% !important; /* 限制宽度不超过容器 */
+  object-fit: cover; /* 覆盖容器避免黑边（可选，若需完整显示改为 contain） */
 }
 
 /* 自定义暂停按钮样式 */
