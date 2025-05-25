@@ -290,6 +290,7 @@ const fetchData_pe = async (page: number, per_page: number) => {
 onMounted(async () => {
   StatusBar.setOverlaysWebView({ overlay: true });
   await StatusBar.setStyle({ style: Style.Light });
+  alert(StatusBar.getInfo());
   window.addEventListener('resize', updateSize);
   updateSize();
   // 初始化加载第一页数据
