@@ -288,6 +288,7 @@ const fetchData_pe = async (page: number, per_page: number) => {
 
 // 生命周期：组件挂载时初始化
 onMounted(async () => {
+  StatusBar.setOverlaysWebView({ overlay: true });
   await StatusBar.setStyle({ style: Style.Light });
   window.addEventListener('resize', updateSize);
   updateSize();
