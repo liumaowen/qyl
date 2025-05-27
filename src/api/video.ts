@@ -40,5 +40,5 @@ export const fetchVideo2 = async (): Promise<VideoItem[]> => {
 // 获取视频3
 export const fetchVideo3 = async (): Promise<VideoItem[]> => {
     const response = await axios.get('/mmpapi/api/shortvideo?type=json');
-    return [{src:response.data.link}];
+    return [{src:response.data.url}];
 }

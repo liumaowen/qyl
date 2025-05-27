@@ -197,23 +197,21 @@ const onSlideChange = (e: SwiperInstance) => {
     currentPage++; // 页码+1
     loadMoreData(); // 触发加载更多
   }
-  console.log('onSlideChange', currentIndex, videoInstances.value.length);
-  console.log('videoRefs onSlideChange:', videoRefs.value);
-  setTimeout(() => {
-    console.log('2000s', { length: Object.keys(videoInstances.value).length });
-    Object.values(videoInstances.value).forEach(element => {
-      console.log('videoInstances', element.id());
-    });
-  }, 2000);
 };
 
 // 加载更多数据
 const loadMoreData = async () => {
   let newData = await fetchApiOpenTopVideos(currentPage, pageSize);
-  const vide1 = await fetchVideo1();
-  const vide2 = await fetchVideo2();
-  const vide3 = await fetchVideo3();
-  newData = [...vide1, ...vide2, ...vide3]; // 合并新数据
+  const results = await Promise.allSettled([
+    fetchVideo1(),
+    fetchVideo2(),
+    fetchVideo3()
+  ]);
+  // 只保留 fulfilled 的结果，并将 VideoItem[] 扁平化为 VideoItem[]
+  const fulfilledVideos = results
+    .filter((r): r is PromiseFulfilledResult<VideoItem[]> => r.status === 'fulfilled')
+    .flatMap(r => r.value);
+  newData = [...newData, ...fulfilledVideos]; // 合并新数据
   console.log('loadMoreData', newData);
   if (newData.length > 0) {
     videoList.value = [...videoList.value, ...newData]; // 合并新数据
