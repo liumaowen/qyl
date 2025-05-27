@@ -3,8 +3,8 @@
     <ion-content :fullscreen="true" class="video-container">
       <!-- 竖滑容器 -->
       <swiper :modules="[Virtual]" :direction="'vertical'" :slides-per-view="1" @slideChange="onSlideChange"
-        ref="swiperRef" :style="{ height: containerHeight + 'px' }">
-        <swiper-slide v-for="(video, index) in videoList" :key="index" class="slide-item"
+        @swiper="setSwiperRef" :virtual="true" :style="{ height: containerHeight + 'px' }">
+        <swiper-slide v-for="(video, index) in videoList" :key="index" :virtualIndex="index" class="slide-item"
           :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
           <!-- 视频容器 -->
           <div class="video-wrap" :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
@@ -29,16 +29,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, watchEffect, onUnmounted, nextTick } from 'vue';
 import axios from 'axios';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Virtual } from 'swiper/modules';
 import 'swiper/css';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
-import { IonPage, IonContent, IonIcon, IonProgressBar,onIonViewWillLeave,onIonViewDidLeave } from '@ionic/vue';
+import { IonPage, IonContent, IonIcon, IonProgressBar, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
 import { play } from 'ionicons/icons';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { Capacitor } from '@capacitor/core';
 
 interface VideoItem {
   src: string;
@@ -54,9 +55,10 @@ const playingIndex = ref(-1);
 // swiper实例引用
 const swiperRef = ref<SwiperInstance>();
 // 视频实例数组
-const videoInstances = ref<VideoJsPlayer[]>([]);
+const videoInstances = ref<Record<string, VideoJsPlayer>>({});;
 // 声明对象类型的 ref
 const videoRefs = ref<Record<string, HTMLVideoElement>>({});
+let videoRefsOld: Record<string, HTMLVideoElement> = {}; // 用于存储旧的 videoRefs
 
 // 新增：进度相关状态
 const progress = ref<number[]>([]); // 各视频的播放进度（0-1）
@@ -66,7 +68,7 @@ const containerHeight = ref(window.innerHeight - 50.8); // 50.8为Tab高度
 let currentPage = 1; // 当前页码
 const pageSize = 6;    // 每页数量
 let isLoading = false; // 加载状态（防止重复请求）
-let handleMouseMove: (e: MouseEvent) => void; 
+let handleMouseMove: (e: MouseEvent) => void;
 let handleMouseUp: () => void;
 let handleTouchMove: (e: TouchEvent) => void
 let handleTouchEnd: (e: TouchEvent) => void;
@@ -79,6 +81,33 @@ const updateSize = () => {
   containerHeight.value = window.innerHeight - 50.8;
 }
 
+
+watchEffect(() => {
+  // 检查是否有新增或删除的 videoRef
+  const newKeys = Object.keys(videoRefs.value);
+  const oldKeys = Object.keys(videoRefsOld);
+
+  // 检测新增的 videoRef
+  newKeys.forEach(key => {
+    if (!oldKeys.includes(key)) {
+      console.log(`New videoRef added: ${key}`);
+      initVideo(parseInt(key.split('_')[1])); // 初始化新添加的视频
+    }
+  });
+
+  // 检测删除的 videoRef
+  oldKeys.forEach(key => {
+    if (!newKeys.includes(key)) {
+      console.log(`videoRef removed: ${key}`);
+      videoInstances.value[key]?.dispose(); // 销毁已删除的视频实例
+      delete videoInstances.value[key]; // 从实例数组中删除
+    }
+  });
+
+  // 更新旧的 videoRefs
+  videoRefsOld = { ...videoRefs.value };
+  console.log('watchvideoInstance', videoInstances.value);
+});
 
 const setVideoRef = (el: Element | ComponentPublicInstance | null, index: number) => {
   let dom: Element | null = null;
@@ -94,20 +123,20 @@ const setVideoRef = (el: Element | ComponentPublicInstance | null, index: number
 
 // 初始化视频播放器
 const initVideo = (index: number) => {
-  const videoElement = videoRefs.value[`videoRef_${index}`];
+  const key = `videoRef_${index}`;
+  const videoElement = videoRefs.value[key];
   if (!videoElement) return;  // 防止元素未渲染时初始化
+  if (videoInstances.value[key]) {
+    return; // 如果播放器已存在则不重复初始化
+  }
   const player = videojs(videoElement as Element, {
     controls: false, // 隐藏原生控制条
     autoplay: false,
-    preload: 'auto',
+    preload: 'metadata',
     // width: containerWidth.value,
     height: containerHeight.value,
     loop: true,
-    fluid: true,
-    fullscreen: {
-      enabled: true, // 显式启用全屏功能
-      options: { native: true } // 使用浏览器原生全屏（可选）
-    }
+    fluid: true
   });
 
   // 监听播放时间更新进度（非拖动状态时）
@@ -119,16 +148,17 @@ const initVideo = (index: number) => {
     }
   });
 
-  videoInstances.value[index] = player;
+  videoInstances.value[key] = player;
   return player;
 };
 
 
 // 切换播放状态
 const togglePlay = (index: number) => {
-  console.log('togglePlay', index);
-  const player = videoInstances.value[index];
-  console.log('player', player.paused());
+  const key = `videoRef_${index}`;
+  const player = videoInstances.value[key];
+  if (!player) return;
+  console.log('player_paused', player.paused());
   if (player.paused()) {
     player.play();
     playingIndex.value = index;
@@ -140,21 +170,28 @@ const togglePlay = (index: number) => {
 
 // 检查是否正在播放
 const isPlaying = (index: number) => {
-  return playingIndex.value === index && !videoInstances.value[index]?.paused();
+  const key = `videoRef_${index}`;
+  return playingIndex.value === index && !videoInstances.value[key]?.paused();
+};
+// 设置swiper实例引用
+const setSwiperRef: (swiper: SwiperInstance) => void = (swiper: SwiperInstance) => {
+  swiperRef.value = swiper;
 };
 
 // 滑动切换处理
 const onSlideChange = (e: SwiperInstance) => {
   const currentIndex = e.activeIndex;
   // 暂停其他视频
-  videoInstances.value.forEach((player, index) => {
-    if (index !== currentIndex && !player.paused()) {
-      player.pause();
+  Object.keys(videoInstances.value).forEach(key => {
+    const idx = parseInt(key.split('_')[1]);
+    if (idx !== currentIndex && videoInstances.value[key] && !videoInstances.value[key].paused()) {
+      videoInstances.value[key].pause();
     }
   });
   // 播放当前视频
-  if (videoInstances.value[currentIndex]) {
-    videoInstances.value[currentIndex].play();
+  const curKey = `videoRef_${currentIndex}`;
+  if (videoInstances.value[curKey]) {
+    videoInstances.value[curKey].play();
     playingIndex.value = currentIndex;
   }
   // 新增：滚动到倒数第二个视频时加载下一页
@@ -163,6 +200,14 @@ const onSlideChange = (e: SwiperInstance) => {
     currentPage++; // 页码+1
     loadMoreData(); // 触发加载更多
   }
+  console.log('onSlideChange', currentIndex, videoInstances.value.length);
+  console.log('videoRefs onSlideChange:', videoRefs.value);
+  setTimeout(() => {
+    console.log('2000s', { length: Object.keys(videoInstances.value).length });
+    Object.values(videoInstances.value).forEach(element => {
+      console.log('videoInstances', element.id());
+    });
+  }, 2000);
 };
 
 // 加载更多数据
@@ -170,12 +215,14 @@ const loadMoreData = async () => {
   const newData = await fetchData(currentPage, pageSize);
   if (newData.length > 0) {
     videoList.value = [...videoList.value, ...newData]; // 合并新数据
+    console.log('加载更多数据:', swiperRef.value);
+    // swiperRef.value?.virtual.appendSlide(newData);
+    console.log('swiperRef after append:', swiperRef.value);
     // 初始化新视频的进度和播放器
     await nextTick();
     newData.forEach((_, index) => {
-      const newIndex = videoList.value.length - newData.length + index;
+      const newIndex = videoList.value.length + index;
       progress.value[newIndex] = 0;
-      initVideo(newIndex);
     });
   }
 };
@@ -288,13 +335,15 @@ const fetchData_pe = async (page: number, per_page: number) => {
 
 // 生命周期：组件挂载时初始化
 onMounted(async () => {
-  await StatusBar.setStyle({ style: Style.Dark });
+  if (Capacitor.isNativePlatform()) {
+    await StatusBar.setStyle({ style: Style.Dark });
+  }
   window.addEventListener('resize', updateSize);
   updateSize();
   // 初始化加载第一页数据
   const initialData = await fetchData(currentPage, pageSize);
   console.log('initialData', initialData);
-  videoList.value = initialData; // 替换初始静态数据
+  videoList.value = [...initialData]; // 替换初始静态数据
   progress.value = initialData.map(() => 0); // 初始化进度数组
   console.log('videoRefs after mount:', videoRefs.value);
   await nextTick();
@@ -304,8 +353,8 @@ onMounted(async () => {
   });
   if (isMobile()) {
     // 移动端：自动播放第一页的第一个视频
-    if (videoInstances.value[0]) {
-      videoInstances.value[0].play();
+    if (videoInstances.value['videoRef_0']) {
+      videoInstances.value['videoRef_0'].play();
       playingIndex.value = 0;
     }
   }
@@ -313,7 +362,7 @@ onMounted(async () => {
 
 // 生命周期：组件卸载时销毁播放器
 onUnmounted(() => {
-  videoInstances.value.forEach(player => {
+  Object.values(videoInstances.value).forEach(player => {
     if (player) player.dispose();
   });
   window.removeEventListener('resize', updateSize);
@@ -323,14 +372,12 @@ onUnmounted(() => {
   document.removeEventListener('touchend', handleTouchEnd);
 });
 onIonViewWillLeave(() => {
-  console.log('onIonViewWillLeave');
-  videoInstances.value.forEach(player => {
+  Object.values(videoInstances.value).forEach(player => {
     if (player) player.pause();
   });
 })
 onIonViewDidLeave(() => {
-  console.log('onIonViewWillLeave');
-  videoInstances.value.forEach(player => {
+  Object.values(videoInstances.value).forEach(player => {
     if (player) player.pause();
   });
 })
@@ -350,7 +397,8 @@ onIonViewDidLeave(() => {
 .video-wrap {
   position: relative;
   background: #000;
-  overflow: hidden; /* 隐藏视频超出容器的部分 */
+  overflow: hidden;
+  /* 隐藏视频超出容器的部分 */
   width: 100%;
   height: 0;
 }
@@ -360,9 +408,12 @@ onIonViewDidLeave(() => {
   position: absolute;
   top: 0;
   left: 0;
-  height: 100% !important; /* 高度撑满容器 */
-  max-width: 100% !important; /* 限制宽度不超过容器 */
-  object-fit: cover; /* 覆盖容器避免黑边（可选，若需完整显示改为 contain） */
+  height: 100% !important;
+  /* 高度撑满容器 */
+  max-width: 100% !important;
+  /* 限制宽度不超过容器 */
+  object-fit: cover;
+  /* 覆盖容器避免黑边（可选，若需完整显示改为 contain） */
 }
 
 /* 自定义暂停按钮样式 */
