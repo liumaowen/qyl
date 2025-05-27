@@ -40,11 +40,8 @@ import { IonPage, IonContent, IonIcon, IonProgressBar, onIonViewWillLeave, onIon
 import { play } from 'ionicons/icons';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
+import { fetchApiOpenTopVideos,fetchVideo1,fetchVideo2,fetchVideo3,VideoItem } from '@/api/video';
 
-interface VideoItem {
-  src: string;
-  poster: string;
-}
 // 模拟视频数据（实际项目中建议从接口获取）
 const videoList = ref<VideoItem[]>([]);
 type VideoJsPlayer = ReturnType<typeof videojs>;
@@ -66,7 +63,7 @@ const isDragging = ref(false); // 是否正在拖动
 const containerWidth = ref(window.innerWidth);
 const containerHeight = ref(window.innerHeight - 50.8); // 50.8为Tab高度
 let currentPage = 1; // 当前页码
-const pageSize = 6;    // 每页数量
+const pageSize = 3;    // 每页数量
 let isLoading = false; // 加载状态（防止重复请求）
 let handleMouseMove: (e: MouseEvent) => void;
 let handleMouseUp: () => void;
@@ -212,7 +209,12 @@ const onSlideChange = (e: SwiperInstance) => {
 
 // 加载更多数据
 const loadMoreData = async () => {
-  const newData = await fetchData(currentPage, pageSize);
+  let newData = await fetchApiOpenTopVideos(currentPage, pageSize);
+  const vide1 = await fetchVideo1();
+  const vide2 = await fetchVideo2();
+  const vide3 = await fetchVideo3();
+  newData = [...vide1, ...vide2, ...vide3]; // 合并新数据
+  console.log('loadMoreData', newData);
   if (newData.length > 0) {
     videoList.value = [...videoList.value, ...newData]; // 合并新数据
     console.log('加载更多数据:', swiperRef.value);
@@ -231,7 +233,8 @@ const loadMoreData = async () => {
 const startDrag = (e: MouseEvent | TouchEvent, index: number) => {
   e.preventDefault();
   isDragging.value = true; // 标记为拖动状态
-  const player = videoInstances.value[index];
+  const key = `videoRef_${index}`;
+  const player = videoInstances.value[key];
   const progressBar = e.target as HTMLElement; // 获取进度条元素
 
   // 计算进度条宽度和位置（用于后续拖动位置计算）
@@ -272,66 +275,6 @@ const startDrag = (e: MouseEvent | TouchEvent, index: number) => {
   document.addEventListener('touchmove', handleTouchMove);
   document.addEventListener('touchend', handleTouchEnd);
 };
-/**
- * 获取视频列表（支持分页）
- * @param page 当前页码
- * @param size 每页数量
- * @returns 视频列表
- */
-const fetchData = async (page: number, size: number) => {
-  let list: any[] = [];
-  if (isLoading) return []; // 防止重复请求
-  isLoading = true;
-  try {
-    const response = await axios.get('https://api.apiopen.top/api/getMiniVideo', {
-      params: { page, size } // 传递分页参数
-    });
-    response.data.result.list.forEach((item: any) => {
-      list.push({
-        src: item.playurl,
-        poster: item.picurl
-      });
-    });
-    const initialData = await fetchData_pe(currentPage, 3);
-    list = [...list, ...initialData];
-    return list || [];
-  } finally {
-    isLoading = false; // 无论成功/失败都重置加载状态
-  }
-};
-/**
- * pexels 视频列表
- * @param page 当前页码
- * @param size 每页数量
- * @returns
- */
-const fetchData_pe = async (page: number, per_page: number) => {
-  let list: any[] = [];
-  if (isLoading) return []; // 防止重复请求
-  isLoading = true;
-  try {
-    const response = await axios.get('https://api.pexels.com/videos/search', {
-      params: { query: 'popular', orientation: 'portrait', size: 'medium', page, per_page }, // 传递分页参数
-      headers: {
-        Authorization: 'I4w6vXKeN6fO5Zo4w1AK232oIN4pPs0MjCfgxnGRMxWTRmGc7eePdOAL'
-      }
-    });
-    response.data.videos.forEach((item: any) => {
-      let targetVideo = item.video_files.find((file: any) => {
-        return file.quality === 'hd';
-      });
-      if (targetVideo) {
-        list.push({
-          src: targetVideo.link,
-          poster: item.image
-        });
-      }
-    });
-    return list || [];
-  } finally {
-    isLoading = false; // 无论成功/失败都重置加载状态
-  }
-};
 
 // 生命周期：组件挂载时初始化
 onMounted(async () => {
@@ -341,7 +284,7 @@ onMounted(async () => {
   window.addEventListener('resize', updateSize);
   updateSize();
   // 初始化加载第一页数据
-  const initialData = await fetchData(currentPage, pageSize);
+  const initialData = await fetchApiOpenTopVideos(currentPage, pageSize);
   console.log('initialData', initialData);
   videoList.value = [...initialData]; // 替换初始静态数据
   progress.value = initialData.map(() => 0); // 初始化进度数组

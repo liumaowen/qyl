@@ -25,5 +25,14 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom'
+  },
+  server: {
+    proxy: {
+      '/mmpapi': {
+        target: 'https://api.mmp.cc',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/mmpapi/, '')
+      }
+    }
   }
 })
