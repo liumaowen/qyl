@@ -2,15 +2,27 @@
   <ion-page>
     <ion-content :fullscreen="true" class="video-container">
       <!-- 竖滑容器 -->
-      <swiper :modules="[Virtual]" :direction="'vertical'" :slides-per-view="1" @slideChange="onSlideChange"
-        @swiper="setSwiperRef" :virtual="true" :style="{ height: containerHeight + 'px' }">
+      <swiper :modules="[Virtual]" 
+      :direction="'vertical'" 
+      :slides-per-view="1" 
+      @slideChange="onSlideChange"
+      @swiper="setSwiperRef" 
+      @transitionEnd="onSlideTransitionEnd"
+      :virtual="true" 
+      :speed="100"
+      :style="{ height: containerHeight + 'px' }">
         <swiper-slide v-for="(video, index) in videoList" :key="index" :virtualIndex="index" class="slide-item"
           :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
           <!-- 视频容器 -->
           <div class="video-wrap" :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
             <!-- 视频播放器 -->
-            <video :class="'video-js vjs-big-play-button-hidden '" :id="'my-video-' + index" :src="video.src"
-              :poster="video.poster" :ref="el => setVideoRef(el, index)"></video>
+            <video :class="'video-js vjs-big-play-button-hidden '" 
+            :id="'my-video-' + index" 
+            :src="video.src"
+            type="video/mp4"
+            :poster="video.poster" 
+            :ref="el => setVideoRef(el, index)"
+            ></video>
 
             <!-- 暂停时显示的中心按钮 -->
             <div class="center-pause-btn" @click="togglePlay(index)">
@@ -29,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watchEffect, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted,watch, watchEffect, onUnmounted, nextTick } from 'vue';
 import axios from 'axios';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Virtual } from 'swiper/modules';
@@ -56,6 +68,8 @@ const videoInstances = ref<Record<string, VideoJsPlayer>>({});;
 // 声明对象类型的 ref
 const videoRefs = ref<Record<string, HTMLVideoElement>>({});
 let videoRefsOld: Record<string, HTMLVideoElement> = {}; // 用于存储旧的 videoRefs
+// 当前播放的索引
+const currentIndex1 = ref(0);
 
 // 新增：进度相关状态
 const progress = ref<number[]>([]); // 各视频的播放进度（0-1）
@@ -63,7 +77,7 @@ const isDragging = ref(false); // 是否正在拖动
 const containerWidth = ref(window.innerWidth);
 const containerHeight = ref(window.innerHeight - 50.8); // 50.8为Tab高度
 let currentPage = 1; // 当前页码
-const pageSize = 3;    // 每页数量
+const pageSize = 4;    // 每页数量
 let isLoading = false; // 加载状态（防止重复请求）
 let handleMouseMove: (e: MouseEvent) => void;
 let handleMouseUp: () => void;
@@ -78,33 +92,51 @@ const updateSize = () => {
   containerHeight.value = window.innerHeight - 50.8;
 }
 
+// watch(currentIndex1, (newIndex, oldIndex) => {
+//   console.log('watch currentIndex', newIndex, oldIndex);
+//   // 只初始化当前页和前后各一页
+//   [newIndex - 1, newIndex, newIndex + 1].forEach(idx => {
+//     if (idx >= 0 && idx < videoList.value.length) {
+//       initVideo(idx);
+//     }
+//   });
+//   // 销毁不在范围内的实例
+//   Object.keys(videoInstances.value).forEach(key => {
+//     const idx = parseInt(key.split('_')[1]);
+//     if (Math.abs(idx - newIndex) > 1) {
+//       videoInstances.value[key]?.dispose();
+//       delete videoInstances.value[key];
+//     }
+//   });
+//   console.log('watch currentIndex1', videoInstances.value);
+// });
 
-watchEffect(() => {
-  // 检查是否有新增或删除的 videoRef
-  const newKeys = Object.keys(videoRefs.value);
-  const oldKeys = Object.keys(videoRefsOld);
+// watchEffect(() => {
+//   // 检查是否有新增或删除的 videoRef
+//   const newKeys = Object.keys(videoRefs.value);
+//   const oldKeys = Object.keys(videoRefsOld);
 
-  // 检测新增的 videoRef
-  newKeys.forEach(key => {
-    if (!oldKeys.includes(key)) {
-      console.log(`New videoRef added: ${key}`);
-      initVideo(parseInt(key.split('_')[1])); // 初始化新添加的视频
-    }
-  });
+//   // 检测新增的 videoRef
+//   newKeys.forEach(key => {
+//     if (!oldKeys.includes(key)) {
+//       console.log(`New videoRef added: ${key}`);
+//       initVideo(parseInt(key.split('_')[1])); // 初始化新添加的视频
+//     }
+//   });
 
-  // 检测删除的 videoRef
-  oldKeys.forEach(key => {
-    if (!newKeys.includes(key)) {
-      console.log(`videoRef removed: ${key}`);
-      videoInstances.value[key]?.dispose(); // 销毁已删除的视频实例
-      delete videoInstances.value[key]; // 从实例数组中删除
-    }
-  });
+//   // 检测删除的 videoRef
+//   oldKeys.forEach(key => {
+//     if (!newKeys.includes(key)) {
+//       console.log(`videoRef removed: ${key}`);
+//       videoInstances.value[key]?.dispose(); // 销毁已删除的视频实例
+//       delete videoInstances.value[key]; // 从实例数组中删除
+//     }
+//   });
 
-  // 更新旧的 videoRefs
-  videoRefsOld = { ...videoRefs.value };
-  console.log('watchvideoInstance', videoInstances.value);
-});
+//   // 更新旧的 videoRefs
+//   videoRefsOld = { ...videoRefs.value };
+//   console.log('watchvideoInstance', videoInstances.value);
+// });
 
 const setVideoRef = (el: Element | ComponentPublicInstance | null, index: number) => {
   let dom: Element | null = null;
@@ -145,6 +177,16 @@ const initVideo = (index: number) => {
     }
   });
 
+  // 监听视频加载错误，自动跳到下一页
+  player.on('error', () => {
+    const error = player.error();
+    console.log('视频播放出错:', error);
+    // 跳到下一页（如果不是最后一页）
+    if (swiperRef.value && index < videoList.value.length - 1) {
+      swiperRef.value.slideTo(index + 1);
+    }
+  });
+
   videoInstances.value[key] = player;
   return player;
 };
@@ -178,6 +220,8 @@ const setSwiperRef: (swiper: SwiperInstance) => void = (swiper: SwiperInstance) 
 // 滑动切换处理
 const onSlideChange = (e: SwiperInstance) => {
   const currentIndex = e.activeIndex;
+  currentIndex1.value = e.activeIndex;
+  console.log('onSlideChange', currentIndex);
   // 暂停其他视频
   Object.keys(videoInstances.value).forEach(key => {
     const idx = parseInt(key.split('_')[1]);
@@ -192,11 +236,31 @@ const onSlideChange = (e: SwiperInstance) => {
     playingIndex.value = currentIndex;
   }
   // 新增：滚动到倒数第二个视频时加载下一页
-  const isLastSecondSlide = currentIndex === videoList.value.length - 2;
+  const isLastSecondSlide = currentIndex === videoList.value.length - 3;
   if (isLastSecondSlide && !isLoading) {
     currentPage++; // 页码+1
     loadMoreData(); // 触发加载更多
   }
+};
+const onSlideTransitionEnd = async (swiper: SwiperInstance) => {
+  const newIndex = swiper.activeIndex;
+  console.log('onSlideTransitionEnd', newIndex);
+  await nextTick(); // 等待 DOM 更新
+  // 只初始化当前页和前后各一页
+  [newIndex - 1, newIndex, newIndex + 1].forEach(idx => {
+    if (idx >= 0 && idx < videoList.value.length) {
+      initVideo(idx);
+    }
+  });
+  // 销毁不在范围内的实例
+  Object.keys(videoInstances.value).forEach(key => {
+    const idx = parseInt(key.split('_')[1]);
+    if (Math.abs(idx - newIndex) > 1) {
+      videoInstances.value[key]?.dispose();
+      delete videoInstances.value[key];
+    }
+  });
+  console.log('onSlideTransitionEnd1', videoInstances.value);
 };
 
 // 加载更多数据
