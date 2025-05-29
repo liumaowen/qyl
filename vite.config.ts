@@ -28,6 +28,11 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      '/apiopen': {
+        target: 'https://api.apiopen.top',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/apiopen/, '')
+      },
       '/mmpapi': {
         target: 'https://api.mmp.cc',
         changeOrigin: true,

@@ -9,7 +9,7 @@
       @swiper="setSwiperRef" 
       @transitionEnd="onSlideTransitionEnd"
       :virtual="true" 
-      :speed="100"
+      :speed="200"
       :style="{ height: containerHeight + 'px' }">
         <swiper-slide v-for="(video, index) in videoList" :key="index" :virtualIndex="index" class="slide-item"
           :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
@@ -267,7 +267,6 @@ const onSlideTransitionEnd = async (swiper: SwiperInstance) => {
 const loadMoreData = async () => {
   let newData = await fetchApiOpenTopVideos(currentPage, pageSize);
   const results = await Promise.allSettled([
-    fetchVideo1(),
     fetchVideo2(),
     fetchVideo3()
   ]);
@@ -289,6 +288,16 @@ const loadMoreData = async () => {
       progress.value[newIndex] = 0;
     });
   }
+    // 后台无感知地请求 fetchVideo1
+  fetchVideo1().then(videos => {
+    if (videos.length > 0) {
+      videoList.value = [...videoList.value, ...videos];
+      videos.forEach((_, index) => {
+        const newIndex = videoList.value.length - videos.length + index;
+        progress.value[newIndex] = 0;
+      });
+    }
+  });
 };
 
 // 拖动开始处理

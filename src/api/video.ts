@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { apiopenRequest, mmpRequest } from './http';
 
 export interface VideoItem {
   src: string;
@@ -12,7 +13,7 @@ export interface VideoItem {
  * @returns 视频列表
  */
 export const fetchApiOpenTopVideos = async (page: number, size: number): Promise<VideoItem[]> => {
-    const response = await axios.get('https://api.apiopen.top/api/getMiniVideo', {
+    const response = await apiopenRequest.get('/api/getMiniVideo', {
         params: { page, size }
     });
     return (response.data.result.list || []).map((item: any) => ({
@@ -26,7 +27,10 @@ export const fetchVideo1 = async (): Promise<VideoItem[]> => {
     const idlist = ['jk', 'YuMeng', 'NvDa', 'NvGao', 'ReWu', 'QingCun', 'SheJie', 'ChuanDa', 'GaoZhiLiangXiaoJieJie', 'HanFu', 'HeiSi', 'BianZhuang', 'LuoLi', 'TianMei', 'BaiSi'];
     let videos: any[] = [];
     for (const id of idlist) {
-        const response = await axios.get(`/mmpapi/api/ksvideo?type=json&id=${id}`);
+        const response = await mmpRequest.get(`/api/ksvideo?type=json&id=${id}`);
+        if (!response.data || !response.data.link) {
+            continue; // 如果没有视频链接，跳过
+        }
         videos = [...videos,{src:response.data.link}];
     }
     return videos;
@@ -34,11 +38,17 @@ export const fetchVideo1 = async (): Promise<VideoItem[]> => {
 
 // 获取视频2
 export const fetchVideo2 = async (): Promise<VideoItem[]> => {
-    const response = await axios.get('/mmpapi/api/miss?type=json');
+    const response = await mmpRequest.get('/api/miss?type=json');
+    if (!response.data || !response.data.link) {
+        return [];
+    }
     return [{src:response.data.link}];
 }
 // 获取视频3
 export const fetchVideo3 = async (): Promise<VideoItem[]> => {
-    const response = await axios.get('/mmpapi/api/shortvideo?type=json');
+    const response = await mmpRequest.get('/api/shortvideo?type=json');
+    if (!response.data || !response.data.url) {
+        return [];
+    }
     return [{src:response.data.url}];
 }
