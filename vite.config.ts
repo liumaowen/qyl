@@ -28,15 +28,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/apiopen': {
-        target: 'https://api.apiopen.top',
+      '/qylapi': {
+        target: 'http://localhost:8081',
         changeOrigin: true,
-        rewrite: path => path.replace(/^\/apiopen/, '')
-      },
-      '/mmpapi': {
-        target: 'https://api.mmp.cc',
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/mmpapi/, '')
+        rewrite: path => path.replace(/^\/qylapi/, '')
       }
     }
   }
