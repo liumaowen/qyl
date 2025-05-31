@@ -4,7 +4,7 @@ import axios from 'axios';
 const apiConfig = {
   qylapi: {
     dev: '/qylapi', // 走 Vite 代理
-    prod: 'https://120.46.169.69:8081' // 生产环境地址
+    prod: 'http://120.46.169.69:8081' // 生产环境地址
   }
 };
 
