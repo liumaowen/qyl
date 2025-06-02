@@ -1,8 +1,19 @@
-import { qylapiRequest } from './http';
+import { AES_Decrypt, getm3u8 } from '@/utils/crypto';
+import { apiopenRequest, mmpRequest, mgtvRequest } from './http';
+import { PLAYDOMAIN } from '@/store/state';
 
 export interface VideoItem {
   src: string;
   poster?: string; // 可选属性，某些视频可能没有封面
+  type?: string; // 视频类型
+  title?: string; // 视频标题
+}
+
+export interface FormType {
+  PageIndex: string;
+  PageSize: string;
+  VideoType: string;
+  SortType: string;
 }
 
 /**
@@ -12,7 +23,7 @@ export interface VideoItem {
  * @returns 视频列表
  */
 export const fetchApiOpenTopVideos = async (page: number, size: number): Promise<VideoItem[]> => {
-    const response = await qylapiRequest.get('/api/getMiniVideo', {
+    const response = await apiopenRequest.get('/api/getMiniVideo', {
         params: { page, size }
     });
     return (response.data.result.list || []).map((item: any) => ({
@@ -26,7 +37,7 @@ export const fetchVideo1 = async (): Promise<VideoItem[]> => {
     const idlist = ['jk', 'YuMeng', 'NvDa', 'NvGao', 'ReWu', 'QingCun', 'SheJie', 'ChuanDa', 'GaoZhiLiangXiaoJieJie', 'HanFu', 'HeiSi', 'BianZhuang', 'LuoLi', 'TianMei', 'BaiSi'];
     let videos: any[] = [];
     for (const id of idlist) {
-        const response = await qylapiRequest.get(`/api/ksvideo`,{ params: { id } });
+        const response = await mmpRequest.get(`/api/ksvideo?type=json&id=${id}`);
         if (!response.data || !response.data.link) {
             continue; // 如果没有视频链接，跳过
         }
@@ -37,7 +48,7 @@ export const fetchVideo1 = async (): Promise<VideoItem[]> => {
 
 // 获取视频2
 export const fetchVideo2 = async (): Promise<VideoItem[]> => {
-    const response = await qylapiRequest.get('/api/miss');
+    const response = await mmpRequest.get('/api/miss?type=json');
     if (!response.data || !response.data.link) {
         return [];
     }
@@ -45,9 +56,46 @@ export const fetchVideo2 = async (): Promise<VideoItem[]> => {
 }
 // 获取视频3
 export const fetchVideo3 = async (): Promise<VideoItem[]> => {
-    const response = await qylapiRequest.get('/api/shortvideo');
+    const response = await mmpRequest.get('/api/shortvideo?type=json');
     if (!response.data || !response.data.url) {
         return [];
     }
     return [{src:response.data.url}];
 }
+// 芒果TV接口示例
+export const fetchMGTVVideoList = async (params: FormType): Promise<VideoItem[]> => {
+  const headers = {
+    "authorization": "Bearer null",
+    "priority": "u=1, i",
+    "x-auth-uuid": "be63a7fc870c84b63bb3d2936649a322",
+    "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+  };
+  const response = await mgtvRequest.post(
+    '/Web/VideoList',
+    new URLSearchParams({ ...params }),
+    {
+      headers,
+      responseType: 'arraybuffer',
+      timeout: 60000,
+    }
+  );
+  if (response.data) {
+    const textDecoder = new TextDecoder();
+    const text = textDecoder.decode(response.data);
+    const decryptedPassword = AES_Decrypt(text);
+    const list99 = JSON.parse(decryptedPassword);
+    const list100 = list99?.data?.items || [];
+    console.log('MGTV视频列表:', list100);
+    // 处理每个视频
+    const result = list100.map((element: any) => {
+      const mm = getm3u8(PLAYDOMAIN, element['playUrl']);
+      return {
+        src: mm,
+        title: element['title'],
+        type: 'application/x-mpegURL', // 设置视频类型为 m3u8
+      };
+    });
+    return result;
+  }
+  return [];
+};

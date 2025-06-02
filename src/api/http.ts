@@ -2,9 +2,17 @@ import axios from 'axios';
 
 // 域名配置
 const apiConfig = {
-  qylapi: {
-    dev: '/qylapi', // 走 Vite 代理
-    prod: 'http://120.46.169.69:8081' // 生产环境地址
+  apiopen: {
+    dev: '/apiopen', // 走 Vite 代理
+    prod: 'https://api.apiopen.top'
+  },
+  mmp: {
+    dev: '/mmpapi', // 走 Vite 代理
+    prod: 'https://api.mmp.cc'
+  },
+  mgtv: {
+    dev: '/mgtv', // 走 Vite 代理
+    prod: 'https://api.mgtv109.cc'
   }
 };
 
@@ -16,6 +24,13 @@ function getBaseURL(key: keyof typeof apiConfig) {
 }
 
 // 创建 axios 实例
-export const qylapiRequest = axios.create({
-  baseURL: getBaseURL('qylapi')
+export const apiopenRequest = axios.create({
+  baseURL: getBaseURL('apiopen')
+});
+
+export const mmpRequest = axios.create({
+  baseURL: getBaseURL('mmp')
+});
+export const mgtvRequest = axios.create({
+  baseURL: getBaseURL('mgtv')
 });

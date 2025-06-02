@@ -2,27 +2,16 @@
   <ion-page>
     <ion-content :fullscreen="true" class="video-container">
       <!-- 竖滑容器 -->
-      <swiper :modules="[Virtual]" 
-      :direction="'vertical'" 
-      :slides-per-view="1" 
-      @slideChange="onSlideChange"
-      @swiper="setSwiperRef" 
-      @transitionEnd="onSlideTransitionEnd"
-      :virtual="true" 
-      :speed="200"
-      :style="{ height: containerHeight + 'px' }">
+      <swiper :modules="[Virtual]" :direction="'vertical'" :slides-per-view="1" @slideChange="onSlideChange"
+        @swiper="setSwiperRef" @transitionEnd="onSlideTransitionEnd" :virtual="true" :speed="200"
+        :style="{ height: containerHeight + 'px' }">
         <swiper-slide v-for="(video, index) in videoList" :key="index" :virtualIndex="index" class="slide-item"
           :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
           <!-- 视频容器 -->
           <div class="video-wrap" :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
             <!-- 视频播放器 -->
-            <video :class="'video-js vjs-big-play-button-hidden '" 
-            :id="'my-video-' + index" 
-            :src="video.src"
-            type="video/mp4"
-            :poster="video.poster" 
-            :ref="el => setVideoRef(el, index)"
-            ></video>
+            <video :class="'video-js vjs-big-play-button-hidden '" :id="'my-video-' + index" :poster="video.poster"
+              :ref="el => setVideoRef(el, index)"></video>
 
             <!-- 暂停时显示的中心按钮 -->
             <div class="center-pause-btn" @click="togglePlay(index)">
@@ -33,6 +22,11 @@
               <ion-progress-bar :value="progress[index]"
                 :class="['custom-progress', { dragging: isDragging }]"></ion-progress-bar>
             </div>
+            <!-- 标题说明 -->
+            <div class="video-title-bar" v-if="video.title">
+              <h6>{{ video.title }}</h6>
+              <!-- <p v-if="video.description">{{ video.description }}</p> -->
+            </div>
           </div>
         </swiper-slide>
       </swiper>
@@ -41,19 +35,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted,watch, watchEffect, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, watch, watchEffect, onUnmounted, nextTick } from 'vue';
 import axios from 'axios';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Virtual } from 'swiper/modules';
 import 'swiper/css';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
+import videoLanguage from 'video.js/dist/lang/zh-CN.json'
 import { IonPage, IonContent, IonIcon, IonProgressBar, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
 import { play } from 'ionicons/icons';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
-import { fetchApiOpenTopVideos,fetchVideo1,fetchVideo2,fetchVideo3,VideoItem } from '@/api/video';
+import { fetchApiOpenTopVideos, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, VideoItem } from '@/api/video';
 
+videojs.addLanguage('zh-CN', videoLanguage); // 添加中文语言包
 // 模拟视频数据（实际项目中建议从接口获取）
 const videoList = ref<VideoItem[]>([]);
 type VideoJsPlayer = ReturnType<typeof videojs>;
@@ -158,14 +154,22 @@ const initVideo = (index: number) => {
   if (videoInstances.value[key]) {
     return; // 如果播放器已存在则不重复初始化
   }
+  const item = videoList.value[index];
   const player = videojs(videoElement as Element, {
     controls: false, // 隐藏原生控制条
     autoplay: false,
     preload: 'metadata',
+    language: 'zh-CN', // 设置语言
     // width: containerWidth.value,
     height: containerHeight.value,
     loop: true,
-    fluid: true
+    fluid: true,
+    sources: [
+      {
+        src: item.src,//视频地址
+        type: item.type ? item.type : 'video/mp4', // 视频类型
+      }
+    ],
   });
 
   // 监听播放时间更新进度（非拖动状态时）
@@ -288,8 +292,24 @@ const loadMoreData = async () => {
       progress.value[newIndex] = 0;
     });
   }
-    // 后台无感知地请求 fetchVideo1
-  fetchVideo1().then(videos => {
+  // 后台无感知地请求 fetchVideo1
+  // fetchVideo1().then(videos => {
+  //   if (videos.length > 0) {
+  //     videoList.value = [...videoList.value, ...videos];
+  //     videos.forEach((_, index) => {
+  //       const newIndex = videoList.value.length - videos.length + index;
+  //       progress.value[newIndex] = 0;
+  //     });
+  //   }
+  // });
+  const params = {
+    PageIndex: "21",
+    PageSize: "6",
+    VideoType: "1",
+    SortType: "7"
+  };
+  fetchMGTVVideoList(params).then(videos => {
+    console.log('fetchMGTVVideoList videos', videos);
     if (videos.length > 0) {
       videoList.value = [...videoList.value, ...videos];
       videos.forEach((_, index) => {
@@ -491,5 +511,30 @@ ion-progress-bar {
 /* 隐藏video.js默认的大播放按钮 */
 .vjs-big-play-button {
   display: none !important;
+}
+.video-title-bar {
+  position: absolute;
+  bottom: 20px;
+  /* 距离底部 20px */
+  left: 5%;
+  width: 80%;
+  color: #fff;
+  margin: 0 auto 8px auto;
+  word-break: break-all;
+  white-space: pre-line;
+  text-align: left;
+  margin: 0!important;
+  padding: 0!important;
+}
+.video-title-bar h6 {
+  font-size: 1rem;
+  margin: 0 0 2px 0;
+  font-weight: bold;
+  line-height: 1.3;
+}
+.video-title-bar p {
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.5;
 }
 </style>
