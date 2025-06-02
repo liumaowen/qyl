@@ -303,8 +303,8 @@ const loadMoreData = async () => {
   //   }
   // });
   const params = {
-    PageIndex: "21",
-    PageSize: "6",
+    PageIndex: currentPage+'',
+    PageSize: pageSize+'',
     VideoType: "1",
     SortType: "7"
   };

@@ -28,10 +28,20 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/qylapi': {
-        target: 'http://localhost:8081',
+      '/apiopen': {
+        target: 'https://api.apiopen.top',
         changeOrigin: true,
-        rewrite: path => path.replace(/^\/qylapi/, '')
+        rewrite: path => path.replace(/^\/apiopen/, '')
+      },
+      '/mmpapi': {
+        target: 'https://api.mmp.cc',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/mmpapi/, '')
+      },
+      '/mgtv': {
+        target: 'https://api.mgtv109.cc',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/mgtv/, '')
       }
     }
   }
