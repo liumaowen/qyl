@@ -34,9 +34,9 @@ const downloadAlertMessage = computed(() => `
 
 onMounted(async () => {
   // 只有安卓设备检查更新
-  // if (Capacitor.getPlatform() !== 'android') {
-  //   return;
-  // }
+  if (Capacitor.getPlatform() !== 'android') {
+    // return;
+  }
   // 获取本地版本号
   const info = await App.getInfo();
   console.log('当前版本信息:', info);
@@ -47,7 +47,7 @@ onMounted(async () => {
   // ({ version, url: downloadUrl } = res.data);
 
   // // 对比版本号
-  // if (version > localVersion) {
+  // if (compareVersion(version, localVersion) > 0) {
   //   presentAlert();
   // }
   version = '2.0.1'; // 模拟最新版本号
@@ -77,7 +77,7 @@ async function startUpdate() {
   progress.value = 0;
   const fileInfo = await Filesystem.getUri({
     directory: Directory.Cache,
-    path: 'qyl_' + version + '.apk'
+    path: 'qyl.apk'
   });
   // 下载新版本
   await FileTransfer.downloadFile({
@@ -131,6 +131,18 @@ function escapeHtml(str: string) {
       "'": '&#39;'
     } as any)[m];
   });
+}
+function compareVersion(v1: string, v2: string): number {
+  const arr1 = v1.split('.').map(Number);
+  const arr2 = v2.split('.').map(Number);
+  const len = Math.max(arr1.length, arr2.length);
+  for (let i = 0; i < len; i++) {
+    const n1 = arr1[i] || 0;
+    const n2 = arr2[i] || 0;
+    if (n1 > n2) return 1;
+    if (n1 < n2) return -1;
+  }
+  return 0;
 }
 </script>
 <style scoped>
