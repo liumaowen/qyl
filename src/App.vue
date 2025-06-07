@@ -51,7 +51,7 @@ onMounted(async () => {
   //   presentAlert();
   // }
   version = '2.0.1'; // 模拟最新版本号
-  downloadUrl = 'http://120.46.169.69/qyl.apk'; // 模拟下载链接
+  downloadUrl = 'https://z4.v3z.cn/mSjmA2'; // 模拟下载链接
   presentAlert();
 });
 // 是否立即更新弹窗
@@ -76,7 +76,7 @@ async function startUpdate() {
   showDownloadAlert.value = true;
   progress.value = 0;
   const fileInfo = await Filesystem.getUri({
-    directory: Directory.Cache,
+    directory: Directory.Data,
     path: 'qyl.apk'
   });
   // 下载新版本
