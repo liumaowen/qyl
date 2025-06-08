@@ -76,16 +76,9 @@ async function startUpdate() {
   showDownloadAlert.value = true;
   progress.value = 0;
   const fileInfo = await Filesystem.getUri({
-    directory: Directory.Data,
+    directory: Directory.Documents,
     path: 'qyl.apk'
   });
-  // 下载新版本
- const aaa = await FileTransfer.downloadFile({
-    url: downloadUrl,
-    path: fileInfo.uri,
-    progress: true,
-  });
-  console.log('下载完成:', aaa);
   FileTransfer.addListener('progress', (prs) => {
     console.log(`Downloaded ${prs.bytes} of ${prs.contentLength}`);
     progress.value = prs.bytes / prs.contentLength;
@@ -99,6 +92,13 @@ async function startUpdate() {
       }, 800);
     }
   });
+  // 下载新版本
+ const aaa = await FileTransfer.downloadFile({
+    url: downloadUrl,
+    path: fileInfo.uri,
+    progress: true,
+  });
+  console.log('下载完成:', aaa);
 }
 const open = async (url: string) => {
   console.log('打开文件：', url);
