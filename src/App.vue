@@ -25,6 +25,10 @@ const progress = ref(0);
 let downloadUrl = '';
 let localVersion = '';
 let version = '';
+const FileTransfer1 = new FileTransfer();
+const File1 = new File();
+const FileOpener1 = new FileOpener();
+
 const downloadAlertMessage = computed(() => `
   <div class="download-title">正在下载更新，请稍等...</div>
   <div class="download-bar">
@@ -81,11 +85,8 @@ async function startUpdate() {
   showDownloadAlert.value = true;
   progress.value = 0;
   // 1. 创建下载对象
-  console.log('开始下载:', new FileTransfer());
-  const FileTransfer1 = new FileTransfer();
-  const File1 = new File();
-  const FileOpener1 = new FileOpener();
   const fileTransfer = FileTransfer1.create();
+  console.log('开始下载:', fileTransfer);
   const apkPath = File1.dataDirectory + 'qyl.apk';
 
   // 2. 开始下载
