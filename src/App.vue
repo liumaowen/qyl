@@ -38,9 +38,9 @@ onMounted(async () => {
     // return;
   }
   // 获取本地版本号
-  // const info = await App.getInfo();
-  // console.log('当前版本信息:', info);
-  // localVersion = info.version;
+  const info = await App.getInfo();
+  console.log('当前版本信息:', info);
+  localVersion = info.version;
 
   // 请求接口获取最新版本
   // const res = await axios.get('https://your-api.com/version');
@@ -51,7 +51,7 @@ onMounted(async () => {
   //   presentAlert();
   // }
   version = '2.0.1'; // 模拟最新版本号
-  downloadUrl = 'https://z4.v3z.cn/mSjmA2'; // 模拟下载链接
+  downloadUrl = 'https://ossgp.oss-cn-hangzhou.aliyuncs.com/pub/prod/vcard/gangpin/qyl.apk'; // 模拟下载链接
   presentAlert();
 });
 // 是否立即更新弹窗
