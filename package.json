@@ -16,6 +16,7 @@
     "@awesome-cordova-plugins/file": "^7.0.0",
     "@awesome-cordova-plugins/file-opener": "^7.0.0",
     "@awesome-cordova-plugins/file-transfer": "^7.0.0",
+    "@capacitor-community/file-opener": "^7.0.1",
     "@capacitor/android": "^7.2.0",
     "@capacitor/app": "7.0.1",
     "@capacitor/core": "7.2.0",

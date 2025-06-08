@@ -16,6 +16,7 @@ import { Capacitor } from '@capacitor/core';
 import { FileTransfer } from '@capacitor/file-transfer';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileViewer } from "@capacitor/file-viewer";
+import { FileOpener, FileOpenerOptions } from '@capacitor-community/file-opener';
 
 const showDownloadAlert = ref(false);
 const progress = ref(0);
@@ -113,9 +114,19 @@ const open = async (url: string) => {
       {
         text: '打开',
         handler: async () => {
-          await FileViewer.openDocumentFromLocalPath({
-            path: url
-          });
+          // await FileViewer.openDocumentFromLocalPath({
+          //   path: url
+          // });
+          try {
+            const fileOpenerOptions: FileOpenerOptions = {
+              filePath: url,
+              contentType: 'application/vnd.android.package-archive',
+              openWithDefault: true,
+            };
+            await FileOpener.open(fileOpenerOptions);
+          } catch (e) {
+            console.log('Error opening file', e);
+          }
         }
       }
     ]
