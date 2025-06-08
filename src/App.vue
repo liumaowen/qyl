@@ -79,8 +79,8 @@ async function startUpdate() {
   showDownloadAlert.value = true;
   progress.value = 0;
   // 1. 创建下载对象
-  const fileTransfer: FileTransferObject = FileTransfer.create();
-  const apkPath = File.dataDirectory + 'qyl.apk';
+  const fileTransfer: FileTransferObject = new (window as any).FileTransfer();
+  const apkPath = (window as any).cordova.file.externalDataDirectory + 'qyl.apk';
 
   // 2. 开始下载
   fileTransfer.onProgress((event) => {
@@ -105,7 +105,7 @@ async function startUpdate() {
         {
           text: '打开',
           handler: async () => {
-            await FileOpener.open(entry.toURL(), 'application/vnd.android.package-archive');
+            await (window as any).cordova.plugins.fileOpener.open(entry.toURL(), 'application/vnd.android.package-archive');
           }
         }
       ]

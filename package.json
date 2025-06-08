@@ -12,6 +12,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@awesome-cordova-plugins/core": "^7.0.0",
     "@awesome-cordova-plugins/file": "^7.0.0",
     "@awesome-cordova-plugins/file-opener": "^7.0.0",
     "@awesome-cordova-plugins/file-transfer": "^7.0.0",
