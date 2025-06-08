@@ -95,7 +95,7 @@ async function startUpdate() {
       true
     );
     showDownloadAlert.value = false;
-
+    console.log('下载完成:', entry, entry.toURL());
     // 3. 下载完成后弹窗
     const openalert = await alertController.create({
       message: '应用下载完成，是否立即更新？',
