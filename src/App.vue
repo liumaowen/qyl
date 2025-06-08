@@ -38,9 +38,9 @@ onMounted(async () => {
     // return;
   }
   // 获取本地版本号
-  const info = await App.getInfo();
-  console.log('当前版本信息:', info);
-  localVersion = info.version;
+  // const info = await App.getInfo();
+  // console.log('当前版本信息:', info);
+  // localVersion = info.version;
 
   // 请求接口获取最新版本
   // const res = await axios.get('https://your-api.com/version');
@@ -80,11 +80,12 @@ async function startUpdate() {
     path: 'qyl.apk'
   });
   // 下载新版本
-  await FileTransfer.downloadFile({
+ const aaa = await FileTransfer.downloadFile({
     url: downloadUrl,
     path: fileInfo.uri,
     progress: true,
   });
+  console.log('下载完成:', aaa);
   FileTransfer.addListener('progress', (prs) => {
     console.log(`Downloaded ${prs.bytes} of ${prs.contentLength}`);
     progress.value = prs.bytes / prs.contentLength;
