@@ -13,9 +13,12 @@ import { ref, onMounted, computed } from 'vue';
 import { App } from '@capacitor/app';
 import axios from 'axios';
 import { Capacitor } from '@capacitor/core';
-import { FileTransfer } from '@capacitor/file-transfer';
-import { Filesystem, Directory } from '@capacitor/filesystem';
-import { FileViewer } from "@capacitor/file-viewer";
+// import { FileTransfer } from '@capacitor/file-transfer';
+// import { Filesystem, Directory } from '@capacitor/filesystem';
+// import { FileViewer } from "@capacitor/file-viewer";
+import { FileTransfer, FileTransferObject } from '@awesome-cordova-plugins/file-transfer';
+import { File } from '@awesome-cordova-plugins/file';
+import { FileOpener } from '@awesome-cordova-plugins/file-opener';
 
 const showDownloadAlert = ref(false);
 const progress = ref(0);
@@ -75,53 +78,66 @@ async function startUpdate() {
   if (top) await top.dismiss();
   showDownloadAlert.value = true;
   progress.value = 0;
-  const fileInfo = await Filesystem.getUri({
-    directory: Directory.Data,
-    path: 'qyl.apk'
-  });
-  FileTransfer.addListener('progress', (prs) => {
-    console.log(`Downloaded ${prs.bytes} of ${prs.contentLength}`);
-    progress.value = prs.bytes / prs.contentLength;
-    if (progress.value >= 1) {
-      setTimeout(() => {
-        showDownloadAlert.value = false;
-        FileTransfer.removeAllListeners();
-        if (fileInfo.uri) {
-          open(fileInfo.uri);
-        }
-      }, 800);
+  // 1. 创建下载对象
+  const fileTransfer: FileTransferObject = FileTransfer.create();
+  const apkPath = File.dataDirectory + 'qyl.apk';
+
+  // 2. 开始下载
+  fileTransfer.onProgress((event) => {
+    if (event.lengthComputable) {
+      progress.value = event.loaded / event.total;
     }
   });
-  // 下载新版本
- const aaa = await FileTransfer.downloadFile({
-    url: downloadUrl,
-    path: fileInfo.uri,
-    progress: true,
-  });
-  console.log('下载完成:', aaa);
-}
-const open = async (url: string) => {
-  console.log('打开文件：', url);
-  // 关闭下载进度弹窗
-  showDownloadAlert.value = false;
-  // 打开文件
-  const openalert = await alertController.create({
-    message: '应用下载完成，是否立即更新？',
-    backdropDismiss: false, // 禁止点击遮罩关闭
-    buttons: [
-      { text: '取消', role: 'cancel' },
-      {
-        text: '打开',
-        handler: async () => {
-          await FileViewer.openDocumentFromLocalPath({
-            path: url
-          });
+    try {
+    const entry = await fileTransfer.download(
+      downloadUrl,
+      apkPath,
+      true
+    );
+    showDownloadAlert.value = false;
+
+    // 3. 下载完成后弹窗
+    const openalert = await alertController.create({
+      message: '应用下载完成，是否立即更新？',
+      backdropDismiss: false,
+      buttons: [
+        { text: '取消', role: 'cancel' },
+        {
+          text: '打开',
+          handler: async () => {
+            await FileOpener.open(entry.toURL(), 'application/vnd.android.package-archive');
+          }
         }
-      }
-    ]
-  });
-  await openalert.present();
-};
+      ]
+    });
+    await openalert.present();
+  } catch (err) {
+    showDownloadAlert.value = false;
+    alert('下载失败: ' + err);
+  }
+}
+// const open = async (url: string) => {
+//   console.log('打开文件：', url);
+//   // 关闭下载进度弹窗
+//   showDownloadAlert.value = false;
+//   // 打开文件
+//   const openalert = await alertController.create({
+//     message: '应用下载完成，是否立即更新？',
+//     backdropDismiss: false, // 禁止点击遮罩关闭
+//     buttons: [
+//       { text: '取消', role: 'cancel' },
+//       {
+//         text: '打开',
+//         handler: async () => {
+//           await FileViewer.openDocumentFromLocalPath({
+//             path: url
+//           });
+//         }
+//       }
+//     ]
+//   });
+//   await openalert.present();
+// };
 function escapeHtml(str: string) {
   return str.replace(/[&<>"']/g, function (m) {
     return ({

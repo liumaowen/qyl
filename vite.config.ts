@@ -42,6 +42,11 @@ export default defineConfig({
         target: 'https://api.mgtv109.cc',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/mgtv/, '')
+      },
+      '/ossgp': {
+        target: 'https://ossgp.oss-cn-hangzhou.aliyuncs.com',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/ossgp/, '')
       }
     }
   }
