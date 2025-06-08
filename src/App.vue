@@ -36,26 +36,28 @@ const downloadAlertMessage = computed(() => `
 `);
 
 onMounted(async () => {
-  // 只有安卓设备检查更新
-  if (Capacitor.getPlatform() !== 'android') {
-    // return;
-  }
-  // 获取本地版本号
-  // const info = await App.getInfo();
-  // console.log('当前版本信息:', info);
-  // localVersion = info.version;
-
-  // 请求接口获取最新版本
-  // const res = await axios.get('https://your-api.com/version');
-  // ({ version, url: downloadUrl } = res.data);
-
-  // // 对比版本号
-  // if (compareVersion(version, localVersion) > 0) {
-  //   presentAlert();
-  // }
-  version = '2.0.1'; // 模拟最新版本号
-  downloadUrl = 'https://ossgp.oss-cn-hangzhou.aliyuncs.com/pub/prod/vcard/gangpin/qyl.apk'; // 模拟下载链接
-  presentAlert();
+    document.addEventListener('deviceready', () => {
+    // 只有安卓设备检查更新
+    if (Capacitor.getPlatform() !== 'android') {
+      // return;
+    }
+    // 获取本地版本号
+    // const info = await App.getInfo();
+    // console.log('当前版本信息:', info);
+    // localVersion = info.version;
+  
+    // 请求接口获取最新版本
+    // const res = await axios.get('https://your-api.com/version');
+    // ({ version, url: downloadUrl } = res.data);
+  
+    // // 对比版本号
+    // if (compareVersion(version, localVersion) > 0) {
+    //   presentAlert();
+    // }
+    version = '2.0.1'; // 模拟最新版本号
+    downloadUrl = 'https://ossgp.oss-cn-hangzhou.aliyuncs.com/pub/prod/vcard/gangpin/qyl.apk'; // 模拟下载链接
+    presentAlert();
+  }, false);
 });
 // 是否立即更新弹窗
 const presentAlert = async () => {
@@ -79,6 +81,7 @@ async function startUpdate() {
   showDownloadAlert.value = true;
   progress.value = 0;
   // 1. 创建下载对象
+  console.log('开始下载:', new FileTransfer());
   const FileTransfer1 = new FileTransfer();
   const File1 = new File();
   const FileOpener1 = new FileOpener();
