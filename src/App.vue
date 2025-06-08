@@ -77,7 +77,7 @@ async function startUpdate() {
   showDownloadAlert.value = true;
   progress.value = 0;
   const fileInfo = await Filesystem.getUri({
-    directory: Directory.Documents,
+    directory: Directory.Data,
     path: 'qyl.apk'
   });
   FileTransfer.addListener('progress', (prs) => {
