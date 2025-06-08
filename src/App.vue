@@ -79,8 +79,11 @@ async function startUpdate() {
   showDownloadAlert.value = true;
   progress.value = 0;
   // 1. 创建下载对象
-  const fileTransfer: FileTransferObject = (FileTransfer as any).create();
-  const apkPath = (File as any).dataDirectory + 'qyl.apk';
+  const FileTransfer1 = new FileTransfer();
+  const File1 = new File();
+  const FileOpener1 = new FileOpener();
+  const fileTransfer = FileTransfer1.create();
+  const apkPath = File1.dataDirectory + 'qyl.apk';
 
   // 2. 开始下载
   fileTransfer.onProgress((event) => {
@@ -105,7 +108,7 @@ async function startUpdate() {
         {
           text: '打开',
           handler: async () => {
-            await (FileOpener as any).open(entry.toURL(), 'application/vnd.android.package-archive');
+            await FileOpener1.open(entry.toURL(), 'application/vnd.android.package-archive');
           }
         }
       ]
