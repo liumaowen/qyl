@@ -308,16 +308,16 @@ const loadMoreData = async () => {
     VideoType: "1",
     SortType: "7"
   };
-  fetchMGTVVideoList(params).then(videos => {
-    console.log('fetchMGTVVideoList videos', videos);
-    if (videos.length > 0) {
-      videoList.value = [...videoList.value, ...videos];
-      videos.forEach((_, index) => {
-        const newIndex = videoList.value.length - videos.length + index;
-        progress.value[newIndex] = 0;
-      });
-    }
-  });
+  // fetchMGTVVideoList(params).then(videos => {
+  //   console.log('fetchMGTVVideoList videos', videos);
+  //   if (videos.length > 0) {
+  //     videoList.value = [...videoList.value, ...videos];
+  //     videos.forEach((_, index) => {
+  //       const newIndex = videoList.value.length - videos.length + index;
+  //       progress.value[newIndex] = 0;
+  //     });
+  //   }
+  // });
 };
 
 // 拖动开始处理
