@@ -1,5 +1,6 @@
 # This is a configuration file for a mobile application.
+# npx trapeze run config.yaml --android-project android
 platforms:
   android:
-    versionName: 1.0.1
+    versionName: 2.2.2
     versionCode: 2
