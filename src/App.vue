@@ -15,7 +15,6 @@ import axios from 'axios';
 import { Capacitor } from '@capacitor/core';
 import { FileTransfer } from '@capacitor/file-transfer';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { FileViewer } from "@capacitor/file-viewer";
 import { FileOpener, FileOpenerOptions } from '@capacitor-community/file-opener';
 
 const showDownloadAlert = ref(false);

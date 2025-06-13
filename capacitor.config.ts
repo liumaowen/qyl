@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
-  appName: 'qyl',
+  appName: '全有料',
   webDir: 'dist',
   "plugins": {
     "Cordova": {
