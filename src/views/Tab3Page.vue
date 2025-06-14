@@ -10,8 +10,11 @@
           <!-- 视频容器 -->
           <div class="video-wrap" :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
             <!-- 视频播放器 -->
-            <video :class="'video-js vjs-big-play-button-hidden '" :id="'my-video-' + index" :poster="video.poster"
-              :ref="el => setVideoRef(el, index)"></video>
+            <video :class="'video-js vjs-big-play-button-hidden '" 
+            :id="'my-video-' + index" 
+            :poster="video.poster"
+            :ref="el => setVideoRef(el, index)"
+            @error="onVideoError(index)"></video>
 
             <!-- 暂停时显示的中心按钮 -->
             <div class="center-pause-btn" @click="togglePlay(index)">
@@ -265,6 +268,19 @@ const onSlideTransitionEnd = async (swiper: SwiperInstance) => {
     }
   });
   console.log('onSlideTransitionEnd1', videoInstances.value);
+};
+
+// 处理视频加载错误
+const onVideoError = (index: number) => {
+  console.error(`视频 ${index} 加载失败`);
+  // 可以在这里添加错误处理逻辑，直接删除此视频
+  videoList.value.splice(index, 1);
+  const key = `videoRef_${index}`;
+  videoInstances.value[key]?.dispose();
+  delete videoInstances.value[key];
+  if (swiperRef.value) {
+    swiperRef.value.update();
+  }
 };
 
 // 加载更多数据
