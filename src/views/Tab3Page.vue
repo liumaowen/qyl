@@ -10,11 +10,8 @@
           <!-- 视频容器 -->
           <div class="video-wrap" :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
             <!-- 视频播放器 -->
-            <video :class="'video-js vjs-big-play-button-hidden '" 
-            :id="'my-video-' + index" 
-            :poster="video.poster"
-            :ref="el => setVideoRef(el, index)"
-            @error="onVideoError(index)"></video>
+            <video :class="'video-js vjs-big-play-button-hidden '" :poster="video.poster"
+              :ref="el => setVideoRef(el, index)"></video>
 
             <!-- 暂停时显示的中心按钮 -->
             <div class="center-pause-btn" @click="togglePlay(index)">
@@ -225,9 +222,27 @@ const setSwiperRef: (swiper: SwiperInstance) => void = (swiper: SwiperInstance) 
 };
 
 // 滑动切换处理
-const onSlideChange = (e: SwiperInstance) => {
+const onSlideChange = async (e: SwiperInstance) => {
   const currentIndex = e.activeIndex;
   currentIndex1.value = e.activeIndex;
+  const video = videoList.value[currentIndex];
+  if (!video) return;
+  // 检测当前视频能否播放
+  const canPlay = await checkVideoPlayable(video.src);
+  if (canPlay) {
+    // 初始化并播放
+    initVideo(currentIndex);
+    const curKey = `videoRef_${currentIndex}`;
+    if (videoInstances.value[curKey]) {
+      videoInstances.value[curKey].play();
+      playingIndex.value = currentIndex;
+    }
+  } else {
+    // 不能播放，自动跳到下一个
+    if (swiperRef.value && currentIndex < videoList.value.length - 1) {
+      swiperRef.value.slideTo(currentIndex + 1);
+    }
+  }
   console.log('onSlideChange', currentIndex);
   // 暂停其他视频
   Object.keys(videoInstances.value).forEach(key => {
@@ -270,18 +285,40 @@ const onSlideTransitionEnd = async (swiper: SwiperInstance) => {
   console.log('onSlideTransitionEnd1', videoInstances.value);
 };
 
-// 处理视频加载错误
-const onVideoError = (index: number) => {
-  console.error(`视频 ${index} 加载失败`);
-  // 可以在这里添加错误处理逻辑，直接删除此视频
-  videoList.value.splice(index, 1);
-  const key = `videoRef_${index}`;
-  videoInstances.value[key]?.dispose();
-  delete videoInstances.value[key];
-  if (swiperRef.value) {
-    swiperRef.value.update();
-  }
-};
+// 检查视频能否播放
+function checkVideoPlayable(url: string, timeout = 8000): Promise<boolean> {
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    video.src = url;
+    video.preload = 'auto';
+    video.muted = true;
+    video.style.display = 'none';
+    document.body.appendChild(video);
+
+    let settled = false;
+    const clear = () => {
+      if (!settled) {
+        settled = true;
+        video.remove();
+      }
+    };
+
+    video.addEventListener('canplay', () => {
+      clear();
+      resolve(true);
+    });
+    video.addEventListener('error', () => {
+      clear();
+      resolve(false);
+    });
+
+    setTimeout(() => {
+      clear();
+      resolve(false);
+    }, timeout);
+  });
+}
+
 
 // 加载更多数据
 const loadMoreData = async () => {
@@ -319,8 +356,8 @@ const loadMoreData = async () => {
   //   }
   // });
   const params = {
-    PageIndex: currentPage+'',
-    PageSize: pageSize+'',
+    PageIndex: currentPage + '',
+    PageSize: pageSize + '',
     VideoType: "1",
     SortType: "7"
   };
@@ -528,6 +565,7 @@ ion-progress-bar {
 .vjs-big-play-button {
   display: none !important;
 }
+
 .video-title-bar {
   position: absolute;
   bottom: 20px;
@@ -539,15 +577,17 @@ ion-progress-bar {
   word-break: break-all;
   white-space: pre-line;
   text-align: left;
-  margin: 0!important;
-  padding: 0!important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
+
 .video-title-bar h6 {
   font-size: 1rem;
   margin: 0 0 2px 0;
   font-weight: bold;
   line-height: 1.3;
 }
+
 .video-title-bar p {
   font-size: 0.95rem;
   margin: 0;
