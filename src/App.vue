@@ -1,16 +1,12 @@
 <template>
   <ion-app>
     <ion-router-outlet />
-    <!-- 下载进度弹窗 -->
-    <!-- <ion-alert v-if="showDownloadAlert" :isOpen="showDownloadAlert" cssclass="download-pop" header=""
-      :message="downloadAlertMessage" :backdropDismiss="false" :buttons="[]"
-      @onDidDismiss="showDownloadAlert = false" /> -->
-          <div v-if="showDownloadAlert" class="download-pop-mask">
+    <div v-if="showDownloadAlert" class="download-pop-mask">
       <div class="download-pop">
         <div class="download-title">正在下载更新，请稍等...</div>
         <div class="download-bar">
           <div class="progress-bar">
-            <div class="progress-inner" :style="{width: Math.round(progress * 100) + '%'}"></div>
+            <div class="progress-inner" :style="{ width: Math.round(progress * 100) + '%' }"></div>
           </div>
         </div>
         <div class="download-text">已完成：{{ Math.round(progress * 100) }}%</div>
@@ -20,8 +16,8 @@
 </template>
 
 <script setup lang="ts">
-import { IonApp, IonRouterOutlet, IonAlert, IonProgressBar, alertController } from '@ionic/vue';
-import { ref, onMounted, computed } from 'vue';
+import { IonApp, IonRouterOutlet, alertController } from '@ionic/vue';
+import { ref, onMounted } from 'vue';
 import { App } from '@capacitor/app';
 import axios from 'axios';
 import { Capacitor } from '@capacitor/core';
@@ -29,25 +25,16 @@ import { FileTransfer } from '@capacitor/file-transfer';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileOpener, FileOpenerOptions } from '@capacitor-community/file-opener';
 
-const showDownloadAlert = ref(true);
-const progress = ref(0.25);
+const showDownloadAlert = ref(false);
+const progress = ref(0);
 let downloadUrl = '';
 let localVersion = '';
 let version = '';
-const downloadAlertMessage = computed(() => `
-  <div class="download-title">正在下载更新，请稍等...</div>
-  <div class="download-bar">
-    <div class="progress-bar">
-      <div class="progress-inner" style="width:${Math.round(progress.value * 100)}%"></div>
-    </div>
-  </div>
-  <div class="download-text">已完成：${Math.round(progress.value * 100)}%</div>
-`);
 
 onMounted(async () => {
   // 只有安卓设备检查更新
   if (Capacitor.getPlatform() !== 'android') {
-    // return;
+    return;
   }
   // 获取本地版本号
   const info = await App.getInfo();
@@ -169,12 +156,16 @@ function compareVersion(v1: string, v2: string): number {
 .download-pop-mask {
   position: fixed;
   z-index: 9999;
-  left: 0; top: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.4);
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 .download-pop {
   background: #222;
   color: #fff;
@@ -183,6 +174,7 @@ function compareVersion(v1: string, v2: string): number {
   min-width: 260px;
   text-align: center;
 }
+
 .progress-bar {
   width: 80%;
   height: 10px;
@@ -191,19 +183,23 @@ function compareVersion(v1: string, v2: string): number {
   margin: 16px auto 8px auto;
   overflow: hidden;
 }
+
 .progress-inner {
   height: 100%;
   background: #3880ff;
   transition: width 0.3s;
 }
+
 .download-title {
   font-size: 18px;
   margin-bottom: 12px;
 }
+
 .download-text {
   margin-top: 8px;
   font-size: 15px;
 }
+
 .update-pop .alert-message {
   text-align: center;
   margin-top: 12px;
