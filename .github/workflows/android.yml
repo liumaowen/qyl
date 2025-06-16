@@ -36,6 +36,7 @@ jobs:
       - name: 构建 APK
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleDebug
 
       - name: 上传 APK
