@@ -69,18 +69,18 @@ jobs:
       - name: 还原 keystore 文件
         if: ${{ github.event.inputs.buildType == 'release' }}
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/release.keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
 
       # 添加文件检查步骤
       - name: 检查 keystore file
         if: ${{ github.event.inputs.buildType =='release' }}
         run: |
           echo "Checking keystore file existence..."
-          ls -l android/release.keystore  # ✅ 添加 android/ 路径
+          ls -l android/app/release.keystore  # ✅ 添加 android/ 路径
           echo "File type check..."
-          file android/release.keystore   # ✅ 添加 android/ 路径
+          file android/app/release.keystore   # ✅ 添加 android/ 路径
           echo "File size check..."
-          stat -c %s android/release.keystore  # ✅ 添加 android/ 路径
+          stat -c %s android/app/release.keystore  # ✅ 添加 android/ 路径
 
       # 构建 APK（push 和 debug 都走 debug，只有 release 参数才走 release）
       - name: 构建 APK
@@ -89,7 +89,7 @@ jobs:
           ./gradlew --stop
           if [ "${{ github.event.inputs.buildType }}" = "release" ]; then
             ./gradlew assembleRelease --info --stacktrace \
-              -Pandroid.injected.signing.store.file=../release.keystore \
+              -Pandroid.injected.signing.store.file=app/release.keystore \
               -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
               -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
               -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
