@@ -63,7 +63,7 @@ jobs:
           ./gradlew --stop
           if [ "${{ github.event.inputs.buildType }}" = "release" ]; then
             ./gradlew assembleRelease --info --stacktrace \
-              -Pandroid.injected.signing.store.file=release.keystore \
+              -Pandroid.injected.signing.store.file=android/release.keystore \
               -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
               -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
               -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
