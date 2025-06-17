@@ -71,6 +71,17 @@ jobs:
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/release.keystore
 
+      # 添加文件检查步骤
+      - name: 检查 keystore file
+        if: ${{ github.event.inputs.buildType =='release' }}
+        run: |
+          echo "Checking keystore file existence..."
+          ls -l release.keystore
+          echo "File type check..."
+          file release.keystore
+          echo "File size check..."
+          stat -c %s release.keystore
+
       # 构建 APK（push 和 debug 都走 debug，只有 release 参数才走 release）
       - name: 构建 APK
         working-directory: android
@@ -78,7 +89,7 @@ jobs:
           ./gradlew --stop
           if [ "${{ github.event.inputs.buildType }}" = "release" ]; then
             ./gradlew assembleRelease --info --stacktrace \
-              -Pandroid.injected.signing.store.file=android/release.keystore \
+              -Pandroid.injected.signing.store.file=release.keystore \
               -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
               -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
               -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
