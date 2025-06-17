@@ -68,7 +68,7 @@ jobs:
               -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
               -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
           else
-            ./gradlew assembleDebug --info --stacktrace
+            ./gradlew assembleDebug --debug --stacktrace
           fi
 
       # 上传 APK（push 和 debug 都上传 debug 包，只有 release 参数才上传 release 包）
