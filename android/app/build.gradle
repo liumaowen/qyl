@@ -25,9 +25,9 @@ android {
 
             if (storeFilePath && storePass && keyAlias && keyPass) {
                 storeFile file(storeFilePath)
-                storePassword storePass
-                keyAlias keyAlias
-                keyPassword keyPass
+                storePassword = storePass
+                keyAlias = keyAlias
+                keyPassword = keyPass
             } else {
                 def debugKeystore = file(System.getProperty("user.home") + "/.android/debug.keystore")
                 if (debugKeystore.exists()) {
