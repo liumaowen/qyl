@@ -29,11 +29,16 @@ android {
                 keyAlias keyAlias
                 keyPassword keyPassword
             } else {
-                // 用 Android 默认 debug.keystore 占位，避免 debug 构建时报错
-                storeFile file(System.getProperty("user.home") + "/.android/debug.keystore")
-                storePassword "android"
-                keyAlias "androiddebugkey"
-                keyPassword "android"
+                def debugKeystore = file(System.getProperty("user.home") + "/.android/debug.keystore")
+                if (debugKeystore.exists()) {
+                    storeFile debugKeystore
+                    storePassword "android"
+                    keyAlias "androiddebugkey"
+                    keyPassword "android"
+                } else {
+                    // CI环境调试构建可禁用签名
+                    signingConfig null
+                }
             }
         }
     }
