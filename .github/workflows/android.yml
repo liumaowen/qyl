@@ -52,7 +52,7 @@ jobs:
 
       # 生成调试签名（仅debug构建）
       - name: 生成调试签名
-        if: ${{ github.event.inputs.buildType == 'debug' }}
+        if: ${{ github.event.inputs.buildType != 'release' }}
         run: |
           mkdir -p ~/.android/
           keytool -genkeypair \
