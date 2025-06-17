@@ -52,18 +52,16 @@ jobs:
 
       # 仅在 release 构建时还原 keystore
       - name: 还原 keystore 文件
-        if: ${{ github.event.inputs.buildType == 'release' || github.event_name == 'push' }}
+        if: ${{ github.event.inputs.buildType == 'release' }}
         run: |
-          if [ "${{ github.event.inputs.buildType }}" = "release" ] || [ "${{ github.event_name }}" = "push" ]; then
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/release.keystore
-          fi
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/release.keystore
 
-      # 构建 APK（根据参数选择 debug 或 release）
+      # 构建 APK（push 和 debug 都走 debug，只有 release 参数才走 release）
       - name: 构建 APK
         working-directory: android
         run: |
           ./gradlew --stop
-          if [ "${{ github.event.inputs.buildType }}" = "release" ] || [ "${{ github.event_name }}" = "push" ]; then
+          if [ "${{ github.event.inputs.buildType }}" = "release" ]; then
             ./gradlew assembleRelease \
               -Pandroid.injected.signing.store.file=release.keystore \
               -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
@@ -73,11 +71,11 @@ jobs:
             ./gradlew assembleDebug
           fi
 
-      # 上传 APK（根据参数选择 debug 或 release）
+      # 上传 APK（push 和 debug 都上传 debug 包，只有 release 参数才上传 release 包）
       - name: 上传 APK
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs.buildType == 'release' || github.event_name == 'push' && 'app-release.apk' || 'app-debug.apk' }}
+          name: ${{ github.event.inputs.buildType == 'release' && 'app-release.apk' || 'app-debug.apk' }}
           path: |
             android/app/build/outputs/apk/release/app-release.apk
             android/app/build/outputs/apk/debug/app-debug.apk
