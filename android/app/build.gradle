@@ -18,10 +18,23 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file(System.getenv("ANDROID_KEYSTORE") ?: project.findProperty("android.injected.signing.store.file"))
-            storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD") ?: project.findProperty("android.injected.signing.store.password")
-            keyAlias System.getenv("ANDROID_KEY_ALIAS") ?: project.findProperty("android.injected.signing.key.alias")
-            keyPassword System.getenv("ANDROID_KEY_PASSWORD") ?: project.findProperty("android.injected.signing.key.password")
+            def storeFilePath = System.getenv("ANDROID_KEYSTORE") ?: project.findProperty("android.injected.signing.store.file")
+            def storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD") ?: project.findProperty("android.injected.signing.store.password")
+            def keyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: project.findProperty("android.injected.signing.key.alias")
+            def keyPassword = System.getenv("ANDROID_KEY_PASSWORD") ?: project.findProperty("android.injected.signing.key.password")
+    
+            if (storeFilePath && storePassword && keyAlias && keyPassword) {
+                storeFile file(storeFilePath)
+                storePassword storePassword
+                keyAlias keyAlias
+                keyPassword keyPassword
+            } else {
+                // 用 Android 默认 debug.keystore 占位，避免 debug 构建时报错
+                storeFile file(System.getProperty("user.home") + "/.android/debug.keystore")
+                storePassword "android"
+                keyAlias "androiddebugkey"
+                keyPassword "android"
+            }
         }
     }
     buildTypes {
