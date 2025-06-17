@@ -19,15 +19,15 @@ android {
     signingConfigs {
         release {
             def storeFilePath = System.getenv("ANDROID_KEYSTORE") ?: project.findProperty("android.injected.signing.store.file")
-            def storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD") ?: project.findProperty("android.injected.signing.store.password")
+            def storePass = System.getenv("ANDROID_KEYSTORE_PASSWORD") ?: project.findProperty("android.injected.signing.store.password")
             def keyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: project.findProperty("android.injected.signing.key.alias")
-            def keyPassword = System.getenv("ANDROID_KEY_PASSWORD") ?: project.findProperty("android.injected.signing.key.password")
-    
-            if (storeFilePath && storePassword && keyAlias && keyPassword) {
+            def keyPass = System.getenv("ANDROID_KEY_PASSWORD") ?: project.findProperty("android.injected.signing.key.password")
+
+            if (storeFilePath && storePass && keyAlias && keyPass) {
                 storeFile file(storeFilePath)
-                storePassword storePassword
+                storePassword storePass
                 keyAlias keyAlias
-                keyPassword keyPassword
+                keyPassword keyPass
             } else {
                 def debugKeystore = file(System.getProperty("user.home") + "/.android/debug.keystore")
                 if (debugKeystore.exists()) {
@@ -37,7 +37,6 @@ android {
                     keyPassword "android"
                 } else {
                     // CI环境调试构建可禁用签名
-                    signingConfig null
                 }
             }
         }
