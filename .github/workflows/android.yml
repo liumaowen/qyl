@@ -62,13 +62,13 @@ jobs:
         run: |
           ./gradlew --stop
           if [ "${{ github.event.inputs.buildType }}" = "release" ]; then
-            ./gradlew assembleRelease \
+            ./gradlew assembleRelease --info --stacktrace \
               -Pandroid.injected.signing.store.file=release.keystore \
               -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
               -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
               -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
           else
-            ./gradlew assembleDebug
+            ./gradlew assembleDebug --info --stacktrace
           fi
 
       # 上传 APK（push 和 debug 都上传 debug 包，只有 release 参数才上传 release 包）
