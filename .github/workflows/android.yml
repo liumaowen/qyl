@@ -76,11 +76,11 @@ jobs:
         if: ${{ github.event.inputs.buildType =='release' }}
         run: |
           echo "Checking keystore file existence..."
-          ls -l release.keystore
+          ls -l android/release.keystore  # ✅ 添加 android/ 路径
           echo "File type check..."
-          file release.keystore
+          file android/release.keystore   # ✅ 添加 android/ 路径
           echo "File size check..."
-          stat -c %s release.keystore
+          stat -c %s android/release.keystore  # ✅ 添加 android/ 路径
 
       # 构建 APK（push 和 debug 都走 debug，只有 release 参数才走 release）
       - name: 构建 APK
