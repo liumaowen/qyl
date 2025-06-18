@@ -50,21 +50,6 @@ jobs:
         working-directory: android
         run: chmod +x gradlew
 
-      # 生成调试签名（仅debug构建）
-      - name: 生成调试签名
-        if: ${{ github.event.inputs.buildType != 'release' }}
-        run: |
-          mkdir -p ~/.android/
-          keytool -genkeypair \
-            -alias androiddebugkey \
-            -keypass android \
-            -storepass android \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -dname "CN=Android Debug,O=Android,C=US" \
-            -keystore ~/.android/debug.keystore
-
       # 仅在 release 构建时还原 keystore
       - name: 还原 keystore 文件
         if: ${{ github.event.inputs.buildType == 'release' }}
@@ -96,3 +81,44 @@ jobs:
           path: |
             android/app/build/outputs/apk/release/app-release.apk
             android/app/build/outputs/apk/debug/app-debug.apk
+
+      # 成功后发送邮箱通知
+      - name: 发送构建成功通知
+        if: success() # 确保无论构建成功或失败都发送通知
+        uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: smtp.qq.com
+          server_port: 465
+          username: ${{ secrets.QQ_EMAIL }}
+          password: ${{ secrets.QQ_EMAIL_PASSWORD }}
+          subject: '✅ Android APK构建成功 - ${{ github.repository }}'
+          body: |
+            <h2>APK构建成功通知</h2>
+            <p>您的Android项目已成功构建APK文件。</p>
+            
+            <p><strong>仓库:</strong> ${{ github.repository }}</p>
+            <p><strong>分支:</strong> ${{ github.ref }}</p>
+            <p><strong>提交:</strong> ${{ github.sha }}</p>
+            <p><strong>工作流详情:</strong> <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">点击查看</a></p>
+            
+            <p>您可以在GitHub Actions的"Artifacts"部分下载APK文件。</p>
+            
+            <p>此邮件由GitHub Actions自动发送，请勿回复。</p>
+          to: 769298546@qq.com
+          from: 769298546@qq.com
+          content_type: text/html
+      # 失败后发送邮箱通知
+      - name: 发送构建失败通知
+        if: ${{ failure() }} # 仅在构建失败时发送通知
+        uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: smtp.qq.com
+          server_port: 465
+          username: ${{ secrets.QQ_EMAIL }}
+          password: ${{ secrets.QQ_EMAIL_PASSWORD }}
+          subject: '❌ Android APK构建失败 - ${{ github.repository }}'
+          body: 'The Android APK build has failed. Please check the logs for details.'
+          to: 769298546@qq.com
+          from: 769298546@qq.com
+          content_type: text/html
+        
