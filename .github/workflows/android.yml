@@ -69,7 +69,7 @@ jobs:
       - name: 还原 keystore 文件
         if: ${{ github.event.inputs.buildType == 'release' }}
         env:
-          SIGNING_KEY_STORE_PATH: ${{ secrets.SIGNING_KEY_STORE_PATH }}
+          SIGNING_KEY_STORE_PATH: ${{ secrets.SIGNING_KEY_STORE_PATH }} # 例如：android/app/release.keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > $SIGNING_KEY_STORE_PATH
 
@@ -77,7 +77,7 @@ jobs:
       - name: 检查 keystore file
         if: ${{ github.event.inputs.buildType =='release' }}
         env:
-          SIGNING_KEY_STORE_PATH: ${{ secrets.SIGNING_KEY_STORE_PATH }}
+          SIGNING_KEY_STORE_PATH: ${{ secrets.SIGNING_KEY_STORE_PATH }} # 例如：android/app/release.keystore
         run: |
           echo "Checking keystore file existence..."
           ls -l $SIGNING_KEY_STORE_PATH
