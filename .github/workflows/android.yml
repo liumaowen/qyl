@@ -59,6 +59,7 @@ jobs:
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > $SIGNING_KEY_STORE_PATH
 
       - name: 构建 APK
+        id: build
         working-directory: android
         env:
           SIGNING_KEY_STORE_PATH: ${{ secrets.SIGNING_KEY_STORE_PATH }}
@@ -72,6 +73,7 @@ jobs:
           else
             ./gradlew assembleDebug
           fi
+        continue-on-error: false  # 确保失败会终止工作流
 
       # 上传 APK（push 和 debug 都上传 debug 包，只有 release 参数才上传 release 包）
       - name: 上传 APK
@@ -85,21 +87,22 @@ jobs:
       # 邮件通知（无论成功失败都会运行）
       - name: 发送构建成功通知
         if: always() # 确保无论构建成功或失败都发送通知
-        uses: dawidd6/action-send-mail@v4
+        uses: dawidd6/action-send-mail@v6
         with:
           server_address: smtp.qq.com
           server_port: 465
           username: ${{ secrets.QQ_EMAIL }}
           password: ${{ secrets.QQ_EMAIL_PASSWORD }}
-          subject: ${{ steps.build.outcome == 'success' && '✅ 构建成功' || '❌ 构建失败' }} - ${{ github.repository }}
-          body: |
-            <h2>${{ steps.build.outcome == 'success' && '✅ APK构建成功' || '❌ APK构建失败' }}</h2>
+          subject: ${{ steps.build.conclusion == 'success' && '✅ 构建成功' || '❌ 构建失败' }} - ${{ github.repository }}
+          html_body: |
+            <style>h2{color: ${{ steps.build.conclusion == 'success' && 'green' || 'red' }};}</style>
+            <h2>${{ steps.build.conclusion == 'success' && '✅ APK构建成功' || '❌ APK构建失败' }}</h2>
             <p><strong>仓库:</strong> ${{ github.repository }}</p>
             <p><strong>分支:</strong> ${{ github.ref }}</p>
             <p><strong>提交:</strong> <a href="https://github.com/${{ github.repository }}/commit/${{ github.sha }}">${{ github.sha }}</a></p>
             <p><strong>工作流详情:</strong> <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">点击查看</a></p>
   
-            ${{ steps.build.outcome == 'success' && '
+            ${{ steps.build.conclusion == 'success' && '
             <p>您可以在GitHub Actions的"Artifacts"部分下载APK文件。</p>
             ' || '
             <p style="color:red">构建过程出现错误，请检查日志。</p>
@@ -110,5 +113,4 @@ jobs:
             <p style="font-size:12px;color:#999">此邮件由GitHub Actions自动发送，请勿回复。</p>
           to: ${{ secrets.QQ_EMAIL }}
           from: ${{ secrets.QQ_EMAIL }}
-          content_type: text/html
         
