@@ -89,6 +89,11 @@ jobs:
       # 构建 APK（push 和 debug 都走 debug，只有 release 参数才走 release）
       - name: 构建 APK
         working-directory: android
+        env:
+          SIGNING_KEY_STORE_PATH: ${{ secrets.SIGNING_KEY_STORE_PATH }}
+          SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
           ./gradlew --stop
           if [ "${{ github.event.inputs.buildType }}" = "release" ]; then
