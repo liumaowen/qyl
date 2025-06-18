@@ -85,17 +85,11 @@ jobs:
         run: ./gradlew assembleRelease
 
       # 上传 APK（push 和 debug 都上传 debug 包，只有 release 参数才上传 release 包）
-      - name: Upload Release Build to Artifacts
+      # 上传 APK（push 和 debug 都上传 debug 包，只有 release 参数才上传 release 包）
+      - name: 上传 APK
         uses: actions/upload-artifact@v4
         with:
-          name: release-artifacts
-          paths: |
-            app/build/outputs/apk/release/
-      #4      
-      - name: Create Github Release
-        uses: softprops/action-gh-release@v1
-        with:
-          generate_release_notes: true
-          prerelease: true
-          files: |
-            app/build/outputs/apk/release/app-release.apk
+          name: ${{ github.event.inputs.buildType == 'release' && 'app-release.apk' || 'app-debug.apk' }}
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/apk/debug/app-debug.apk
