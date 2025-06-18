@@ -105,7 +105,7 @@ jobs:
             <p style="color:red">构建过程出现错误，请检查日志。</p>
             ' }}
 
-            <p>触发时间: ${{ github.event.head_commit.timestamp || now() }}</p>
+            <p>触发时间: ${{ github.event.head_commit.timestamp || github.run_started_at }}</p>
             <hr>
             <p style="font-size:12px;color:#999">此邮件由GitHub Actions自动发送，请勿回复。</p>
           to: ${{ secrets.QQ_EMAIL }}
