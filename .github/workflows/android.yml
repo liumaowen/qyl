@@ -119,7 +119,7 @@ jobs:
           BUILD_TYPE=${{ github.event.inputs.buildType }}
           APK_PATH="app/build/outputs/apk/${BUILD_TYPE}/${NEW_APK_NAME}"
           
-          lftp -u "$FTP_USER,$FTP_PASS" -e "set ftp:ssl-allow no; open $FTP_HOST -p $FTP_PORT; put -O ${FTP_PATH} $APK_PATH; quit"
+          lftp -u "$FTP_USER,$FTP_PASS" -e "set ftp:ssl-allow yes; open $FTP_HOST -p $FTP_PORT; put -O ${FTP_PATH} $APK_PATH; quit"
 
       # 邮件通知（无论成功失败都会运行）
       - name: 发送构建成功通知
