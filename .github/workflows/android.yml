@@ -90,7 +90,7 @@ jobs:
         run: |
           VERSION=$(cat ../package.json | grep -E '"version":' | cut -d '"' -f 4)
           DATE=$(date +"%Y%m%d")
-          BUILD_TYPE=${{ github.event.inputs.buildType }}
+          BUILD_TYPE=${{ github.event.inputs.buildType == 'release' && 'release' || 'debug' }}
           APK_DIR="app/build/outputs/apk/${BUILD_TYPE}"
           ORIGINAL_APK_NAME="app-${BUILD_TYPE}.apk"
           NEW_APK_NAME="app_${VERSION}_${DATE}.apk"
@@ -116,9 +116,9 @@ jobs:
           FTP_PASS: ${{ secrets.FTP_PASSWORD }}
           FTP_PATH: ${{ secrets.FTP_UPLOAD_PATH }}
         run: |
-          BUILD_TYPE=${{ github.event.inputs.buildType }}
+          BUILD_TYPE=${{ github.event.inputs.buildType == 'release' && 'release' || 'debug' }}
           APK_PATH="app/build/outputs/apk/${BUILD_TYPE}/${NEW_APK_NAME}"
-          
+          lftp -u "$FTP_USER,$FTP_PASS" -e "open $FTP_HOST -p $FTP_PORT; ls; quit"
           lftp -u "$FTP_USER,$FTP_PASS" -e "set ftp:ssl-allow yes; open $FTP_HOST -p $FTP_PORT; put -O ${FTP_PATH} $APK_PATH; quit"
 
       # 邮件通知（无论成功失败都会运行）
