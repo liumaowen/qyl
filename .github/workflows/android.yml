@@ -108,16 +108,18 @@ jobs:
         run: sudo apt-get install -y lftp
       
       - name: 使用 FTP 上传 APK 到服务器
+        working-directory: android
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_PORT: 1025
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASS: ${{ secrets.FTP_PASSWORD }}
           FTP_PATH: ${{ secrets.FTP_UPLOAD_PATH }}
         run: |
           BUILD_TYPE=${{ github.event.inputs.buildType }}
-          APK_PATH="android/app/build/outputs/apk/${BUILD_TYPE}/${NEW_APK_NAME}"
+          APK_PATH="app/build/outputs/apk/${BUILD_TYPE}/${NEW_APK_NAME}"
           
-          lftp -u "$FTP_USER,$FTP_PASS" -e "set ftp:ssl-allow no; put -O ${FTP_PATH} $APK_PATH; quit" $FTP_HOST
+          lftp -u "$FTP_USER,$FTP_PASS" -e "set ftp:ssl-allow no; open $FTP_HOST -p $FTP_PORT; put -O ${FTP_PATH} $APK_PATH; quit"
 
       # 邮件通知（无论成功失败都会运行）
       - name: 发送构建成功通知
