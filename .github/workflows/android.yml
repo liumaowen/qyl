@@ -93,12 +93,17 @@ jobs:
           BUILD_TYPE=${{ github.event.inputs.buildType }}
           APK_DIR="app/build/outputs/apk/${BUILD_TYPE}"
           ORIGINAL_APK_NAME="app-${BUILD_TYPE}.apk"
-          NEW_APK_NAME="app-${VERSION}-${DATE}.apk"
+          NEW_APK_NAME="app_${VERSION}_${DATE}.apk"
 
           echo "正在重命名文件: $APK_DIR/$ORIGINAL_APK_NAME -> $APK_DIR/$NEW_APK_NAME"
           mv "$APK_DIR/$ORIGINAL_APK_NAME" "$APK_DIR/$NEW_APK_NAME"
           echo "NEW_APK_NAME=$NEW_APK_NAME" >> $GITHUB_ENV
       
+      - name: 查看构建输出
+        working-directory: android
+        run: |
+          ls -R app/build/outputs/apk/
+
       - name: 安装 lftp
         run: sudo apt-get install -y lftp
       
