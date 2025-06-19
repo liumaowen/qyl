@@ -84,6 +84,32 @@ jobs:
             android/app/build/outputs/apk/release/app-release.apk
             android/app/build/outputs/apk/debug/app-debug.apk
 
+      # 在构建完成后的步骤中添加以下内容
+      - name: 获取版本号并重命名 APK
+        working-directory: android
+        run: |
+          VERSION=$(cat ../package.json | grep -E '"version":' | cut -d '"' -f 4)
+          DATE=$(date +"%Y%m%d")
+          APK_DIR="app/build/outputs/apk/${{ github.event.inputs.buildType }}"
+          ORIGINAL_APK_NAME="app-${{ github.event.inputs.buildType }}.apk"
+          NEW_APK_NAME="app-${VERSION}-${DATE}.apk"
+          mv "$APK_DIR/$ORIGINAL_APK_NAME" "$APK_DIR/$NEW_APK_NAME"
+          echo "NEW_APK_NAME=$NEW_APK_NAME" >> $GITHUB_ENV
+      
+      - name: 安装 lftp
+        run: sudo apt-get install -y lftp
+      
+      - name: 使用 FTP 上传 APK 到服务器
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+          FTP_PATH: ${{ secrets.FTP_UPLOAD_PATH }}
+        run: |
+          APK_PATH="android/app/build/outputs/apk/${{ github.event.inputs.buildType }}/${ENV.NEW_APK_NAME}"
+          
+          lftp -u "$FTP_USER,$FTP_PASS" -e "set ftp:ssl-allow no; put -O ${FTP_PATH} $APK_PATH; quit" $FTP_HOST
+
       # 邮件通知（无论成功失败都会运行）
       - name: 发送构建成功通知
         if: always() # 确保无论构建成功或失败都发送通知
@@ -104,6 +130,8 @@ jobs:
   
             ${{ steps.build.conclusion == 'success' && '
             <p>您可以在GitHub Actions的"Artifacts"部分下载APK文件。</p>
+            <p><strong>或者通过以下链接下载：</strong></p>
+            <p><a href="http://120.46.169.69/apks/${{ env.NEW_APK_NAME }}" target="_blank">点击下载最新版本 APK</a></p>
             ' || '
             <p style="color:red">构建过程出现错误，请检查日志。</p>
             ' }}
@@ -113,4 +141,5 @@ jobs:
             <p style="font-size:12px;color:#999">此邮件由GitHub Actions自动发送，请勿回复。</p>
           to: ${{ secrets.QQ_EMAIL }}
           from: ${{ secrets.QQ_EMAIL }}
+
         
