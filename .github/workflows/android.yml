@@ -84,7 +84,12 @@ jobs:
             android/app/build/outputs/apk/release/app-release.apk
             android/app/build/outputs/apk/debug/app-debug.apk
 
-      # 在构建完成后的步骤中添加以下内容
+      - name: 发布 APK 到 GitHub Releases
+        if: ${{ github.event.inputs.buildType == 'release' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          files: android/app/build/outputs/apk/release/app-release.apk
+  
       - name: 获取版本号并重命名 APK
         working-directory: android
         run: |
@@ -94,10 +99,20 @@ jobs:
           APK_DIR="app/build/outputs/apk/${BUILD_TYPE}"
           ORIGINAL_APK_NAME="app-${BUILD_TYPE}.apk"
           NEW_APK_NAME="app_${VERSION}_${DATE}.apk"
-
           echo "正在重命名文件: $APK_DIR/$ORIGINAL_APK_NAME -> $APK_DIR/$NEW_APK_NAME"
           mv "$APK_DIR/$ORIGINAL_APK_NAME" "$APK_DIR/$NEW_APK_NAME"
           echo "NEW_APK_NAME=$NEW_APK_NAME" >> $GITHUB_ENV
+ 
+      - name: 上传 APK 到服务器（SFTP）
+        if: ${{ github.event.inputs.buildType == 'release' }}
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          key: ${{ secrets.SFTP_KEY }}
+          port: ${{ secrets.SFTP_PORT }}
+          source: android/app/build/outputs/apk/${{ github.event.inputs.buildType == 'release' && 'release' || 'debug' }}/app_${{ env.NEW_APK_NAME }}
+          target: ${{ secrets.SFTP_TARGET_DIR }}
       
       - name: 查看构建输出
         working-directory: android
