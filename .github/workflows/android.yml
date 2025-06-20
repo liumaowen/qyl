@@ -84,10 +84,25 @@ jobs:
             android/app/build/outputs/apk/release/app-release.apk
             android/app/build/outputs/apk/debug/app-debug.apk
 
+      - name: 读取版本号
+        id: version
+        run: |
+          VERSION=$(cat package.json | grep -E '"version":' | cut -d '"' -f 4)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      
+      - name: 打 tag
+        if: ${{ github.event.inputs.buildType == 'release' }}
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git tag v${{ steps.version.outputs.version }}
+          git push origin v${{ steps.version.outputs.version }}
+
       - name: 发布 APK 到 GitHub Releases
         if: ${{ github.event.inputs.buildType == 'release' }}
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: v${{ steps.version.outputs.version }}
           files: android/app/build/outputs/apk/release/app-release.apk
   
       - name: 获取版本号并重命名 APK
