@@ -97,38 +97,22 @@ jobs:
           mv "$APK_DIR/$ORIGINAL_APK_NAME" "$APK_DIR/$NEW_APK_NAME"
           echo "NEW_APK_NAME=$NEW_APK_NAME" >> $GITHUB_ENV
  
-      - name: 上传 APK 到服务器（SFTP）
-        if: ${{ github.event.inputs.buildType == 'release' }}
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SFTP_HOST }}
-          username: ${{ secrets.SFTP_USER }}
-          key: ${{ secrets.SFTP_KEY }}
-          port: ${{ secrets.SFTP_PORT }}
-          source: android/app/build/outputs/apk/${{ github.event.inputs.buildType == 'release' && 'release' || 'debug' }}/app_${{ env.NEW_APK_NAME }}
-          target: ${{ secrets.SFTP_TARGET_DIR }}
-      
       - name: 查看构建输出
         working-directory: android
         run: |
           ls -R app/build/outputs/apk/
 
-      - name: 安装 lftp
-        run: sudo apt-get install -y lftp
+      - name: 上传 APK 到服务器（SFTP）
+        if: ${{ github.event.inputs.buildType == 'release' }}
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          key: ${{ secrets.SFTP_KEY }}
+          port: ${{ secrets.SFTP_PORT }}
+          source: android/app/build/outputs/apk/release/app_3.0.0_20250620.apk
+          target: ${{ secrets.SFTP_TARGET_DIR }}
       
-      - name: 使用 FTP 上传 APK 到服务器
-        working-directory: android
-        env:
-          FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_PORT: 1025
-          FTP_USER: ${{ secrets.FTP_USER }}
-          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
-          FTP_PATH: ${{ secrets.FTP_UPLOAD_PATH }}
-        run: |
-          BUILD_TYPE=${{ github.event.inputs.buildType == 'release' && 'release' || 'debug' }}
-          APK_PATH="app/build/outputs/apk/${BUILD_TYPE}/${NEW_APK_NAME}"
-          lftp -u "$FTP_USER,$FTP_PASS" -e "open $FTP_HOST -p $FTP_PORT; ls; quit"
-          lftp -u "$FTP_USER,$FTP_PASS" -e "set ftp:ssl-allow yes; open $FTP_HOST -p $FTP_PORT; put -O ${FTP_PATH} $APK_PATH; quit"
 
       # 邮件通知（无论成功失败都会运行）
       - name: 发送构建成功通知
