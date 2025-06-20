@@ -112,6 +112,7 @@ jobs:
           port: ${{ secrets.SFTP_PORT }}
           source: android/app/build/outputs/apk/release/app_3.0.0_20250620.apk
           target: ${{ secrets.SFTP_TARGET_DIR }}
+          strip_components: 4
       
 
       # 邮件通知（无论成功失败都会运行）
