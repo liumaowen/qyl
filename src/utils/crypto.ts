@@ -12,13 +12,17 @@ const KEY = CryptoJS.enc.Utf8.parse('gFzviOY0zOxVq1cu') // 秘钥
 
 // 生成随机的iv
 const iv = CryptoJS.enc.Utf8.parse('ZmA0Osl677UdSrl0')
+export const AES_UUID = () => {
+  console.log('AES_UUID', crypto.randomUUID().replace(/-/g, ''));
+  return crypto.randomUUID().replace(/-/g, '');
+}
 
 export const AES_Encrypt = (plaintext:string) => {
   let ciphertext:string = CryptoJS.AES.encrypt(plaintext, KEY, {
-	iv:iv,
+	  iv:iv,
     mode: CryptoJS.mode.CBC,
     padding: CryptoJS.pad.Pkcs7,
-  }).toString()
+  }).toString();
   return ciphertext
 }
 

@@ -8,7 +8,7 @@ const apiConfig = {
   },
   mmp: {
     dev: '/mmpapi', // 走 Vite 代理
-    prod: 'https://api.mmp.cc'
+    prod: 'https://www.qylapi.top'
   },
   mgtv: {
     dev: '/mgtv', // 走 Vite 代理

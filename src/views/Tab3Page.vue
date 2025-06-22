@@ -35,8 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, watchEffect, onUnmounted, nextTick } from 'vue';
-import axios from 'axios';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Virtual } from 'swiper/modules';
 import 'swiper/css';
@@ -47,7 +46,8 @@ import { IonPage, IonContent, IonIcon, IonProgressBar, onIonViewWillLeave, onIon
 import { play } from 'ionicons/icons';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
-import { fetchApiOpenTopVideos, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, VideoItem } from '@/api/video';
+import { fetchApiOpenTopVideos, fetchMGTVVideoList,pojie, fetchVideo1, fetchVideo2, fetchVideo3, VideoItem, fetchConfig,fetchduanju } from '@/api/video';
+import { shortVideoConfig,ShortVideoConfigType } from '@/store/state';
 
 videojs.addLanguage('zh-CN', videoLanguage); // 添加中文语言包
 // 模拟视频数据（实际项目中建议从接口获取）
@@ -66,6 +66,11 @@ const videoRefs = ref<Record<string, HTMLVideoElement>>({});
 let videoRefsOld: Record<string, HTMLVideoElement> = {}; // 用于存储旧的 videoRefs
 // 当前播放的索引
 const currentIndex1 = ref(0);
+const shortPageIndex = ref(1);
+const shortconfig: ShortVideoConfigType = {
+  shortVideoRandomMax: 200,
+  shortVideoRandomMin: 1
+}
 
 // 新增：进度相关状态
 const progress = ref<number[]>([]); // 各视频的播放进度（0-1）
@@ -228,21 +233,21 @@ const onSlideChange = async (e: SwiperInstance) => {
   const video = videoList.value[currentIndex];
   if (!video) return;
   // 检测当前视频能否播放
-  const canPlay = await checkVideoPlayable(video.src);
-  if (canPlay) {
+  // const canPlay = await checkVideoPlayable(video.src);
+  // if (canPlay) {
     // 初始化并播放
     initVideo(currentIndex);
-    const curKey = `videoRef_${currentIndex}`;
-    if (videoInstances.value[curKey]) {
-      videoInstances.value[curKey].play();
+    const curKey1 = `videoRef_${currentIndex}`;
+    if (videoInstances.value[curKey1]) {
+      videoInstances.value[curKey1].play();
       playingIndex.value = currentIndex;
     }
-  } else {
-    // 不能播放，自动跳到下一个
-    if (swiperRef.value && currentIndex < videoList.value.length - 1) {
-      swiperRef.value.slideTo(currentIndex + 1);
-    }
-  }
+  // } else {
+  //   // 不能播放，自动跳到下一个
+  //   if (swiperRef.value && currentIndex < videoList.value.length - 1) {
+  //     swiperRef.value.slideTo(currentIndex + 1);
+  //   }
+  // }
   console.log('onSlideChange', currentIndex);
   // 暂停其他视频
   Object.keys(videoInstances.value).forEach(key => {
@@ -355,22 +360,42 @@ const loadMoreData = async () => {
   //     });
   //   }
   // });
+  const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
   const params = {
-    PageIndex: currentPage + '',
+    PageIndex: indd + '',
     PageSize: pageSize + '',
     VideoType: "1",
     SortType: "7"
   };
-  // fetchMGTVVideoList(params).then(videos => {
-  //   console.log('fetchMGTVVideoList videos', videos);
-  //   if (videos.length > 0) {
-  //     videoList.value = [...videoList.value, ...videos];
-  //     videos.forEach((_, index) => {
-  //       const newIndex = videoList.value.length - videos.length + index;
-  //       progress.value[newIndex] = 0;
-  //     });
-  //   }
-  // });
+  fetchMGTVVideoList(params).then(videos => {
+    console.log('fetchMGTVVideoList videos', videos);
+    if (videos.length > 0) {
+      videoList.value = [...videoList.value, ...videos];
+      videos.forEach((_, index) => {
+        const newIndex = videoList.value.length - videos.length + index;
+        progress.value[newIndex] = 0;
+      });
+    }
+  });
+  duanju();
+};
+const duanju = () => {
+  const params = {
+    PageIndex: currentPage + '',
+    PageSize: 5 + '',
+    ChannelId: "",
+    GenderChannelType: ""
+  }; 
+  fetchduanju(params).then((res) => {
+    console.log('duanjulist', res);
+    if (res.length > 0) {
+      videoList.value = [...videoList.value, ...res];
+      res.forEach((_, index) => {
+        const newIndex = videoList.value.length - res.length + index;
+        progress.value[newIndex] = 0;
+      });
+    }
+  });
 };
 
 // 拖动开始处理
@@ -419,55 +444,61 @@ const startDrag = (e: MouseEvent | TouchEvent, index: number) => {
   document.addEventListener('touchmove', handleTouchMove);
   document.addEventListener('touchend', handleTouchEnd);
 };
-
+onMounted(() => { 
+  pojie('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');
+});
 // 生命周期：组件挂载时初始化
-onMounted(async () => {
-  if (Capacitor.isNativePlatform()) {
-    await StatusBar.setStyle({ style: Style.Dark });
-  }
-  window.addEventListener('resize', updateSize);
-  updateSize();
-  // 初始化加载第一页数据
-  const initialData = await fetchApiOpenTopVideos(currentPage, pageSize);
-  console.log('initialData', initialData);
-  videoList.value = [...initialData]; // 替换初始静态数据
-  progress.value = initialData.map(() => 0); // 初始化进度数组
-  console.log('videoRefs after mount:', videoRefs.value);
-  await nextTick();
-  // 初始化视频播放器（需等待数据加载完成）
-  initialData.forEach((_, index) => {
-    initVideo(index);
-  });
-  if (isMobile()) {
-    // 移动端：自动播放第一页的第一个视频
-    if (videoInstances.value['videoRef_0']) {
-      videoInstances.value['videoRef_0'].play();
-      playingIndex.value = 0;
-    }
-  }
-});
+// onMounted(async () => {
+//   if (Capacitor.isNativePlatform()) {
+//     await StatusBar.setStyle({ style: Style.Dark });
+//   }
+//   window.addEventListener('resize', updateSize);
+//   updateSize();
+//   // 初始化加载第一页数据
+//   const initialData = await fetchApiOpenTopVideos(currentPage, pageSize);
+//   console.log('initialData', initialData);
+//   videoList.value = [...initialData]; // 替换初始静态数据
+//   progress.value = initialData.map(() => 0); // 初始化进度数组
+//   console.log('videoRefs after mount:', videoRefs.value);
+//   await nextTick();
+//   // 初始化视频播放器（需等待数据加载完成）
+//   initialData.forEach((_, index) => {
+//     initVideo(index);
+//   });
+//   if (isMobile()) {
+//     // 移动端：自动播放第一页的第一个视频
+//     if (videoInstances.value['videoRef_0']) {
+//       videoInstances.value['videoRef_0'].play();
+//       playingIndex.value = 0;
+//     }
+//   }
+//   await fetchConfig();
+//   console.log(shortVideoConfig)
+//   shortPageIndex.value = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
+//   console.log('shortPageIndex', shortPageIndex.value);
+// });
 
-// 生命周期：组件卸载时销毁播放器
-onUnmounted(() => {
-  Object.values(videoInstances.value).forEach(player => {
-    if (player) player.dispose();
-  });
-  window.removeEventListener('resize', updateSize);
-  document.removeEventListener('mousemove', handleMouseMove);
-  document.removeEventListener('mouseup', handleMouseUp);
-  document.removeEventListener('touchmove', handleTouchMove);
-  document.removeEventListener('touchend', handleTouchEnd);
-});
-onIonViewWillLeave(() => {
-  Object.values(videoInstances.value).forEach(player => {
-    if (player) player.pause();
-  });
-})
-onIonViewDidLeave(() => {
-  Object.values(videoInstances.value).forEach(player => {
-    if (player) player.pause();
-  });
-})
+// // 生命周期：组件卸载时销毁播放器
+// onUnmounted(() => {
+//   Object.values(videoInstances.value).forEach(player => {
+//     if (player) player.dispose();
+//   });
+//   window.removeEventListener('resize', updateSize);
+//   document.removeEventListener('mousemove', handleMouseMove);
+//   document.removeEventListener('mouseup', handleMouseUp);
+//   document.removeEventListener('touchmove', handleTouchMove);
+//   document.removeEventListener('touchend', handleTouchEnd);
+// });
+// onIonViewWillLeave(() => {
+//   Object.values(videoInstances.value).forEach(player => {
+//     if (player) player.pause();
+//   });
+// })
+// onIonViewDidLeave(() => {
+//   Object.values(videoInstances.value).forEach(player => {
+//     if (player) player.pause();
+//   });
+// })
 </script>
 
 <style scoped>

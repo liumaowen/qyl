@@ -34,7 +34,7 @@ export default defineConfig({
         rewrite: path => path.replace(/^\/apiopen/, '')
       },
       '/mmpapi': {
-        target: 'https://api.mmp.cc',
+        target: 'https://www.qylapi.top/',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/mmpapi/, '')
       },

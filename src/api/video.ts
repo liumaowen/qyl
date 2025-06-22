@@ -1,6 +1,6 @@
-import { AES_Decrypt, getm3u8 } from '@/utils/crypto';
+import { AES_Decrypt,AES_Encrypt, getm3u8,AES_UUID } from '@/utils/crypto';
 import { apiopenRequest, mmpRequest, mgtvRequest } from './http';
-import { PLAYDOMAIN } from '@/store/state';
+import { PLAYDOMAIN, ShortVideoConfigType,shortVideoConfig } from '@/store/state';
 
 export interface VideoItem {
   src: string;
@@ -14,6 +14,12 @@ export interface FormType {
   PageSize: string;
   VideoType: string;
   SortType: string;
+}
+export interface MovieFormType {
+  PageIndex: string,
+  PageSize: string,
+  ChannelId: string,
+  GenderChannelType: string
 }
 
 /**
@@ -62,12 +68,49 @@ export const fetchVideo3 = async (): Promise<VideoItem[]> => {
     }
     return [{src:response.data.url}];
 }
+// 获取config
+export const fetchConfig = async () => {
+  const headers = {
+    "authorization": "Bearer null",
+    "priority": "u=1, i",
+    "x-auth-uuid": "be63a7fc870c84b63bb3d2936649a322",
+    "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+  };
+  const response = await mgtvRequest.post(
+    '/Web/Config',
+    {},
+    {
+      headers,
+      responseType: 'arraybuffer',
+      timeout: 60000,
+    }
+  );
+  if (response.data) {
+    const textDecoder = new TextDecoder();
+    const text = textDecoder.decode(response.data);
+    const decryptedPassword = AES_Decrypt(text);
+    const list99 = JSON.parse(decryptedPassword);
+    console.log('list99', list99);
+    const list100 = list99?.data || [];
+    list100.forEach((element: any) => {
+      if(element.id === '102'){
+        shortVideoConfig.shortVideoRandomMax = Number(element.value2);
+        shortVideoConfig.shortVideoRandomMin = Number(element.value1);
+      }
+    });
+  }
+  return {
+    shortVideoRandomMax: 200,
+    shortVideoRandomMin: 1
+  };
+}
+
 // 芒果TV接口示例
 export const fetchMGTVVideoList = async (params: FormType): Promise<VideoItem[]> => {
   const headers = {
     "authorization": "Bearer null",
     "priority": "u=1, i",
-    "x-auth-uuid": "be63a7fc870c84b63bb3d2936649a322",
+    "x-auth-uuid": AES_UUID(),
     "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
   };
   const response = await mgtvRequest.post(
@@ -80,10 +123,11 @@ export const fetchMGTVVideoList = async (params: FormType): Promise<VideoItem[]>
     }
   );
   if (response.data) {
-    const textDecoder = new TextDecoder();
+    const textDecoder = new TextDecoder("utf-8");
     const text = textDecoder.decode(response.data);
     const decryptedPassword = AES_Decrypt(text);
     const list99 = JSON.parse(decryptedPassword);
+    console.log('MGTV视频列表:', list99)
     const list100 = list99?.data?.items || [];
     console.log('MGTV视频列表:', list100);
     // 处理每个视频
@@ -99,3 +143,53 @@ export const fetchMGTVVideoList = async (params: FormType): Promise<VideoItem[]>
   }
   return [];
 };
+
+//短剧
+export const fetchduanju = async (params: MovieFormType): Promise<VideoItem[]> => {
+  const da = AES_Encrypt(JSON.stringify(params));
+  const headers = {
+    "authorization": "Bearer null",
+    "Accept":"application/json, text/plain, */*",
+    "x-auth-uuid": AES_UUID(),
+    "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+  };
+  const response = await mgtvRequest.post(
+    '/ShortMovie/ShortMovieList',
+    da,
+    {
+      headers,
+      responseType: 'arraybuffer',
+      timeout: 60000,
+    }
+  );
+  if (response.data) {
+    const textDecoder = new TextDecoder();
+    const text = textDecoder.decode(response.data);
+    const decryptedPassword = AES_Decrypt(text);
+    const list99 = JSON.parse(decryptedPassword);
+    console.log('短句视频列表99:', list99);
+    const list100 = list99?.data?.items || [];
+    console.log('短句视频列表:', list100);
+    // 处理每个视频
+    const result = list100.map((element: any) => {
+      const mm = getm3u8(PLAYDOMAIN, element['first']['playUrl']);
+      return {
+        src: mm,
+        title: element['title'],
+        type: 'application/x-mpegURL', // 设置视频类型为 m3u8
+      };
+    });
+    return result;
+  }
+  return [];
+};
+
+//短剧详情 ShortMovie/ShortMovieDetail
+ 
+export const pojie = (str:any) => {
+  // const textDecoder = new TextDecoder();
+  // const text = textDecoder.decode(str);
+  const decryptedPassword = AES_Decrypt(str);
+  const list99 = JSON.parse(decryptedPassword);
+  console.log(list99);
+}
