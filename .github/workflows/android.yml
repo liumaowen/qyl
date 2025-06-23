@@ -97,6 +97,7 @@ jobs:
           echo "正在重命名文件: $APK_DIR/$ORIGINAL_APK_NAME -> $APK_DIR/$NEW_APK_NAME"
           mv "$APK_DIR/$ORIGINAL_APK_NAME" "$APK_DIR/$NEW_APK_NAME"
           echo "NEW_APK_NAME=$NEW_APK_NAME" >> $GITHUB_ENV
+          echo "new_apk_name=$NEW_APK_NAME" >> $GITHUB_OUTPUT  # 添加这行，设置 output
  
       - name: 查看构建输出
         working-directory: android
