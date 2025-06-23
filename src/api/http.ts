@@ -8,6 +8,7 @@ const apiConfig = {
   },
   mmp: {
     dev: '/mmpapi', // 走 Vite 代理
+    // prod: 'https://api.mmp.cc'
     prod: 'https://www.qylapi.top'
   },
   mgtv: {
@@ -34,3 +35,28 @@ export const mmpRequest = axios.create({
 export const mgtvRequest = axios.create({
   baseURL: getBaseURL('mgtv')
 });
+
+// 添加响应拦截器
+apiopenRequest.interceptors.response.use(
+  response => response,
+  error => {
+    console.error('APIOpen 请求错误:', error);
+    return Promise.reject(error);
+  }
+);
+
+mmpRequest.interceptors.response.use(
+  response => response,
+  error => {
+    console.error('MMP 请求错误:', error);
+    return Promise.reject(error);
+  }
+);
+
+mgtvRequest.interceptors.response.use(
+  response => response,
+  error => {
+    console.error('MGTV 请求错误:', error);
+    return Promise.reject(error);
+  }
+);

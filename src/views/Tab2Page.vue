@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue';
 import { IonPage, IonContent } from '@ionic/vue';
-import { fetchApiOpenTopVideos, fetchMGTVVideoList, fetchVideo2, fetchVideo3, fetchConfig, fetchduanju, VideoItem } from '@/api/video';
+import { fetchApiOpenTopVideos, fetchMGTVVideoList,fetchVideo1, fetchVideo2, fetchVideo3, fetchConfig, fetchduanju, VideoItem } from '@/api/video';
 import { shortVideoConfig, ShortVideoConfigType } from '@/store/state';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -27,7 +27,6 @@ const containerWidth = ref(window.innerWidth);
 const containerHeight = ref(window.innerHeight - 50.8);
 let currentPage = 1;
 const pageSize = 4;
-let isLoading = false;
 
 const updateSize = () => {
   containerWidth.value = window.innerWidth;
@@ -35,7 +34,6 @@ const updateSize = () => {
 };
 
 const loadMoreData = async () => {
-  isLoading = true;
   let newData = await fetchApiOpenTopVideos(currentPage, pageSize);
   const results = await Promise.allSettled([
     fetchVideo2(),
@@ -53,14 +51,8 @@ const loadMoreData = async () => {
       progress.value[newIndex] = 0;
     });
   }
-  const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
-  const params = {
-    PageIndex: indd + '',
-    PageSize: pageSize + '',
-    VideoType: "1",
-    SortType: "7"
-  };
-  fetchMGTVVideoList(params).then(videos => {
+  // 后台无感知地请求 fetchVideo1
+  fetchVideo1().then(videos => {
     if (videos.length > 0) {
       videoList.value = [...videoList.value, ...videos];
       videos.forEach((_, index) => {
@@ -69,8 +61,23 @@ const loadMoreData = async () => {
       });
     }
   });
-  duanju();
-  isLoading = false;
+  const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
+  const params = {
+    PageIndex: indd + '',
+    PageSize: pageSize + '',
+    VideoType: "1",
+    SortType: "7"
+  };
+  // fetchMGTVVideoList(params).then(videos => {
+  //   if (videos.length > 0) {
+  //     videoList.value = [...videoList.value, ...videos];
+  //     videos.forEach((_, index) => {
+  //       const newIndex = videoList.value.length - videos.length + index;
+  //       progress.value[newIndex] = 0;
+  //     });
+  //   }
+  // });
+  // duanju();
 };
 
 const duanju = () => {
