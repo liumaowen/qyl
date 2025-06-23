@@ -118,29 +118,50 @@ jobs:
 
       # 邮件通知（无论成功失败都会运行）
       - name: 发送构建成功通知
-        if: always() # 确保无论构建成功或失败都发送通知
+        if: ${{ steps.build.conclusion == 'success' }}
         uses: dawidd6/action-send-mail@v6
         with:
           server_address: smtp.qq.com
           server_port: 465
           username: ${{ secrets.QQ_EMAIL }}
           password: ${{ secrets.QQ_EMAIL_PASSWORD }}
-          subject: ${{ steps.build.conclusion == 'success' && '✅ 构建成功' || '❌ 构建失败' }} - ${{ github.repository }}
+          subject: '✅ 构建成功' - ${{ github.repository }}
           html_body: |
-            <style>h2{color: ${{ steps.build.conclusion == 'success' && 'green' || 'red' }};}</style>
-            <h2>${{ steps.build.conclusion == 'success' && '✅ APK构建成功' || '❌ APK构建失败' }}</h2>
+            <style>h2{color: 'green';}</style>
+            <h2>✅ APK构建成功</h2>
             <p><strong>仓库:</strong> ${{ github.repository }}</p>
             <p><strong>分支:</strong> ${{ github.ref }}</p>
             <p><strong>提交:</strong> <a href="https://github.com/${{ github.repository }}/commit/${{ github.sha }}">${{ github.sha }}</a></p>
             <p><strong>工作流详情:</strong> <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">点击查看</a></p>
   
-            ${{ steps.build.conclusion == 'success' && '
             <p>您可以在GitHub Actions的"Artifacts"部分下载APK文件。</p>
             <p><strong>或者通过以下链接下载：</strong></p>
             <p><a href="https://www.qylapi.top/apks/${{ steps.rename_apk.outputs.NEW_APK_NAME }}" target="_blank">点击下载最新版本 APK</a></p>
-            ' || '
+
+            <p>触发时间: ${{ github.event.head_commit.timestamp || github.run_started_at }}</p>
+            <hr>
+            <p style="font-size:12px;color:#999">此邮件由GitHub Actions自动发送，请勿回复。</p>
+          to: ${{ secrets.QQ_EMAIL }}
+          from: ${{ secrets.QQ_EMAIL }}
+
+      - name: 发送构建成功通知
+        if:   ${{ steps.build.conclusion != 'success' }}
+        uses: dawidd6/action-send-mail@v6
+        with:
+          server_address: smtp.qq.com
+          server_port: 465
+          username: ${{ secrets.QQ_EMAIL }}
+          password: ${{ secrets.QQ_EMAIL_PASSWORD }}
+          subject: '❌ 构建失败' - ${{ github.repository }}
+          html_body: |
+            <style>h2{color: 'red';}</style>
+            <h2>❌ APK构建失败</h2>
+            <p><strong>仓库:</strong> ${{ github.repository }}</p>
+            <p><strong>分支:</strong> ${{ github.ref }}</p>
+            <p><strong>提交:</strong> <a href="https://github.com/${{ github.repository }}/commit/${{ github.sha }}">${{ github.sha }}</a></p>
+            <p><strong>工作流详情:</strong> <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">点击查看</a></p>
+  
             <p style="color:red">构建过程出现错误，请检查日志。</p>
-            ' }}
 
             <p>触发时间: ${{ github.event.head_commit.timestamp || github.run_started_at }}</p>
             <hr>
