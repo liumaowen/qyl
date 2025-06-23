@@ -136,7 +136,7 @@ jobs:
   
             <p>您可以在GitHub Actions的"Artifacts"部分下载APK文件。</p>
             <p><strong>或者通过以下链接下载：</strong></p>
-            <p><a href="https://www.qylapi.top/apks/${{ steps.rename_apk.outputs.NEW_APK_NAME }}" target="_blank">点击下载最新版本 APK</a></p>
+            <p><a href="https://www.qylapi.top/apks/${{ steps.rename_apk.outputs.new_apk_name }}" target="_blank">点击下载最新版本 APK</a></p>
 
             <p>触发时间: ${{ github.event.head_commit.timestamp || github.run_started_at }}</p>
             <hr>
@@ -144,7 +144,7 @@ jobs:
           to: ${{ secrets.QQ_EMAIL }}
           from: ${{ secrets.QQ_EMAIL }}
 
-      - name: 发送构建成功通知
+      - name: 发送构建失败通知
         if:   ${{ steps.build.conclusion != 'success' }}
         uses: dawidd6/action-send-mail@v6
         with:
