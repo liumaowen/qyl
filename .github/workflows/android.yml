@@ -85,6 +85,7 @@ jobs:
             android/app/build/outputs/apk/debug/app-debug.apk
   
       - name: 获取版本号并重命名 APK
+        id: rename_apk
         working-directory: android
         run: |
           VERSION=$(cat ../package.json | grep -E '"version":' | cut -d '"' -f 4)
@@ -136,7 +137,7 @@ jobs:
             ${{ steps.build.conclusion == 'success' && '
             <p>您可以在GitHub Actions的"Artifacts"部分下载APK文件。</p>
             <p><strong>或者通过以下链接下载：</strong></p>
-            <p><a href="http://120.46.169.69/apks/${{ env.NEW_APK_NAME }}" target="_blank">点击下载最新版本 APK</a></p>
+            <p><a href="https://www.qylapi.top/apks/${{ steps.rename_apk.outputs.NEW_APK_NAME }}" target="_blank">点击下载最新版本 APK</a></p>
             ' || '
             <p style="color:red">构建过程出现错误，请检查日志。</p>
             ' }}
