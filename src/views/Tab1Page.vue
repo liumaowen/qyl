@@ -77,7 +77,7 @@ const progress = ref<number[]>([]); // 各视频的播放进度（0-1）
 const isDragging = ref(false); // 是否正在拖动
 const containerWidth = ref(window.innerWidth);
 const containerHeight = ref(window.innerHeight - 50.8); // 50.8为Tab高度
-let currentPage = 1; // 当前页码
+let currentPage = Math.floor(Math.random() * (1600 - 0 + 1)) + 0; // 当前页码
 const pageSize = 4;    // 每页数量
 let isLoading = false; // 加载状态（防止重复请求）
 let handleMouseMove: (e: MouseEvent) => void;
@@ -265,7 +265,7 @@ const onSlideChange = async (e: SwiperInstance) => {
   // 新增：滚动到倒数第二个视频时加载下一页
   const isLastSecondSlide = currentIndex === videoList.value.length - 3;
   if (isLastSecondSlide && !isLoading) {
-    currentPage++; // 页码+1
+    currentPage = Math.floor(Math.random() * (1600 - 0 + 1)) + 0;
     loadMoreData(); // 触发加载更多
   }
 };

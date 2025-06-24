@@ -5,12 +5,12 @@
       <ion-tab-bar slot="bottom">
         <ion-tab-button tab="tab1" href="/tabs/tab1">
           <ion-icon aria-hidden="true" :icon="videocam" />
-          <ion-label>Tab 1</ion-label>
+          <ion-label>推荐</ion-label>
         </ion-tab-button>
 
         <ion-tab-button tab="tab2" href="/tabs/tab2">
           <ion-icon aria-hidden="true" :icon="tv" />
-          <ion-label>Tab 2</ion-label>
+          <ion-label>短剧</ion-label>
         </ion-tab-button>
 
         <ion-tab-button tab="tab3" href="/tabs/tab3">
@@ -29,5 +29,7 @@ import { tv, square, videocam } from 'ionicons/icons';
 
 </script>
 <style lang="css" scoped>
-
+ion-tab-bar {
+  border-top:none!important;
+}
 </style>
