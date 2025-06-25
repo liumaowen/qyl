@@ -25,7 +25,7 @@ const videoList = ref<VideoItem[]>([]);
 const progress = ref<number[]>([]);
 const containerWidth = ref(window.innerWidth);
 const containerHeight = ref(window.innerHeight - 50.8);
-let currentPage = 1;
+let currentPage = Math.floor(Math.random() * (1600 - 0 + 1)) + 0;
 const pageSize = 4;
 
 const updateSize = () => {
@@ -34,6 +34,7 @@ const updateSize = () => {
 };
 
 const loadMoreData = async () => {
+  currentPage = Math.floor(Math.random() * (1600 - 0 + 1)) + 0;
   let newData = await fetchApiOpenTopVideos(currentPage, pageSize);
   const results = await Promise.allSettled([
     fetchVideo2(),
