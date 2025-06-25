@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
+  appId: 'com.qyl.quanyouliao',
   appName: '全有料',
   webDir: 'dist',
   "plugins": {

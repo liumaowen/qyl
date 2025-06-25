@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package com.qyl.quanyouliao;
 
 import com.getcapacitor.BridgeActivity;
 
