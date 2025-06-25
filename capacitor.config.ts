@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.qyl.quanyouliao',
-  appName: '全有料',
+  appName: '瞬乐',
   webDir: 'dist',
   "plugins": {
     "Cordova": {
