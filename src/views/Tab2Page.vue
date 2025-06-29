@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue';
 import { IonPage, IonContent } from '@ionic/vue';
-import { fetchApiOpenTopVideos, fetchMGTVVideoList,fetchVideo1, fetchVideo2, fetchVideo3, fetchConfig, fetchduanju, VideoItem } from '@/api/video';
+import { fetchApiOpenTopVideos, fetchMGTVVideoList,fetchVideo1, fetchVideo2, fetchVideo3, fetchduanju, VideoItem } from '@/api/video';
 import { shortVideoConfig, ShortVideoConfigType } from '@/store/state';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -109,7 +109,6 @@ onMounted(async () => {
   videoList.value = [...initialData];
   progress.value = initialData.map(() => 0);
   await nextTick();
-  await fetchConfig();
 });
 
 </script>

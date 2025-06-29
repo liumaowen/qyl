@@ -46,7 +46,7 @@ import { IonPage, IonContent, IonIcon, IonProgressBar, onIonViewWillLeave, onIon
 import { play } from 'ionicons/icons';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
-import { fetchApiOpenTopVideos, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, VideoItem, fetchConfig,fetchduanju } from '@/api/video';
+import { fetchApiOpenTopVideos, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, VideoItem,fetchduanju } from '@/api/video';
 import { shortVideoConfig,ShortVideoConfigType } from '@/store/state';
 
 videojs.addLanguage('zh-CN', videoLanguage); // 添加中文语言包
@@ -470,10 +470,6 @@ onMounted(async () => {
       playingIndex.value = 0;
     }
   }
-  await fetchConfig();
-  console.log(shortVideoConfig)
-  shortPageIndex.value = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
-  console.log('shortPageIndex', shortPageIndex.value);
 });
 
 // 生命周期：组件卸载时销毁播放器

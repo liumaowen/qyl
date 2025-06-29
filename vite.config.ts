@@ -26,6 +26,18 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom'
   },
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      },
+      mangle: {
+        toplevel: true
+      }
+    }
+  },
   server: {
     proxy: {
       '/apiopen': {

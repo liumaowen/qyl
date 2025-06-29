@@ -46,7 +46,7 @@ import { IonPage, IonContent, IonIcon, IonProgressBar, onIonViewWillLeave, onIon
 import { play } from 'ionicons/icons';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
-import { fetchApiOpenTopVideos, fetchMGTVVideoList,pojie, fetchVideo1, fetchVideo2, fetchVideo3, VideoItem, fetchConfig,fetchduanju } from '@/api/video';
+import { fetchApiOpenTopVideos, fetchMGTVVideoList,pojie, fetchVideo1, fetchVideo2, fetchVideo3, VideoItem,fetchduanju } from '@/api/video';
 import { shortVideoConfig,ShortVideoConfigType } from '@/store/state';
 
 videojs.addLanguage('zh-CN', videoLanguage); // 添加中文语言包
