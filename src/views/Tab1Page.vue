@@ -2,13 +2,17 @@
   <ion-page>
     <ion-content :fullscreen="true" class="video-container">
       <!-- 竖滑容器 -->
-      <swiper :modules="[Virtual]" :direction="'vertical'" :slides-per-view="1" @slideChange="onSlideChange"
-        @swiper="setSwiperRef" @transitionEnd="onSlideTransitionEnd" :virtual="true" :speed="200"
+      <swiper :modules="[Virtual]" :direction="'vertical'" :slides-per-view="1" 
+        @slideChange="onSlideChange"
+        @beforeSlideChangeStart="onBeforeSlideChangeStart"
+        @swiper="setSwiperRef" 
+        @transitionEnd="onSlideTransitionEnd"
+        :virtual="true" :speed="200"
         :style="{ height: containerHeight + 'px' }">
         <swiper-slide v-for="(video, index) in videoList" :key="index" :virtualIndex="index" class="slide-item"
           :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
           <!-- 视频容器 -->
-          <div class="video-wrap" :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
+          <div v-if="video.type !== 'ad'" class="video-wrap" :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
             <!-- 视频播放器 -->
             <video :class="'video-js vjs-big-play-button-hidden '" :poster="video.poster"
               :ref="el => setVideoRef(el, index)"></video>
@@ -26,6 +30,22 @@
             <div class="video-title-bar" v-if="video.title">
               <h6>{{ video.title }}</h6>
               <!-- <p v-if="video.description">{{ video.description }}</p> -->
+            </div>
+          </div>
+          <!-- 广告内容 -->
+          <div v-else class="ad-wrap">
+            <div class="ad-container" @click="openAd(video.src)">
+              <iframe 
+                :src="video.src" 
+                class="ad-iframe"
+                frameborder="0"
+                allowfullscreen
+                @error="onAdIframeError">
+              </iframe>
+              <div class="ad-overlay">
+                <div v-if="adCountdown > 0" class="ad-countdown">{{ adCountdown }}秒后跳过</div>
+                <button v-else @click.stop ="skipAd" class="skip-btn">跳过广告</button>
+              </div>
             </div>
           </div>
         </swiper-slide>
@@ -48,6 +68,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
 import { fetchApiOpenTopVideos, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, VideoItem,fetchduanju } from '@/api/video';
 import { shortVideoConfig,ShortVideoConfigType } from '@/store/state';
+import { InAppBrowser } from '@capacitor/inappbrowser';
 
 videojs.addLanguage('zh-CN', videoLanguage); // 添加中文语言包
 // 模拟视频数据（实际项目中建议从接口获取）
@@ -71,6 +92,38 @@ const shortconfig: ShortVideoConfigType = {
   shortVideoRandomMax: 200,
   shortVideoRandomMin: 1
 }
+// 广告相关状态
+const adCountdown = ref(5);
+const currentAdIndex = ref(-1);
+let adTimer: any = null;
+// 广告数据
+const adData: VideoItem[] = [
+  {
+  type: 'ad',
+  duration: 10,
+  src: 'https://wait-page.eu/a/5JBqI0nViO64J',
+ },
+  {
+  type: 'ad',
+  duration: 10,
+  src: 'https://true-date.eu/a/Vgw8uZ6WFz3rx',
+ },
+  {
+  type: 'ad',
+  duration: 10,
+  src: 'https://wait-page.eu/a/pr4OsxkZzuDKxB',
+ },
+  {
+  type: 'ad',
+  duration: 10,
+  src: 'https://wait-page.eu/a/MOkYH6wjVckzO9',
+ },
+  {
+  type: 'ad',
+  duration: 10,
+  src: 'https://true-date.eu/a/ErYNsjg7Hwgyy',
+}
+];
 
 // 新增：进度相关状态
 const progress = ref<number[]>([]); // 各视频的播放进度（0-1）
@@ -225,7 +278,19 @@ const isPlaying = (index: number) => {
 const setSwiperRef: (swiper: SwiperInstance) => void = (swiper: SwiperInstance) => {
   swiperRef.value = swiper;
 };
-
+// 添加滑动开始前的检查
+const onBeforeSlideChangeStart = (swiper: SwiperInstance) => {
+  const currentIndex = swiper.activeIndex;
+  const video = videoList.value[currentIndex];
+  
+  // 如果当前是广告且未观看过，阻止滑动
+  // if (video && video.type === 'ad' && !video.isAdlook) {
+  //   // 阻止滑动
+  //   swiper.allowTouchMove = false;
+  //   swiper.allowSlideNext = false;
+  //   swiper.allowSlidePrev = false;
+  // }
+};
 // 滑动切换处理
 const onSlideChange = async (e: SwiperInstance) => {
   const currentIndex = e.activeIndex;
@@ -233,6 +298,40 @@ const onSlideChange = async (e: SwiperInstance) => {
   const video = videoList.value[currentIndex];
   if (!video) return;
   // 检测当前视频能否播放
+  // 检查是否是广告
+  if (video.type === 'ad') {
+    if(swiperRef.value) {
+      swiperRef.value.allowTouchMove = false; // 禁止滑动
+      swiperRef.value.update();
+    }
+    currentAdIndex.value = currentIndex;
+    if(video.isAdlook) {
+      adCountdown.value = 0;
+    }else{
+      adCountdown.value = video.duration || 5;
+    }
+    
+    // 开始倒计时
+    adTimer = window.setInterval(() => {
+      adCountdown.value--;
+      if (adCountdown.value <= 0) {
+        clearInterval(adTimer);
+        if(swiperRef.value) {
+          swiperRef.value.allowTouchMove = true; // 滑动
+          swiperRef.value.update();
+        }
+        video.isAdlook = true;
+        // skipAd();
+      }
+    }, 1000);
+    Object.keys(videoInstances.value).forEach(key => {
+    const idx = parseInt(key.split('_')[1]);
+    if (idx !== currentIndex && videoInstances.value[key] && !videoInstances.value[key].paused()) {
+      videoInstances.value[key].pause();
+    }
+  });
+    return;
+  }
   // const canPlay = await checkVideoPlayable(video.src);
   // if (canPlay) {
     // 初始化并播放
@@ -267,6 +366,63 @@ const onSlideChange = async (e: SwiperInstance) => {
   if (isLastSecondSlide && !isLoading) {
     currentPage = Math.floor(Math.random() * (1600 - 0 + 1)) + 0;
     loadMoreData(); // 触发加载更多
+  }
+};
+const onAdIframeError = () => {
+  console.log('广告加载失败');
+  adCountdown.value = 0;
+  if (adTimer) {
+    clearInterval(adTimer);
+    adTimer = null;
+  }
+};
+// 跳过广告
+const skipAd = () => {
+  // 先保存当前广告索引
+  const currentAdPosition = currentAdIndex.value;
+  currentAdIndex.value = -1;
+  // 自动跳到下一个非广告内容
+  const nextIndex = findNextNonAdIndex(currentAdPosition);
+  if (nextIndex !== -1 && swiperRef.value) {
+    swiperRef.value.slideTo(nextIndex);
+  }
+};
+// 查找下一个非广告索引
+const findNextNonAdIndex = (currentIndex: number): number => {
+  for (let i = currentIndex + 1; i < videoList.value.length; i++) {
+    if (videoList.value[i].type !== 'ad') {
+      return i;
+    }
+  }
+  return -1;
+};
+// 在数据加载时插入广告
+const insertAds = (videos: VideoItem[]) => {
+  // 每10个视频插入一个广告
+  const result: Array<VideoItem> = [];
+  let adIndex = 0; // 广告索引，用于跟踪已插入的广告数量
+  
+  videos.forEach((video, index) => {
+    result.push(video);
+    
+    // 每10个视频插入一个广告，且确保有广告可用
+    if ((index + 1) % 10 === 0 && adIndex < adData.length) {
+      // 复制广告对象，避免重复使用同一个引用
+      const adCopy = { ...adData[adIndex] };
+      result.push(adCopy);
+      adIndex++;
+    }
+  });
+  
+  return result;
+};
+const openAd = async (src: string) => {
+  if (Capacitor.isNativePlatform()) {
+    await InAppBrowser.openInExternalBrowser({
+      url: src
+    });
+  }else{
+    window.open(src, '_blank');
   }
 };
 const onSlideTransitionEnd = async (swiper: SwiperInstance) => {
@@ -330,7 +486,8 @@ const loadMoreData = async () => {
   let newData = await fetchApiOpenTopVideos(currentPage, pageSize);
   const results = await Promise.allSettled([
     fetchVideo2(),
-    fetchVideo3()
+    fetchVideo3(),
+    fetchVideo1()
   ]);
   // 只保留 fulfilled 的结果，并将 VideoItem[] 扁平化为 VideoItem[]
   const fulfilledVideos = results
@@ -339,27 +496,29 @@ const loadMoreData = async () => {
   newData = [...newData, ...fulfilledVideos]; // 合并新数据
   console.log('loadMoreData', newData);
   if (newData.length > 0) {
-    videoList.value = [...videoList.value, ...newData]; // 合并新数据
+    // 对新数据插入广告
+    const newDataWithAds = insertAds(newData);
+    videoList.value = [...videoList.value, ...newDataWithAds]; // 合并新数据
     console.log('加载更多数据:', swiperRef.value);
     // swiperRef.value?.virtual.appendSlide(newData);
     console.log('swiperRef after append:', swiperRef.value);
     // 初始化新视频的进度和播放器
     await nextTick();
-    newData.forEach((_, index) => {
-      const newIndex = videoList.value.length + index;
+    newDataWithAds.forEach((_, index) => {
+      const newIndex = videoList.value.length - newDataWithAds.length + index;
       progress.value[newIndex] = 0;
     });
   }
-  // 后台无感知地请求 fetchVideo1
-  fetchVideo1().then(videos => {
-    if (videos.length > 0) {
-      videoList.value = [...videoList.value, ...videos];
-      videos.forEach((_, index) => {
-        const newIndex = videoList.value.length - videos.length + index;
-        progress.value[newIndex] = 0;
-      });
-    }
-  });
+  // // 后台无感知地请求 fetchVideo1
+  // fetchVideo1().then(videos => {
+  //   if (videos.length > 0) {
+  //     videoList.value = [...videoList.value, ...videos];
+  //     videos.forEach((_, index) => {
+  //       const newIndex = videoList.value.length - videos.length + index;
+  //       progress.value[newIndex] = 0;
+  //     });
+  //   }
+  // });
   const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
   const params = {
     PageIndex: indd + '',
@@ -617,5 +776,61 @@ ion-progress-bar {
   font-size: 0.95rem;
   margin: 0;
   line-height: 1.5;
+}
+/* 广告 */
+.ad-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.ad-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: pointer; /* 显示点击手势 */
+}
+
+.ad-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: none; /* 禁止 iframe 内的点击事件 */
+}
+
+.ad-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* 禁止覆盖层的点击事件 */
+}
+
+.ad-countdown {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.skip-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  pointer-events: auto; /* 允许跳过按钮的点击事件 */
 }
 </style>

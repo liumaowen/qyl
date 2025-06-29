@@ -7,6 +7,8 @@ export interface VideoItem {
   poster?: string; // 可选属性，某些视频可能没有封面
   type?: string; // 视频类型
   title?: string; // 视频标题
+  duration?: number; // 广告时长（秒）
+  isAdlook?: boolean; // 是否看过当前广告
 }
 
 export interface FormType {
@@ -50,7 +52,7 @@ export const fetchVideo1_ = async (): Promise<VideoItem[]> => {
     let videos: any[] = [];
     for (const id of idlist) {
       const response = await mmpRequest.get(`/api/ksvideo?type=json&id=${id}`);
-      if (!response.data || !response.data.link) {
+      if (!response.data || !response.data.link || response.data.link === '') {
         continue; // 如果没有视频链接，跳过
       }
       videos = [...videos, { src: response.data.link }];
