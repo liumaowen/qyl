@@ -29,7 +29,7 @@ const showDownloadAlert = ref(false);
 const progress = ref(0);
 let downloadUrl = '';
 let localVersion = '';
-let version = '';
+let versionName = '';
 
 onMounted(async () => {
   // 只有安卓设备检查更新
@@ -42,11 +42,11 @@ onMounted(async () => {
   localVersion = info.version;
 
   // 请求接口获取最新版本
-  const res = await axios.get('https://your-api.com/version');
-  ({ version, url: downloadUrl } = res.data);
+  const res = await axios.get('https://www.qylapi.top/versions/latest');
+  ({ versionName, url: downloadUrl } = res.data);
 
   // 对比版本号
-  if (compareVersion(version, localVersion) > 0) {
+  if (compareVersion(versionName, localVersion) > 0) {
     presentAlert();
   }
   // version = '2.0.1'; // 模拟最新版本号
@@ -59,7 +59,7 @@ const presentAlert = async () => {
     header: '发现新版本, 是否更新?',
     cssClass: 'update-pop',
     backdropDismiss: false, // 禁止点击遮罩关闭
-    message: `当前版本号：${escapeHtml(localVersion)}<br/>待更新版本号：${escapeHtml(version)}`,
+    message: `当前版本号：${escapeHtml(localVersion)}<br/>待更新版本号：${escapeHtml(versionName)}`,
     buttons: [
       { text: '取消', role: 'cancel' },
       { text: '立即更新', handler: startUpdate }
