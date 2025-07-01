@@ -10,6 +10,13 @@ export interface VideoItem {
   duration?: number; // 广告时长（秒）
   isAdlook?: boolean; // 是否看过当前广告
 }
+export interface VersionItem {
+  id: number;
+  versionName: string;
+  downloadUrl: string;
+  createdAt: string;
+  updatedLog: string;
+}
 
 export interface FormType {
   PageIndex: string;
@@ -73,6 +80,28 @@ export const fetchVideo1 = async (): Promise<VideoItem[]> => {
   } catch (error) {
     console.error('获取视频1失败:', error);
     return [];
+  }
+};
+// 获取版本号
+export const getVersion = async (): Promise<VersionItem> => {
+  const version: VersionItem = {
+    id: 0,
+    versionName: '0.0.0',
+    downloadUrl: '',
+    createdAt: '',
+    updatedLog: ''
+  };
+  try {
+    const response = await mmpRequest.get(`/api/versions/latest`);  // 获取最新版本
+    version.versionName = response.data.versionName;
+    version.downloadUrl = response.data.downloadUrl;
+    version.createdAt = response.data.createdAt;
+    version.updatedLog = response.data.updatedLog;
+    version.id = response.data.id;
+    return version;
+  } catch (error) {
+    console.error('获取版本号失败:', error);
+    return version;
   }
 };
 

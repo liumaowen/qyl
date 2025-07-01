@@ -19,11 +19,11 @@
 import { IonApp, IonRouterOutlet, alertController } from '@ionic/vue';
 import { ref, onMounted } from 'vue';
 import { App } from '@capacitor/app';
-import axios from 'axios';
 import { Capacitor } from '@capacitor/core';
 import { FileTransfer } from '@capacitor/file-transfer';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileOpener, FileOpenerOptions } from '@capacitor-community/file-opener';
+import { getVersion } from './api/video';
 
 const showDownloadAlert = ref(false);
 const progress = ref(0);
@@ -42,9 +42,9 @@ onMounted(async () => {
   localVersion = info.version;
 
   // 请求接口获取最新版本
-  const res = await axios.get('https://www.qylapi.top/versions/latest');
-  ({ versionName, url: downloadUrl } = res.data);
-
+  const res = await getVersion();
+  versionName = res.versionName;
+  downloadUrl = res.downloadUrl;
   // 对比版本号
   if (compareVersion(versionName, localVersion) > 0) {
     presentAlert();
@@ -76,7 +76,7 @@ async function startUpdate() {
   progress.value = 0;
   const fileInfo = await Filesystem.getUri({
     directory: Directory.Data,
-    path: 'qyl.apk'
+    path: 'shunle.apk'
   });
   FileTransfer.addListener('progress', (prs) => {
     console.log(`Downloaded ${prs.bytes} of ${prs.contentLength}`);
