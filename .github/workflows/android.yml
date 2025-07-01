@@ -122,7 +122,7 @@ jobs:
         run: |
           curl -X POST -H "Content-Type: application/json" \
           -d '{
-            "versionName": "v${{ steps.rename_apk.outputs.package_version }}",
+            "versionName": "${{ steps.rename_apk.outputs.package_version }}",
             "downloadUrl": "https://www.qylapi.top/apks/${{ steps.rename_apk.outputs.new_apk_name }}"
           }' \
           '${{ secrets.API_URL }}/api/versions'
