@@ -400,17 +400,17 @@ const findNextNonAdIndex = (currentIndex: number): number => {
 const insertAds = (videos: VideoItem[]) => {
   // 每10个视频插入一个广告
   const result: Array<VideoItem> = [];
-  let adIndex = 0; // 广告索引，用于跟踪已插入的广告数量
-  
   videos.forEach((video, index) => {
     result.push(video);
     
     // 每10个视频插入一个广告，且确保有广告可用
-    if ((index + 1) % 10 === 0 && adIndex < adData.length) {
-      // 复制广告对象，避免重复使用同一个引用
-      const adCopy = { ...adData[adIndex] };
-      result.push(adCopy);
-      adIndex++;
+    if ((index + 1) % 10 === 0) {
+      // 复制广告对象，避免重复使用同一个,插入完广告后，将广告对象push到adData数组中
+      const adCopy = adData.shift() as VideoItem;
+      if (adCopy) {
+        result.push(adCopy);
+        adData.push(adCopy);
+      }
     }
   });
   
