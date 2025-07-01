@@ -16,10 +16,14 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { IonApp, IonRouterOutlet } from '@ionic/vue';
 import { useAppUpdate } from './composables/useAppUpdate';
 
-const { showDownloadAlert, progress } = useAppUpdate();
+const { showDownloadAlert, progress, checkUpdate } = useAppUpdate();
+onMounted(() => {
+  checkUpdate();
+});
 </script>
 
 <style scoped>

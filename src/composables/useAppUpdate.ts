@@ -106,6 +106,20 @@ const open = async (url: string) => {
   await openalert.present();
 };
 
+async function checkUpdate() {
+  if (Capacitor.getPlatform() !== 'android') {
+    return;
+  }
+  const info = await App.getInfo();
+  localVersion = info.version;
+  const res = await getVersion();
+  versionName = res.versionName;
+  downloadUrl = res.downloadUrl;
+  if (compareVersion(versionName, localVersion) > 0) {
+    presentAlert();
+  }
+}
+
 onMounted(async () => {
   if (Capacitor.getPlatform() !== 'android') {
     return;
@@ -123,6 +137,7 @@ onMounted(async () => {
 export function useAppUpdate() {
   return {
     showDownloadAlert,
-    progress
+    progress,
+    checkUpdate
   };
 } 
