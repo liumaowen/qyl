@@ -810,7 +810,7 @@ ion-progress-bar {
 
 .ad-countdown {
   position: absolute;
-  top: 20px;
+  top: 30px;
   right: 20px;
   background: rgba(0, 0, 0, 0.7);
   color: white;
@@ -822,7 +822,7 @@ ion-progress-bar {
 
 .skip-btn {
   position: absolute;
-  top: 20px;
+  top: 30px;
   right: 20px;
   background: rgba(0, 0, 0, 0.7);
   color: white;
