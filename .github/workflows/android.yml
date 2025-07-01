@@ -93,7 +93,7 @@ jobs:
           BUILD_TYPE=${{ github.event.inputs.buildType == 'release' && 'release' || 'debug' }}
           APK_DIR="app/build/outputs/apk/${BUILD_TYPE}"
           ORIGINAL_APK_NAME="app-${BUILD_TYPE}.apk"
-          NEW_APK_NAME="shunle_${VERSION}_${DATE}.apk"
+          NEW_APK_NAME="shunle.apk"
           echo "正在重命名文件: $APK_DIR/$ORIGINAL_APK_NAME -> $APK_DIR/$NEW_APK_NAME"
           mv "$APK_DIR/$ORIGINAL_APK_NAME" "$APK_DIR/$NEW_APK_NAME"
           echo "NEW_APK_NAME=$NEW_APK_NAME" >> $GITHUB_ENV
