@@ -404,7 +404,7 @@ const insertAds = (videos: VideoItem[]) => {
     result.push(video);
     
     // 每10个视频插入一个广告，且确保有广告可用
-    if ((index + 1) % 10 === 0) {
+    if ((index + 1) % 10 === 0 && adData.length) {
       // 复制广告对象，避免重复使用同一个,插入完广告后，将广告对象push到adData数组中
       const adCopy = adData.shift() as VideoItem;
       if (adCopy) {
