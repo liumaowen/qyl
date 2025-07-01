@@ -37,7 +37,7 @@ import './theme/variables.css';
 import 'video.js/dist/video-js.css'
 
 const app = createApp(App)
-  .use(IonicVue,{mode:'ios',innerHTMLTemplatesEnabled:true})
+  .use(IonicVue,{innerHTMLTemplatesEnabled:true})
   .use(router);
 
 router.isReady().then(() => {
