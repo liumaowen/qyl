@@ -17,7 +17,9 @@
         class="slide-item"
         :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }"
       >
+        <!-- 视频内容 -->
         <ShortVideoItem
+          v-if="video.type !== 'ad'"
           :video="video"
           :index="index"
           :container-width="containerWidth"
@@ -28,47 +30,106 @@
           @pause="handlePause"
           @progressChange="handleProgressChange"
         />
+        <!-- 广告内容 -->
+        <div v-else class="ad-wrap">
+          <div class="ad-container" @click="openAd(video.src)">
+            <iframe 
+              :src="video.src" 
+              class="ad-iframe"
+              frameborder="0"
+              allowfullscreen
+              @error="onAdIframeError">
+            </iframe>
+            <div class="ad-overlay">
+              <div v-if="adCountdown > 0 && currentAdIndex === index" class="ad-countdown">{{ adCountdown }}秒后跳过</div>
+              <button v-else-if="currentAdIndex === index" @click.stop ="skipAd" class="skip-btn">跳过广告</button>
+            </div>
+          </div>
+        </div>
       </swiper-slide>
     </swiper>
   </template>
   
   <script setup lang="ts">
-  import { ref, nextTick } from 'vue';
+  import { ref, nextTick, onMounted, onUnmounted } from 'vue';
+  import { onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
   import { Swiper, SwiperSlide } from 'swiper/vue';
   import { Virtual } from 'swiper/modules';
   import 'swiper/css';
   import ShortVideoItem from './ShortVideoItem.vue';
-  import type { VideoItem } from '@/api/video';
-  import type { Swiper as SwiperInstance } from 'swiper/types';
+  import { Capacitor } from '@capacitor/core';
+  import { InAppBrowser } from '@capacitor/inappbrowser';
   
   const props = defineProps<{
-    videoList: VideoItem[];
+    videoList: any[];
     containerWidth: number;
     containerHeight: number;
     progress: number[];
   }>();
   
-  const emit = defineEmits(['loadMore']);
+  const emit = defineEmits(['update:progress', 'loadMore']);
   
   const playingIndex = ref(0);
-  const swiperRef = ref<SwiperInstance>();
+  const swiperRef = ref<any>();
+  const adCountdown = ref(0);
+  const currentAdIndex = ref(-1);
+  let adTimer: any = null;
   
-  const setSwiperRef = (swiper: SwiperInstance) => {
+  const setSwiperRef = (swiper: any) => {
     swiperRef.value = swiper;
   };
   
-  const onSlideChange = (e: SwiperInstance) => {
+  const onSlideChange = (e: any) => {
     const currentIndex = e.activeIndex;
     playingIndex.value = currentIndex;
+    const video = props.videoList[currentIndex];
+    if (video && video.type === 'ad') {
+      if(swiperRef.value) {
+      swiperRef.value.allowTouchMove = false; // 禁止滑动
+      swiperRef.value.update();
+    }
+      currentAdIndex.value = currentIndex;
+      if(video.isAdlook) {
+        adCountdown.value = 0;
+      }else{
+        adCountdown.value = video.duration || 10;
+      }
+      if (adTimer) clearInterval(adTimer);
+      adTimer = setInterval(() => {
+        adCountdown.value--;
+        if (adCountdown.value <= 0) {
+          clearInterval(adTimer);
+          adTimer = null;
+          if(swiperRef.value) {
+          swiperRef.value.allowTouchMove = true; // 滑动
+          swiperRef.value.update();
+        }
+          video.isAdlook = true;
+        }
+      }, 1000);
+      if (swiperRef.value) {
+        swiperRef.value.allowTouchMove = false;
+        swiperRef.value.update();
+      }
+    } else {
+      currentAdIndex.value = -1;
+      if (adTimer) {
+        clearInterval(adTimer);
+        adTimer = null;
+      }
+      if (swiperRef.value) {
+        swiperRef.value.allowTouchMove = true;
+        swiperRef.value.update();
+      }
+    }
     // 滑到倒数第三个时加载更多
     if (currentIndex === props.videoList.length - 3) {
       emit('loadMore');
     }
   };
   
-  const onSlideTransitionEnd = async (swiper: SwiperInstance) => {
+  const onSlideTransitionEnd = async (swiper: any) => {
     await nextTick();
-    // 可在此处做播放器实例的销毁和初始化优化
   };
   
   const handlePlay = (index: number) => {
@@ -78,7 +139,108 @@
     if (playingIndex.value === index) playingIndex.value = -1;
   };
   const handleProgressChange = (index: number, value: number) => {
-    // 可选：向父组件同步进度
+    emit('update:progress', { index, value });
   };
   
+  const onAdIframeError = () => {
+    adCountdown.value = 0;
+    if (adTimer) {
+      clearInterval(adTimer);
+      adTimer = null;
+    }
+  };
+  const skipAd = () => {
+    const currentAdPosition = currentAdIndex.value;
+    currentAdIndex.value = -1;
+    // 跳到下一个非广告slide
+    for (let i = currentAdPosition + 1; i < props.videoList.length; i++) {
+      if (props.videoList[i].type !== 'ad') {
+        swiperRef.value.slideTo(i);
+        break;
+      }
+    }
+  };
+  const openAd = async (src: string) => {
+    if (Capacitor.isNativePlatform()) {
+      await InAppBrowser.openInExternalBrowser({ url: src });
+    } else {
+      window.open(src, '_blank');
+    }
+  };
+  const pauseAll = () => {
+    // 清理广告计时器
+    if (adTimer) clearInterval(adTimer);
+    playingIndex.value = -1;
+  };
+  defineExpose({ pauseAll });
+  
+  onUnmounted(() => {
+    // 清理广告计时器
+    if (adTimer) clearInterval(adTimer);
+    // 暂停所有视频
+    playingIndex.value = -1;
+  });
+
+  onIonViewWillLeave(() => {
+    playingIndex.value = -1;
+  });
+  onIonViewDidLeave(() => {
+    playingIndex.value = -1;
+  });
   </script>
+  
+  <style scoped>
+  .swiper {
+    background: #000;
+  }
+  .ad-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #000;
+  }
+  .ad-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+  .ad-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    pointer-events: none;
+  }
+  .ad-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .ad-countdown {
+    position: absolute;
+    top: 30px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    pointer-events: none;
+  }
+  .skip-btn {
+    position: absolute;
+    top: 30px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+  </style>

@@ -17,6 +17,19 @@ export interface VersionItem {
   createdAt: string;
   updatedLog: string;
 }
+export interface ConfigItem {
+  id: number;
+  key: string;
+  value: string;
+}
+export interface AdItem {
+  id: number;
+  link: string;
+  description: string;
+}
+export interface resultItem {
+  result: boolean;
+}
 
 export interface FormType {
   PageIndex: string;
@@ -102,6 +115,36 @@ export const getVersion = async (): Promise<VersionItem> => {
   } catch (error) {
     console.error('获取版本号失败:', error);
     return version;
+  }
+};
+// 获取广告
+export const getAd = async (): Promise<AdItem[]> => {
+  let list: AdItem[] = [];
+  try {
+    const response = await mmpRequest.get(`/api/ads`);
+    if (response.data) {
+      list = response.data;
+    }
+    return list;
+  } catch (error) {
+    console.error('获取广告失败:', error);
+    return list;
+  }
+};
+// 验证口令
+export const getkoul = async (value:string): Promise<resultItem> => {
+  let boolean:resultItem = {result:false};
+  try {
+    const response = await mmpRequest.get(`/api/config/yanzheng`, {
+      params: { value:value }
+    });
+    if (response.data) {
+      boolean = response.data;
+    }
+    return boolean;
+  } catch (error) {
+    console.error('获取口令失败:', error);
+    return boolean;
   }
 };
 

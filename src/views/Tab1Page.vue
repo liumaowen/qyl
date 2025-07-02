@@ -62,11 +62,11 @@ import 'swiper/css';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import videoLanguage from 'video.js/dist/lang/zh-CN.json'
-import { IonPage, IonContent, IonIcon, IonProgressBar, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
+import { IonPage, IonContent, IonIcon, IonProgressBar, onIonViewDidEnter,onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
 import { play } from 'ionicons/icons';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
-import { fetchApiOpenTopVideos, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, VideoItem,fetchduanju } from '@/api/video';
+import { AdItem,fetchApiOpenTopVideos, fetchMGTVVideoList,getAd, fetchVideo1, fetchVideo2, fetchVideo3, VideoItem,fetchduanju } from '@/api/video';
 import { shortVideoConfig,ShortVideoConfigType } from '@/store/state';
 import { InAppBrowser } from '@capacitor/inappbrowser';
 
@@ -93,37 +93,11 @@ const shortconfig: ShortVideoConfigType = {
   shortVideoRandomMin: 1
 }
 // 广告相关状态
-const adCountdown = ref(5);
+const adCountdown = ref(10);
 const currentAdIndex = ref(-1);
 let adTimer: any = null;
 // 广告数据
-const adData: VideoItem[] = [
-  {
-  type: 'ad',
-  duration: 10,
-  src: 'https://wait-page.eu/a/5JBqI0nViO64J',
- },
-  {
-  type: 'ad',
-  duration: 10,
-  src: 'https://true-date.eu/a/Vgw8uZ6WFz3rx',
- },
-  {
-  type: 'ad',
-  duration: 10,
-  src: 'https://wait-page.eu/a/pr4OsxkZzuDKxB',
- },
-  {
-  type: 'ad',
-  duration: 10,
-  src: 'https://wait-page.eu/a/MOkYH6wjVckzO9',
- },
-  {
-  type: 'ad',
-  duration: 10,
-  src: 'https://true-date.eu/a/ErYNsjg7Hwgyy',
-}
-];
+let adData: VideoItem[] = [];
 
 // 新增：进度相关状态
 const progress = ref<number[]>([]); // 各视频的播放进度（0-1）
@@ -308,7 +282,7 @@ const onSlideChange = async (e: SwiperInstance) => {
     if(video.isAdlook) {
       adCountdown.value = 0;
     }else{
-      adCountdown.value = video.duration || 5;
+      adCountdown.value = video.duration || 10;
     }
     
     // 开始倒计时
@@ -485,7 +459,6 @@ function checkVideoPlayable(url: string, timeout = 8000): Promise<boolean> {
 const loadMoreData = async () => {
   let newData = await fetchApiOpenTopVideos(currentPage, pageSize);
   const results = await Promise.allSettled([
-    fetchVideo2(),
     fetchVideo3(),
     fetchVideo1()
   ]);
@@ -651,6 +624,18 @@ onIonViewDidLeave(() => {
   Object.values(videoInstances.value).forEach(player => {
     if (player) player.pause();
   });
+})
+onIonViewDidEnter(async () => { 
+  const ads = await getAd();
+  if (ads.length > 0) {
+      adData = [];
+      ads.forEach((item: AdItem) => {
+        adData.push({
+          src: item.link,
+          type: 'ad'
+        });
+      });
+    }
 })
 </script>
 
