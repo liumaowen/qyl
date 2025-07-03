@@ -19,9 +19,11 @@
 import { onMounted } from 'vue';
 import { IonApp, IonRouterOutlet } from '@ionic/vue';
 import { useAppUpdate } from './composables/useAppUpdate';
+import { fetchConfig } from '@/api/video';
 
 const { showDownloadAlert, progress, checkUpdate } = useAppUpdate();
 onMounted(() => {
+  fetchConfig();
   checkUpdate();
 });
 </script>

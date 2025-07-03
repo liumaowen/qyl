@@ -38,8 +38,8 @@ export interface FormType {
   SortType: string;
 }
 export interface MovieFormType {
-  PageIndex: string,
-  PageSize: string,
+  PageIndex: number,
+  PageSize: number,
   ChannelId: string,
   GenderChannelType: string
 }
@@ -180,7 +180,7 @@ export const fetchConfig = async () => {
     const headers = {
       "authorization": "Bearer null",
       "priority": "u=1, i",
-      "x-auth-uuid": "be63a7fc870c84b63bb3d2936649a322",
+      "x-auth-uuid": AES_UUID(),
       "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
     };
     const response = await mgtvRequest.post(
@@ -292,7 +292,7 @@ export const fetchduanju = async (params: MovieFormType): Promise<VideoItem[]> =
       console.log('短句视频列表:', list100);
       // 处理每个视频
       const result = list100.map((element: any) => {
-        const mm = getm3u8(PLAYDOMAIN, element['playUrl']);
+        const mm = getm3u8(PLAYDOMAIN, element['first']['playUrl']);
         return {
           src: mm,
           title: element['title'],

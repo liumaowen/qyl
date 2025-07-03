@@ -100,23 +100,23 @@ const onProgressUpdate = ({ index, value }: { index: number, value: number }) =>
   progress.value[index] = value;
 };
 
-const duanju = () => {
-  const params = {
-    PageIndex: currentPage + '',
-    PageSize: 5 + '',
-    ChannelId: "",
-    GenderChannelType: ""
-  };
-  fetchduanju(params).then((res) => {
-    if (res.length > 0) {
-      videoList.value = [...videoList.value, ...res];
-      res.forEach((_, index) => {
-        const newIndex = videoList.value.length - res.length + index;
-        progress.value[newIndex] = 0;
-      });
-    }
-  });
-};
+// const duanju = () => {
+//   const params = {
+//     PageIndex: currentPage + '',
+//     PageSize: 5 + '',
+//     ChannelId: "",
+//     GenderChannelType: ""
+//   };
+//   fetchduanju(params).then((res) => {
+//     if (res.length > 0) {
+//       videoList.value = [...videoList.value, ...res];
+//       res.forEach((_, index) => {
+//         const newIndex = videoList.value.length - res.length + index;
+//         progress.value[newIndex] = 0;
+//       });
+//     }
+//   });
+// };
 
 onMounted(async () => {
   if (Capacitor.isNativePlatform()) {

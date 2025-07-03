@@ -420,41 +420,6 @@ const onSlideTransitionEnd = async (swiper: SwiperInstance) => {
   console.log('onSlideTransitionEnd1', videoInstances.value);
 };
 
-// 检查视频能否播放
-function checkVideoPlayable(url: string, timeout = 8000): Promise<boolean> {
-  return new Promise((resolve) => {
-    const video = document.createElement('video');
-    video.src = url;
-    video.preload = 'auto';
-    video.muted = true;
-    video.style.display = 'none';
-    document.body.appendChild(video);
-
-    let settled = false;
-    const clear = () => {
-      if (!settled) {
-        settled = true;
-        video.remove();
-      }
-    };
-
-    video.addEventListener('canplay', () => {
-      clear();
-      resolve(true);
-    });
-    video.addEventListener('error', () => {
-      clear();
-      resolve(false);
-    });
-
-    setTimeout(() => {
-      clear();
-      resolve(false);
-    }, timeout);
-  });
-}
-
-
 // 加载更多数据
 const loadMoreData = async () => {
   let newData = await fetchApiOpenTopVideos(currentPage, pageSize);
@@ -511,24 +476,24 @@ const loadMoreData = async () => {
   // });
   // duanju();
 };
-const duanju = () => {
-  const params = {
-    PageIndex: currentPage + '',
-    PageSize: 5 + '',
-    ChannelId: "",
-    GenderChannelType: ""
-  }; 
-  fetchduanju(params).then((res) => {
-    console.log('duanjulist', res);
-    if (res.length > 0) {
-      videoList.value = [...videoList.value, ...res];
-      res.forEach((_, index) => {
-        const newIndex = videoList.value.length - res.length + index;
-        progress.value[newIndex] = 0;
-      });
-    }
-  });
-};
+// const duanju = () => {
+//   const params = {
+//     PageIndex: currentPage,
+//     PageSize: 5,
+//     ChannelId: "",
+//     GenderChannelType: ""
+//   }; 
+//   fetchduanju(params).then((res) => {
+//     console.log('duanjulist', res);
+//     if (res.length > 0) {
+//       videoList.value = [...videoList.value, ...res];
+//       res.forEach((_, index) => {
+//         const newIndex = videoList.value.length - res.length + index;
+//         progress.value[newIndex] = 0;
+//       });
+//     }
+//   });
+// };
 
 // 拖动开始处理
 const startDrag = (e: MouseEvent | TouchEvent, index: number) => {

@@ -84,14 +84,14 @@
     playingIndex.value = currentIndex;
     const video = props.videoList[currentIndex];
     if (video && video.type === 'ad') {
-      if(swiperRef.value) {
-      swiperRef.value.allowTouchMove = false; // 禁止滑动
-      swiperRef.value.update();
-    }
       currentAdIndex.value = currentIndex;
       if(video.isAdlook) {
         adCountdown.value = 0;
       }else{
+        if(swiperRef.value) {
+          swiperRef.value.allowTouchMove = false; // 禁止滑动
+          swiperRef.value.update();
+        }
         adCountdown.value = video.duration || 10;
       }
       if (adTimer) clearInterval(adTimer);
@@ -101,9 +101,9 @@
           clearInterval(adTimer);
           adTimer = null;
           if(swiperRef.value) {
-          swiperRef.value.allowTouchMove = true; // 滑动
-          swiperRef.value.update();
-        }
+            swiperRef.value.allowTouchMove = true; // 滑动
+            swiperRef.value.update();
+          }
           video.isAdlook = true;
         }
       }, 1000);
