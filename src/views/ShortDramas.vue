@@ -1,23 +1,21 @@
 <template>
   <ion-page>
     <ion-content :fullscreen="true" class="video-container">
-      <ShortVideoSwiper
-        ref="swiperRef"
-        :video-list="videoList"
+      <ShortVideoSwiper ref="swiperRef" 
+        :video-list="videoList" 
         :container-width="containerWidth"
-        :container-height="containerHeight"
-        :progress="progress"
+        :container-height="containerHeight" 
+        :progress="progress" 
         @loadMore="loadMoreData"
-        @update:progress="onProgressUpdate"
-      />
+        @update:progress="onProgressUpdate" />
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted,onUnmounted, nextTick } from 'vue';
-import { IonPage, IonContent,onIonViewDidEnter,onIonViewWillLeave,onIonViewDidLeave } from '@ionic/vue';
-import { getAd,AdItem,MovieFormType, fetchduanju, VideoItem } from '@/api/video';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { IonPage, IonContent, onIonViewDidEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
+import { getAd, AdItem, MovieFormType, fetchduanju, VideoItem } from '@/api/video';
 import { shortVideoConfig } from '@/store/state';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -29,13 +27,13 @@ const containerWidth = ref(window.innerWidth);
 const containerHeight = ref(window.innerHeight - 50.8);
 let currentPage = Math.floor(Math.random() * (1600 - 0 + 1)) + 0;
 const pageSize = 4;
-const params =  ref<MovieFormType>({
+const params = ref<MovieFormType>({
   PageIndex: 1,
   PageSize: 5,
   ChannelId: "",
   GenderChannelType: ""
 })
-    
+
 // 广告数据
 let adData: VideoItem[] = [];
 const swiperRef = ref();
@@ -65,7 +63,7 @@ const insertAds = (videos: VideoItem[]) => {
   const result: Array<VideoItem> = [];
   videos.forEach((video, index) => {
     result.push(video);
-    
+
     // 每10个视频插入一个广告，且确保有广告可用
     if ((index + 1) % 10 === 0 && adData.length) {
       // 复制广告对象，避免重复使用同一个,插入完广告后，将广告对象push到adData数组中
@@ -76,7 +74,7 @@ const insertAds = (videos: VideoItem[]) => {
       }
     }
   });
-  
+
   return result;
 };
 const onProgressUpdate = ({ index, value }: { index: number, value: number }) => {
@@ -104,14 +102,14 @@ const onProgressUpdate = ({ index, value }: { index: number, value: number }) =>
 const getAds = async () => {
   const ads = await getAd();
   if (ads.length > 0) {
-      adData = [];
-      ads.forEach((item: AdItem) => {
-        adData.push({
-          src: item.link,
-          type: 'ad'
-        });
+    adData = [];
+    ads.forEach((item: AdItem) => {
+      adData.push({
+        src: item.link,
+        type: 'ad'
       });
-    }
+    });
+  }
 }
 
 onMounted(async () => {
@@ -126,7 +124,7 @@ onMounted(async () => {
   await nextTick();
   getAds();
 });
-onIonViewDidEnter(async () => { 
+onIonViewDidEnter(async () => {
 })
 onIonViewWillLeave(() => {
   swiperRef.value?.pauseAll();
@@ -134,10 +132,10 @@ onIonViewWillLeave(() => {
 onIonViewDidLeave(() => {
   swiperRef.value?.pauseAll();
 });
-  onUnmounted(() => {
-    window.removeEventListener('resize', updateSize);
-    swiperRef.value?.pauseAll();
-  });
+onUnmounted(() => {
+  window.removeEventListener('resize', updateSize);
+  swiperRef.value?.pauseAll();
+});
 
 </script>
 

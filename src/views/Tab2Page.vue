@@ -1,23 +1,21 @@
 <template>
   <ion-page>
     <ion-content :fullscreen="true" class="video-container">
-      <ShortVideoSwiper
-        ref="swiperRef"
-        :video-list="videoList"
-        :container-width="containerWidth"
-        :container-height="containerHeight"
-        :progress="progress"
-        @loadMore="loadMoreData"
-        @update:progress="onProgressUpdate"
-      />
+      <ShortVideoSwiper ref="swiperRef" 
+      :video-list="videoList" 
+      :container-width="containerWidth"
+      :container-height="containerHeight" 
+      :progress="progress" 
+      @loadMore="loadMoreData"
+      @update:progress="onProgressUpdate" />
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted,onUnmounted, nextTick } from 'vue';
-import { IonPage, IonContent,onIonViewDidEnter,onIonViewWillLeave,onIonViewDidLeave } from '@ionic/vue';
-import { fetchApiOpenTopVideos,getAd,AdItem, fetchMGTVVideoList,fetchVideo1, fetchVideo2, fetchVideo3, fetchduanju, VideoItem } from '@/api/video';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { IonPage, IonContent, onIonViewDidEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
+import { fetchApiOpenTopVideos, getAd, AdItem, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, fetchduanju, VideoItem } from '@/api/video';
 import { shortVideoConfig, ShortVideoConfigType } from '@/store/state';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -82,7 +80,7 @@ const insertAds = (videos: VideoItem[]) => {
   const result: Array<VideoItem> = [];
   videos.forEach((video, index) => {
     result.push(video);
-    
+
     // 每10个视频插入一个广告，且确保有广告可用
     if ((index + 1) % 10 === 0 && adData.length) {
       // 复制广告对象，避免重复使用同一个,插入完广告后，将广告对象push到adData数组中
@@ -93,7 +91,7 @@ const insertAds = (videos: VideoItem[]) => {
       }
     }
   });
-  
+
   return result;
 };
 const onProgressUpdate = ({ index, value }: { index: number, value: number }) => {
@@ -129,17 +127,17 @@ onMounted(async () => {
   progress.value = initialData.map(() => 0);
   await nextTick();
 });
-onIonViewDidEnter(async () => { 
+onIonViewDidEnter(async () => {
   const ads = await getAd();
   if (ads.length > 0) {
-      adData = [];
-      ads.forEach((item: AdItem) => {
-        adData.push({
-          src: item.link,
-          type: 'ad'
-        });
+    adData = [];
+    ads.forEach((item: AdItem) => {
+      adData.push({
+        src: item.link,
+        type: 'ad'
       });
-    }
+    });
+  }
 })
 onIonViewWillLeave(() => {
   swiperRef.value?.pauseAll();
@@ -148,8 +146,8 @@ onIonViewDidLeave(() => {
   swiperRef.value?.pauseAll();
 });
 onUnmounted(() => {
-    swiperRef.value?.pauseAll();
-  });
+  swiperRef.value?.pauseAll();
+});
 
 </script>
 
