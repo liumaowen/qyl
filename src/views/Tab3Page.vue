@@ -377,26 +377,26 @@ const loadMoreData = async () => {
       });
     }
   });
-  duanju();
+  // duanju();
 };
-const duanju = () => {
-  const params = {
-    PageIndex: currentPage + '',
-    PageSize: 5 + '',
-    ChannelId: "",
-    GenderChannelType: ""
-  }; 
-  fetchduanju(params).then((res) => {
-    console.log('duanjulist', res);
-    if (res.length > 0) {
-      videoList.value = [...videoList.value, ...res];
-      res.forEach((_, index) => {
-        const newIndex = videoList.value.length - res.length + index;
-        progress.value[newIndex] = 0;
-      });
-    }
-  });
-};
+// const duanju = () => {
+//   const params = {
+//     PageIndex: currentPage + '',
+//     PageSize: 5 + '',
+//     ChannelId: "",
+//     GenderChannelType: ""
+//   }; 
+//   fetchduanju(params).then((res) => {
+//     console.log('duanjulist', res);
+//     if (res.length > 0) {
+//       videoList.value = [...videoList.value, ...res];
+//       res.forEach((_, index) => {
+//         const newIndex = videoList.value.length - res.length + index;
+//         progress.value[newIndex] = 0;
+//       });
+//     }
+//   });
+// };
 
 // 拖动开始处理
 const startDrag = (e: MouseEvent | TouchEvent, index: number) => {
