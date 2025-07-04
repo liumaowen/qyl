@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { IonPage, IonContent, onIonViewDidEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
-import { getAd, AdItem, MovieFormType, fetchduanju, VideoItem } from '@/api/video';
+import { getAd, AdItem, MovieFormType, fetchduanju, VideoItem,getShortdetail } from '@/api/video';
 import { shortVideoConfig } from '@/store/state';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -123,6 +123,7 @@ onMounted(async () => {
   progress.value = initialData.map(() => 0);
   await nextTick();
   getAds();
+  getShortdetail('37');
 });
 onIonViewDidEnter(async () => {
 })

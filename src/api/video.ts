@@ -307,8 +307,55 @@ export const fetchduanju = async (params: MovieFormType): Promise<VideoItem[]> =
     return [];
   }
 };
-
-//短剧详情 ShortMovie/ShortMovieDetail
+export const getShortdetail = async (id:string) => {
+  try {
+    const da = AES_Encrypt(JSON.stringify({Id:id}));
+    const headers = {
+      "authorization": "Bearer null",
+      "Accept": "application/json, text/plain, */*",
+      "x-auth-uuid": AES_UUID(),
+      "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+    };
+    const response = await mgtvRequest.post(
+      '/ShortMovie/ShortMovieDetail',
+      da,
+      {
+        headers,
+        responseType: 'arraybuffer',
+        timeout: 60000,
+      }
+    );
+    if (response.data) {
+      const textDecoder = new TextDecoder();
+      const text = textDecoder.decode(response.data);
+      const decryptedPassword = AES_Decrypt(text);
+      const list99 = JSON.parse(decryptedPassword);
+      console.log('短剧详情99:', list99);
+      const list100 = list99?.data?.items || [];
+      console.log('短句视频列表:', list100);
+      // list100
+      //collectionIndex :  "2",
+      //duration :  "544"
+      //id :  "35677"
+      //playUrl :  "MGTV/20250604/bd4494ebc035c1ba401f531789325993/index2.m3u8"
+      // 处理每个视频
+      const result = list100.map((element: any) => {
+        const mm = getm3u8(PLAYDOMAIN, element['playUrl']);
+        return {
+          src: mm,
+          title: element['title'],
+          type: 'application/x-mpegURL', // 设置视频类型为 m3u8
+        };
+      });
+      return result;
+    }
+    return [];
+  } catch (error) {
+    console.error('获取短剧视频失败:', error);
+    return [];
+  }
+}
+//短剧详情 
 
 export const pojie = (str: any) => {
   // const textDecoder = new TextDecoder();
