@@ -43,13 +43,11 @@ const progress = ref<number[]>([]);
 const containerWidth = ref(window.innerWidth);
 const containerHeight = ref(window.innerHeight - 50.8);
 const titlecount = ref(1);
-let title = '';
 
 const onProgressUpdate = ({ index, value }: { index: number, value: number }) => {
   progress.value[index] = value;
 };
 const onSwiperChange = ({currentIndex}:{currentIndex: number}) => {
-    console.log('当前索引:', currentIndex)
   titlecount.value = currentIndex + 1;
 };
 const updateSize = () => {
@@ -59,8 +57,6 @@ const updateSize = () => {
 onMounted(async () => {
   const id = route.params.id as string;
   const title = route.query.title as string;
-  
-  console.log('路由参数:', { id, title });
   
   window.addEventListener('resize', updateSize);
   updateSize();
