@@ -195,7 +195,7 @@ const initVideo = (index: number) => {
     // width: containerWidth.value,
     height: containerHeight.value,
     loop: true,
-    fluid: true,
+    fluid: isMobile(),
     sources: [
       {
         src: item.src,//视频地址
@@ -627,8 +627,9 @@ onIonViewDidEnter(async () => {
 /* 关键：设置视频播放器垂直居中 */
 .video-js {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   height: 100% !important;
   /* 高度撑满容器 */
   max-width: 100% !important;

@@ -13,7 +13,6 @@ const KEY = CryptoJS.enc.Utf8.parse('gFzviOY0zOxVq1cu') // 秘钥
 // 生成随机的iv
 const iv = CryptoJS.enc.Utf8.parse('ZmA0Osl677UdSrl0')
 export const AES_UUID = () => {
-  console.log('AES_UUID', crypto.randomUUID().replace(/-/g, ''));
   return crypto.randomUUID().replace(/-/g, '');
 }
 

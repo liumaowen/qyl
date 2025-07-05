@@ -39,6 +39,7 @@ import 'swiper/css';
 import ShortVideoItem from './ShortVideoItem.vue';
 import { Capacitor } from '@capacitor/core';
 import { InAppBrowser } from '@capacitor/inappbrowser';
+import { VideoItem,getShortdetail } from '@/api/video';
 
 const props = defineProps<{
   videoList: any[];
@@ -47,7 +48,7 @@ const props = defineProps<{
   progress: number[];
 }>();
 
-const emit = defineEmits(['update:progress', 'loadMore']);
+const emit = defineEmits(['update:progress', 'loadMore','update:swiperChange']);
 
 const playingIndex = ref(0);
 const swiperRef = ref<any>();
@@ -59,10 +60,11 @@ const setSwiperRef = (swiper: any) => {
   swiperRef.value = swiper;
 };
 
-const onSlideChange = (e: any) => {
+const onSlideChange = async (e: any) => {
   const currentIndex = e.activeIndex;
   playingIndex.value = currentIndex;
   const video = props.videoList[currentIndex];
+  console.log('播放短剧',video)
   if (video && video.type === 'ad') {
     currentAdIndex.value = currentIndex;
     if (video.isAdlook) {
@@ -92,6 +94,7 @@ const onSlideChange = (e: any) => {
       swiperRef.value.update();
     }
   } else {
+    emit('update:swiperChange', { currentIndex });
     currentAdIndex.value = -1;
     if (adTimer) {
       clearInterval(adTimer);
@@ -100,6 +103,11 @@ const onSlideChange = (e: any) => {
     if (swiperRef.value) {
       swiperRef.value.allowTouchMove = true;
       swiperRef.value.update();
+    }
+    if (video && video.videotype === 'dm' && video.id) {
+      console.log('播放短剧',video)
+      const infos = await getShortdetail(video.id);
+      video.info = {count:infos.length};
     }
   }
   // 滑到倒数第三个时加载更多

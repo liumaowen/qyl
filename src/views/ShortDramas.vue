@@ -15,8 +15,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { IonPage, IonContent, onIonViewDidEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
-import { getAd, AdItem, MovieFormType, fetchduanju, VideoItem,getShortdetail } from '@/api/video';
-import { shortVideoConfig } from '@/store/state';
+import { getAd, AdItem, MovieFormType, fetchduanju, VideoItem,getShortdetail,MovieDetail } from '@/api/video';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
@@ -25,8 +24,6 @@ const videoList = ref<VideoItem[]>([]);
 const progress = ref<number[]>([]);
 const containerWidth = ref(window.innerWidth);
 const containerHeight = ref(window.innerHeight - 50.8);
-let currentPage = Math.floor(Math.random() * (1600 - 0 + 1)) + 0;
-const pageSize = 4;
 const params = ref<MovieFormType>({
   PageIndex: 1,
   PageSize: 5,
@@ -123,7 +120,10 @@ onMounted(async () => {
   progress.value = initialData.map(() => 0);
   await nextTick();
   getAds();
-  getShortdetail('37');
+  if (videoList.value.length && videoList.value[0].id) {
+    const infos = await getShortdetail(videoList.value[0].id);
+    videoList.value[0].info = {count:infos.length};
+  }
 });
 onIonViewDidEnter(async () => {
 })

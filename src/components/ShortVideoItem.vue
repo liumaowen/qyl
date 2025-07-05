@@ -9,6 +9,14 @@
     </div>
     <div class="video-title-bar" v-if="video.title">
       <h6>{{ video.title }}</h6>
+      <div v-if="video.info?.count && video.info?.count > 1">
+        <p style="margin: 0;font-size: 13px;">第一集</p>
+        <div class="video-info-bar" @click="goShortdetail(video.id)">
+          <div>观看完整短剧·全{{ video.info?.count }}集</div>
+          <!-- <div class="video-info-bar-icon"></div> -->
+          <ion-icon class="video-info-bar-icon" :icon="chevronForwardOutline" color="#fff"></ion-icon>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -19,8 +27,10 @@ import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import videoLanguage from 'video.js/dist/lang/zh-CN.json';
 import { IonIcon, IonProgressBar } from '@ionic/vue';
-import { play } from 'ionicons/icons';
-import type { VideoItem } from '@/api/video';
+import { play,chevronForwardOutline } from 'ionicons/icons';
+import { getShortdetail, type VideoItem } from '@/api/video';
+import { useIonRouter } from '@ionic/vue';
+import { useRouter } from 'vue-router';
 
 videojs.addLanguage('zh-CN', videoLanguage);
 
@@ -35,9 +45,13 @@ const props = defineProps<{
 
 const emit = defineEmits(['play', 'pause', 'progressChange']);
 
+const ionRouter = useIonRouter();
+const router = useRouter();
 const videoRef = ref<HTMLVideoElement | null>(null);
 const player = ref<any>(null);
 const isDragging = ref(false);
+// 判断是否为手机端（屏幕宽度<768px）
+const isMobile = () => window.innerWidth < 768;
 
 onMounted(() => {
   if (videoRef.value) {
@@ -48,7 +62,7 @@ onMounted(() => {
       language: 'zh-CN',
       height: props.containerHeight,
       loop: true,
-      fluid: true,
+      fluid: isMobile(),
       sources: [
         {
           src: props.video.src,
@@ -96,6 +110,37 @@ const togglePlay = () => {
   }
 };
 
+const goShortdetail = (id?: string) => {
+  if (id) {
+    try {
+      console.log(props.video.title);
+      // 优先使用 ionRouter，提供更好的移动端体验
+      ionRouter.push(`/DramasDetail/${id}?title=${encodeURIComponent(props.video.title || '短剧')}`);
+      player.value?.pause();
+    } catch (error) {
+      console.error('ionRouter 跳转失败，尝试使用 router:', error);
+      try {
+        // 备用方案：使用 router
+        router.push({
+          name: 'DramasDetail',
+          params: { 
+            id: id,
+            title: props.video.title || '短剧'
+          },
+          query: {
+            count: props.video.info?.count || 0,
+            videotype: props.video.videotype || 'dm'
+          }
+        });
+      } catch (routerError) {
+        console.error('router 跳转也失败:', routerError);
+      }
+    }
+  } else {
+    console.log('id 为空，无法跳转');
+  }
+};
+
 const startDrag = (e: MouseEvent | TouchEvent) => {
   e.preventDefault();
   isDragging.value = true;
@@ -130,7 +175,6 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
 </script>
 
 <style scoped>
-/* 复制原有的 .video-wrap、.center-pause-btn、.my_progress_bar、.custom-progress、.video-title-bar 等样式 */
 .video-wrap {
   position: relative;
   background: #000;
@@ -141,8 +185,9 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
 
 .video-js {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   height: 100% !important;
   max-width: 100% !important;
   object-fit: cover;
@@ -216,5 +261,22 @@ ion-progress-bar {
   margin: 0 0 2px 0;
   font-weight: bold;
   line-height: 1.3;
+}
+.video-info-bar{
+  padding: 6px 10px;
+  background: rgb(110 104 104 / 70%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.video-info-bar-icon {
+  width: 16px;
+  height: 16px;
+  position: relative;
+  flex-shrink: 0;
 }
 </style>

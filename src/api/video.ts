@@ -5,10 +5,23 @@ import { PLAYDOMAIN, ShortVideoConfigType, shortVideoConfig } from '@/store/stat
 export interface VideoItem {
   src: string;
   poster?: string; // 可选属性，某些视频可能没有封面
-  type?: string; // 视频类型
+  type?: string; // 视频类型 ad:广告
+  videotype?: string; // 视频类型 dm:短剧
   title?: string; // 视频标题
   duration?: number; // 广告时长（秒）
   isAdlook?: boolean; // 是否看过当前广告
+  id?: string;
+  info?: {
+    count: number;
+  };
+}
+export interface MovieDetail{
+  id: string;
+  title?: string;
+  type?: string;
+  collectionIndex:string;
+  src:string;
+  poster?: string;
 }
 export interface VersionItem {
   id: number;
@@ -295,6 +308,8 @@ export const fetchduanju = async (params: MovieFormType): Promise<VideoItem[]> =
         const mm = getm3u8(PLAYDOMAIN, element['first']['playUrl']);
         return {
           src: mm,
+          id: element['id'],
+          videotype:'dm',
           title: element['title'],
           type: 'application/x-mpegURL', // 设置视频类型为 m3u8
         };
@@ -307,7 +322,8 @@ export const fetchduanju = async (params: MovieFormType): Promise<VideoItem[]> =
     return [];
   }
 };
-export const getShortdetail = async (id:string) => {
+// 获取短剧详情
+export const getShortdetail = async (id:string): Promise<MovieDetail[]> => {
   try {
     const da = AES_Encrypt(JSON.stringify({Id:id}));
     const headers = {
@@ -339,11 +355,12 @@ export const getShortdetail = async (id:string) => {
       //id :  "35677"
       //playUrl :  "MGTV/20250604/bd4494ebc035c1ba401f531789325993/index2.m3u8"
       // 处理每个视频
-      const result = list100.map((element: any) => {
+      const result:MovieDetail[] = list100.map((element: any) => {
         const mm = getm3u8(PLAYDOMAIN, element['playUrl']);
         return {
           src: mm,
-          title: element['title'],
+          id: element['id'],
+          collectionIndex: element['collectionIndex'],
           type: 'application/x-mpegURL', // 设置视频类型为 m3u8
         };
       });
@@ -355,7 +372,6 @@ export const getShortdetail = async (id:string) => {
     return [];
   }
 }
-//短剧详情 
 
 export const pojie = (str: any) => {
   // const textDecoder = new TextDecoder();
