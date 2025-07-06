@@ -115,7 +115,7 @@ const goShortdetail = (id?: string) => {
     try {
       console.log(props.video.title);
       // 优先使用 ionRouter，提供更好的移动端体验
-      ionRouter.push(`/DramasDetail/${id}?title=${encodeURIComponent(props.video.title || '短剧')}`);
+      ionRouter.push(`/dramasDetail/${id}?title=${encodeURIComponent(props.video.title || '短剧')}`);
       player.value?.pause();
     } catch (error) {
       console.error('ionRouter 跳转失败，尝试使用 router:', error);
