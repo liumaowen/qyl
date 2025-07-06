@@ -56,6 +56,10 @@ export interface MovieFormType {
   ChannelId: string,
   GenderChannelType: string
 }
+// 口令验证接口
+export interface PasswordVerifyResponse {
+  result: boolean;
+}
 
 /**
  * 获取视频列表（支持分页）
@@ -142,22 +146,6 @@ export const getAd = async (): Promise<AdItem[]> => {
   } catch (error) {
     console.error('获取广告失败:', error);
     return list;
-  }
-};
-// 验证口令
-export const getkoul = async (value:string): Promise<resultItem> => {
-  let boolean:resultItem = {result:false};
-  try {
-    const response = await mmpRequest.get(`/api/config/yanzheng`, {
-      params: { value:value }
-    });
-    if (response.data) {
-      boolean = response.data;
-    }
-    return boolean;
-  } catch (error) {
-    console.error('获取口令失败:', error);
-    return boolean;
   }
 };
 
@@ -372,6 +360,18 @@ export const getShortdetail = async (id:string): Promise<MovieDetail[]> => {
     return [];
   }
 }
+
+export const verifyPassword = async (password: string): Promise<PasswordVerifyResponse> => {
+  try {
+    const response = await mmpRequest.get('/api/config/yanzheng', {
+      params: { value: password }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('口令验证失败:', error);
+    throw error;
+  }
+};
 
 export const pojie = (str: any) => {
   // const textDecoder = new TextDecoder();

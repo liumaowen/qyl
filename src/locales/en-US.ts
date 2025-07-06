@@ -37,7 +37,15 @@ export default {
     downloadingUpdate: 'Downloading update, please wait...',
     completed: 'Completed: {percent}%',
     copyright: '© {year} Short Drama App',
-    version: 'Version {version}'
+    version: 'Version {version}',
+    unlockContent: 'Unlock Content',
+    enterPassword: 'Enter Password',
+    passwordPlaceholder: 'Please enter 6-digit password',
+    unlockSuccess: 'Unlock successful!',
+    unlockFailed: 'Password incorrect, please try again',
+    passwordLength: 'Password must be 6 characters',
+    unlockHint: 'Enter the secret code to unlock premium content',
+    unlockExpired: 'Unlock expired, please enter password again'
   },
 
   // 通用
@@ -63,7 +71,9 @@ export default {
     networkError: 'Network Error',
     serverError: 'Server Error',
     unknownError: 'Unknown Error',
-    language: 'Language'
+    language: 'Language',
+    unlocked: 'Unlocked',
+    locked: 'Locked'
   },
 
   // 时间相关

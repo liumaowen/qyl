@@ -32,16 +32,24 @@ export default {
       shortDrama: '短剧'
     },
 
-    // 个人中心
-    my: {
-      vip: 'VIP',
-      viewWebsite: '查看官网',
-      checkUpdate: '检查更新',
-      downloadingUpdate: '正在下载更新，请稍等...',
-      completed: '已完成：{percent}%',
-      copyright: '© {year} 短剧应用',
-      version: '版本 {version}'
-    },
+      // 个人中心
+  my: {
+    vip: 'VIP',
+    viewWebsite: '查看官网',
+    checkUpdate: '检查更新',
+    downloadingUpdate: '正在下载更新，请稍等...',
+    completed: '已完成：{percent}%',
+    copyright: '© {year} 短剧应用',
+    version: '版本 {version}',
+    unlockContent: '解锁内容',
+    enterPassword: '输入口令',
+    passwordPlaceholder: '请输入6位口令',
+    unlockSuccess: '解锁成功！',
+    unlockFailed: '口令错误，请重试',
+    passwordLength: '口令必须是6位字符',
+    unlockHint: '输入正确口令可解锁新姿势',
+    unlockExpired: '解锁已过期，请重新输入口令'
+  },
 
       // 通用
   common: {
@@ -66,7 +74,9 @@ export default {
     networkError: '网络错误',
     serverError: '服务器错误',
     unknownError: '未知错误',
-    language: '语言'
+    language: '语言',
+    unlocked: '已解锁',
+    locked: '未解锁'
   },
 
     // 时间相关

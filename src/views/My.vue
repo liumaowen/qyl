@@ -41,8 +41,76 @@
             {{ $t('my.checkUpdate') }}
           </ion-button>
 
+          <ion-button 
+            expand="block" 
+            fill="clear" 
+            class="function-btn unlock-btn"
+            @click="showPasswordModal = true">
+            <ion-icon :icon="lockOpen" slot="start"></ion-icon>
+            {{ $t('my.unlockContent') }}
+          </ion-button>
+
+          <!-- 解锁状态显示 -->
+          <div v-if="isContentUnlocked()" class="unlock-status">
+            <ion-chip color="success">
+              <ion-icon :icon="checkmarkCircle"></ion-icon>
+              <ion-label>{{ $t('common.unlocked') }} - {{ remainingTime }}小时</ion-label>
+            </ion-chip>
+          </div>
+
           <LanguageSwitcher />
         </div>
+
+        <!-- 口令输入模态框 -->
+        <ion-modal :is-open="showPasswordModal" @did-dismiss="showPasswordModal = false">
+          <ion-header>
+            <ion-toolbar>
+              <ion-title>{{ $t('my.enterPassword') }}</ion-title>
+              <ion-buttons slot="end">
+                <ion-button @click="showPasswordModal = false">
+                  <ion-icon :icon="close"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content class="ion-padding">
+            <div class="password-form">
+              <p class="password-hint">{{ $t('my.unlockHint') }}</p>
+              
+              <ion-item>
+                <ion-label position="stacked">{{ $t('my.enterPassword') }}</ion-label>
+                <ion-input
+                  v-model="password"
+                  type="text"
+                  :placeholder="$t('my.passwordPlaceholder')"
+                  :maxlength="6"
+                  @ion-input="onPasswordInput"
+                  @keyup.enter="verifyPasswordHandler">
+                </ion-input>
+              </ion-item>
+
+              <div class="password-actions">
+                <ion-button 
+                  expand="block" 
+                  @click="verifyPasswordHandler"
+                  :disabled="password.length !== 6">
+                  {{ $t('my.enterPassword') }}
+                </ion-button>
+                
+                <ion-button 
+                  expand="block" 
+                  fill="clear"
+                  @click="showPasswordModal = false">
+                  {{ $t('common.cancel') }}
+                </ion-button>
+              </div>
+
+              <div v-if="passwordError" class="password-error">
+                {{ passwordError }}
+              </div>
+            </div>
+          </ion-content>
+        </ion-modal>
 
         <!-- 底部信息 -->
         <div class="footer-info">
@@ -61,14 +129,118 @@ import {
   IonPage, 
   IonContent, 
   IonButton,
-  IonIcon
+  IonIcon,
+  IonModal,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonChip,
+  toastController
 } from '@ionic/vue';
-import { person, globe, refresh } from 'ionicons/icons';
+import { person, globe, refresh, lockOpen, close,closeCircle,checkmarkCircle } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
 import { InAppBrowser } from '@capacitor/inappbrowser';
 import { useAppUpdate } from '@/composables/useAppUpdate';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import { verifyPassword } from '@/api/video';
+import { useI18n } from 'vue-i18n';
+import { setContentUnlocked, isContentUnlocked, getRemainingUnlockTime } from '@/utils/unlock';
+
 const { showDownloadAlert, progress, checkUpdate } = useAppUpdate();
+const { t } = useI18n();
+
+// 口令相关状态
+const showPasswordModal = ref(false);
+const password = ref('');
+const passwordError = ref('');
+const remainingTime = ref(0);
+
+// 更新剩余时间
+const updateRemainingTime = () => {
+  remainingTime.value = getRemainingUnlockTime();
+};
+
+// 口令输入处理
+const onPasswordInput = (event: any) => {
+  const value = event.target.value;
+  password.value = value;
+  passwordError.value = '';
+  
+  // 限制只能输入6位字符
+  if (value.length > 6) {
+    password.value = value.slice(0, 6);
+  }
+};
+
+// 验证口令
+const verifyPasswordHandler = async () => {
+  if (password.value.length !== 6) {
+    passwordError.value = t('my.passwordLength');
+    // 显示错误 Toast
+    const warningToast = await toastController.create({
+      message: t('my.passwordLength'),
+      duration: 2000,
+      position: 'top',
+      color: 'warning',
+      icon: 'warning'
+    });
+    await warningToast.present();
+    return;
+  }
+
+  try {
+    const response = await verifyPassword(password.value);
+    if (response.result) {
+      // 解锁成功
+      passwordError.value = '';
+      password.value = '';
+      showPasswordModal.value = false;
+      
+      // 保存解锁状态到本地存储
+      setContentUnlocked(true);
+      
+      // 更新剩余时间
+      updateRemainingTime();
+      
+      // 显示成功提示
+      const toast = await toastController.create({
+        message: t('my.unlockSuccess'),
+        duration: 2000,
+        position: 'top',
+        color: 'success',
+        icon: checkmarkCircle
+      });
+      await toast.present();
+    } else {
+      passwordError.value = t('my.unlockFailed');
+      // 显示错误 Toast
+      const errorToast = await toastController.create({
+        message: t('my.unlockFailed'),
+        duration: 3000,
+        position: 'top',
+        color: 'danger',
+        icon: closeCircle
+      });
+      await errorToast.present();
+    }
+  } catch (error) {
+    console.error('口令验证失败:', error);
+    passwordError.value = t('my.unlockFailed');
+    // 显示错误 Toast
+    const errorToast = await toastController.create({
+      message: t('my.unlockFailed'),
+      duration: 3000,
+      position: 'top',
+      color: 'danger',
+      icon: closeCircle
+    });
+    await errorToast.present();
+  }
+};
 
 // 自动获取当前年度
 const currentYear = ref(new Date().getFullYear());
@@ -112,6 +284,12 @@ const openWebsite = async () => {
 onMounted(async () => {
   // 获取应用版本信息
   await getAppVersion();
+  
+  // 更新剩余解锁时间
+  updateRemainingTime();
+  
+  // 每分钟更新一次剩余时间
+  setInterval(updateRemainingTime, 60000);
 });
 
 </script>
@@ -198,4 +376,59 @@ ion-content {
 .year, .version {
   margin: 4px 0;
 }
+
+/* 口令解锁相关样式 */
+.unlock-btn {
+  --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --color: #fff;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.unlock-btn:hover {
+  --background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.unlock-status {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.unlock-status ion-chip {
+  --background: rgba(76, 175, 80, 0.1);
+  --color: #4caf50;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.password-form {
+  padding: 20px 0;
+}
+
+.password-hint {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.password-actions {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.password-error {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+}
+
+
 </style>

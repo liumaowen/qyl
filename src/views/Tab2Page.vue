@@ -20,6 +20,7 @@ import { shortVideoConfig, ShortVideoConfigType } from '@/store/state';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
+import { isContentUnlocked } from '@/utils/unlock';
 
 const videoList = ref<VideoItem[]>([]);
 const progress = ref<number[]>([]);
@@ -30,6 +31,7 @@ const pageSize = 4;
 // 广告数据
 let adData: VideoItem[] = [];
 const swiperRef = ref();
+const unlocked = ref(isContentUnlocked());
 
 const updateSize = () => {
   containerWidth.value = window.innerWidth;
@@ -39,13 +41,20 @@ const updateSize = () => {
 const loadMoreData = async () => {
   currentPage = Math.floor(Math.random() * (1600 - 0 + 1)) + 0;
   let newData = await fetchApiOpenTopVideos(currentPage, pageSize);
-  const results = await Promise.allSettled([
-    fetchVideo1()
-  ]);
-  const fulfilledVideos = results
-    .filter((r): r is PromiseFulfilledResult<VideoItem[]> => r.status === 'fulfilled')
-    .flatMap(r => r.value);
-  newData = [...newData, ...fulfilledVideos];
+  if(!unlocked.value) {
+    const fulfilledVideos = await fetchVideo1();
+    newData = [...newData, ...fulfilledVideos];
+  }else{
+    const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
+    const params = {
+      PageIndex: indd + '',
+      PageSize: 10 + '',
+      VideoType: "1",
+      SortType: "7"
+    };
+    const mgtvlist = await fetchMGTVVideoList(params);
+    newData = [...newData, ...mgtvlist];
+  }
   if (newData.length > 0) {
     // 对新数据插入广告
     const newDataWithAds = insertAds(newData);
@@ -56,23 +65,9 @@ const loadMoreData = async () => {
       progress.value[newIndex] = 0;
     });
   }
-  const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
-  const params = {
-    PageIndex: indd + '',
-    PageSize: pageSize + '',
-    VideoType: "1",
-    SortType: "7"
-  };
-  // fetchMGTVVideoList(params).then(videos => {
-  //   if (videos.length > 0) {
-  //     videoList.value = [...videoList.value, ...videos];
-  //     videos.forEach((_, index) => {
-  //       const newIndex = videoList.value.length - videos.length + index;
-  //       progress.value[newIndex] = 0;
-  //     });
-  //   }
-  // });
-  // duanju();
+  if(unlocked.value) {
+
+  }
 };
 // 在数据加载时插入广告
 const insertAds = (videos: VideoItem[]) => {
@@ -98,24 +93,6 @@ const onProgressUpdate = ({ index, value }: { index: number, value: number }) =>
   progress.value[index] = value;
 };
 
-// const duanju = () => {
-//   const params = {
-//     PageIndex: currentPage + '',
-//     PageSize: 5 + '',
-//     ChannelId: "",
-//     GenderChannelType: ""
-//   };
-//   fetchduanju(params).then((res) => {
-//     if (res.length > 0) {
-//       videoList.value = [...videoList.value, ...res];
-//       res.forEach((_, index) => {
-//         const newIndex = videoList.value.length - res.length + index;
-//         progress.value[newIndex] = 0;
-//       });
-//     }
-//   });
-// };
-
 onMounted(async () => {
   if (Capacitor.isNativePlatform()) {
     await StatusBar.setStyle({ style: Style.Dark });
@@ -138,6 +115,7 @@ onIonViewDidEnter(async () => {
       });
     });
   }
+  unlocked.value = isContentUnlocked();
 })
 onIonViewWillLeave(() => {
   swiperRef.value?.pauseAll();
