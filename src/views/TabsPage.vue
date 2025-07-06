@@ -10,16 +10,16 @@
 
         <ion-tab-button tab="tab2" href="/tabs/tab2">
           <ion-icon aria-hidden="true" :icon="videocam" />
-          <ion-label>推荐</ion-label>
+          <ion-label>{{ $t('nav.recommend') }}</ion-label>
         </ion-tab-button>
 
         <ion-tab-button tab="tab4" href="/tabs/shortDramas">
           <ion-icon aria-hidden="true" :icon="tv" />
-          <ion-label>短剧</ion-label>
+          <ion-label>{{ $t('nav.shortDrama') }}</ion-label>
         </ion-tab-button>
         <ion-tab-button tab="tab3" href="/tabs/my">
           <ion-icon aria-hidden="true" :icon="square" />
-          <ion-label>我的</ion-label>
+          <ion-label>{{ $t('nav.my') }}</ion-label>
         </ion-tab-button>
       </ion-tab-bar>
     </ion-tabs>
@@ -27,7 +27,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet,onIonViewWillEnter,onIonViewDidEnter } from '@ionic/vue';
 import { tv, square, videocam } from 'ionicons/icons';
 

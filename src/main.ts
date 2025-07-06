@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router';
+import i18n from './locales';
 
 import { IonicVue } from '@ionic/vue';
 
@@ -38,7 +39,8 @@ import 'video.js/dist/video-js.css'
 
 const app = createApp(App)
   .use(IonicVue,{innerHTMLTemplatesEnabled:true})
-  .use(router);
+  .use(router)
+  .use(i18n);
 
 router.isReady().then(() => {
   app.mount('#app');

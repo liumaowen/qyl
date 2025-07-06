@@ -1,15 +1,15 @@
 <template>
   <ion-page>
     <div v-if="showDownloadAlert" class="download-pop-mask">
-      <div class="download-pop">
-        <div class="download-title">正在下载更新，请稍等...</div>
-        <div class="download-bar">
-          <div class="progress-bar">
-            <div class="progress-inner" :style="{ width: Math.round(progress * 100) + '%' }"></div>
+              <div class="download-pop">
+          <div class="download-title">{{ $t('my.downloadingUpdate') }}</div>
+          <div class="download-bar">
+            <div class="progress-bar">
+              <div class="progress-inner" :style="{ width: Math.round(progress * 100) + '%' }"></div>
+            </div>
           </div>
+          <div class="download-text">{{ $t('my.completed', { percent: Math.round(progress * 100) }) }}</div>
         </div>
-        <div class="download-text">已完成：{{ Math.round(progress * 100) }}%</div>
-      </div>
     </div>
     <ion-content class="fullscreen-content">
       <div class="my-container">
@@ -18,7 +18,7 @@
           <div class="avatar">
             <ion-icon :icon="person" size="large" color="primary"></ion-icon>
           </div>
-          <h2 class="username">VIP</h2>
+          <h2 class="username">{{ $t('my.vip') }}</h2>
         </div>
 
         <!-- 功能按钮区域 -->
@@ -29,7 +29,7 @@
             class="function-btn"
             @click="openWebsite">
             <ion-icon :icon="globe" slot="start"></ion-icon>
-            查看官网
+            {{ $t('my.viewWebsite') }}
           </ion-button>
           
           <ion-button 
@@ -38,14 +38,16 @@
             class="function-btn"
             @click="checkUpdate">
             <ion-icon :icon="refresh" slot="start"></ion-icon>
-            检查更新
+            {{ $t('my.checkUpdate') }}
           </ion-button>
+
+          <LanguageSwitcher />
         </div>
 
         <!-- 底部信息 -->
         <div class="footer-info">
-          <p class="year">© {{ currentYear }} 短剧应用</p>
-          <p class="version">版本 {{ appVersion }}</p>
+          <p class="year">{{ $t('my.copyright', { year: currentYear }) }}</p>
+          <p class="version">{{ $t('my.version', { version: appVersion }) }}</p>
         </div>
       </div>
     </ion-content>
@@ -65,6 +67,7 @@ import { person, globe, refresh } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
 import { InAppBrowser } from '@capacitor/inappbrowser';
 import { useAppUpdate } from '@/composables/useAppUpdate';
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 const { showDownloadAlert, progress, checkUpdate } = useAppUpdate();
 
 // 自动获取当前年度

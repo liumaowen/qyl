@@ -21,8 +21,8 @@
           <iframe :src="video.src" class="ad-iframe" frameborder="0" allowfullscreen @error="onAdIframeError">
           </iframe>
           <div class="ad-overlay">
-            <div v-if="adCountdown > 0 && currentAdIndex === index" class="ad-countdown">{{ adCountdown }}秒后跳过</div>
-            <button v-else-if="currentAdIndex === index" @click.stop="skipAd" class="skip-btn">跳过广告</button>
+            <div v-if="adCountdown > 0 && currentAdIndex === index" class="ad-countdown">{{ $t('ad.skipAfter', { seconds: adCountdown }) }}</div>
+            <button v-else-if="currentAdIndex === index" @click.stop="skipAd" class="skip-btn">{{ $t('ad.skipAd') }}</button>
           </div>
         </div>
       </div>

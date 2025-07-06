@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/tabs/ShortDramas"></ion-back-button>
         </ion-buttons>
-        <ion-title class="title">第{{titlecount}}集</ion-title>
+        <ion-title class="title">{{ $t('page.episode', { number: titlecount }) }}</ion-title>
       </ion-toolbar>
     </ion-header>
     

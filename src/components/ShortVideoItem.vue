@@ -10,9 +10,9 @@
     <div class="video-title-bar" v-if="video.title">
       <h6>{{ video.title }}</h6>
       <div v-if="video.info?.count && video.info?.count > 1">
-        <p style="margin: 0;font-size: 13px;">第一集</p>
+        <p style="margin: 0;font-size: 13px;">{{ $t('video.firstEpisode') }}</p>
         <div class="video-info-bar" @click="goShortdetail(video.id)">
-          <div>观看完整短剧·全{{ video.info?.count }}集</div>
+          <div>{{ $t('video.watchFullDrama', { count: video.info?.count }) }}</div>
           <!-- <div class="video-info-bar-icon"></div> -->
           <ion-icon class="video-info-bar-icon" :icon="chevronForwardOutline" color="#fff"></ion-icon>
         </div>
@@ -28,7 +28,7 @@ import 'video.js/dist/video-js.css';
 import videoLanguage from 'video.js/dist/lang/zh-CN.json';
 import { IonIcon, IonProgressBar } from '@ionic/vue';
 import { play,chevronForwardOutline } from 'ionicons/icons';
-import { getShortdetail, type VideoItem } from '@/api/video';
+import { type VideoItem } from '@/api/video';
 import { useIonRouter } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 
