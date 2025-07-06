@@ -88,7 +88,9 @@ export default {
     unknownError: '未知错误',
     language: '语言',
     unlocked: '已解锁',
-    locked: '未解锁'
+    locked: '未解锁',
+    privacyPolicy: '隐私政策',
+    userAgreement: '用户协议'
   },
 
     // 时间相关

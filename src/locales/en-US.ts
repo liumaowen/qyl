@@ -85,7 +85,9 @@ export default {
     unknownError: 'Unknown Error',
     language: 'Language',
     unlocked: 'Unlocked',
-    locked: 'Locked'
+    locked: 'Locked',
+    privacyPolicy: 'Privacy Policy',
+    userAgreement: 'User Agreement'
   },
 
   // 时间相关

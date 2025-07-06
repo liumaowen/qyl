@@ -23,6 +23,12 @@
 
         <!-- 功能按钮区域 -->
         <div class="function-section">
+          <ion-button expand="block" fill="clear" class="function-btn" @click="openPrivacy">
+            {{ $t('common.privacyPolicy') }}
+          </ion-button>
+          <ion-button expand="block" fill="clear" class="function-btn" @click="openAgreement">
+            {{ $t('common.userAgreement') }}
+          </ion-button>
           <ion-button 
             expand="block" 
             fill="clear" 
@@ -111,7 +117,7 @@
             </div>
           </ion-content>
         </ion-modal>
-
+        <LegalModal :show="showLegal" :type="legalType" :onClose="closeLegal" />
         <!-- 底部信息 -->
         <div class="footer-info">
           <p class="year">{{ $t('my.copyright', { year: currentYear }) }}</p>
@@ -149,9 +155,12 @@ import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import { verifyPassword } from '@/api/video';
 import { useI18n } from 'vue-i18n';
 import { setContentUnlocked, isContentUnlocked, getRemainingUnlockTime } from '@/utils/unlock';
+import LegalModal from '@/components/LegalModal.vue';
 
 const { showDownloadAlert, progress, checkUpdate } = useAppUpdate();
 const { t } = useI18n();
+const showLegal = ref(false);
+const legalType = ref<'privacy' | 'agreement'>('privacy');
 
 // 口令相关状态
 const showPasswordModal = ref(false);
@@ -279,6 +288,17 @@ const openWebsite = async () => {
   } catch (error) {
     console.error('打开官网失败:', error);
   }
+};
+const openPrivacy = () => {
+  legalType.value = 'privacy';
+  showLegal.value = true;
+};
+const openAgreement = () => {
+  legalType.value = 'agreement';
+  showLegal.value = true;
+};
+const closeLegal = () => {
+  showLegal.value = false;
 };
 
 onMounted(async () => {
