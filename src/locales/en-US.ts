@@ -34,8 +34,6 @@ export default {
     vip: 'VIP',
     viewWebsite: 'View Website',
     checkUpdate: 'Check Update',
-    downloadingUpdate: 'Downloading update, please wait...',
-    completed: 'Completed: {percent}%',
     copyright: '© {year} Short Drama App',
     version: 'Version {version}',
     unlockContent: 'Unlock Content',
@@ -46,6 +44,20 @@ export default {
     passwordLength: 'Password must be 6 characters',
     unlockHint: 'Enter the secret code to unlock premium content',
     unlockExpired: 'Unlock expired, please enter password again'
+  },
+
+  // 应用更新
+  update: {
+    newVersionFound: 'New version found, update now?',
+    currentVersion: 'Current version: {version}',
+    newVersion: 'New version: {version}',
+    cancel: 'Cancel',
+    updateNow: 'Update Now',
+    downloadComplete: 'App download complete, install now?',
+    open: 'Open',
+    updateProgress: 'Downloading update, please wait...',
+    updateCompleted: 'Completed: {percent}%',
+    alreadyLatest: 'Already the latest version!'
   },
 
   // 通用

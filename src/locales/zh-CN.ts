@@ -37,8 +37,6 @@ export default {
     vip: 'VIP',
     viewWebsite: '查看官网',
     checkUpdate: '检查更新',
-    downloadingUpdate: '正在下载更新，请稍等...',
-    completed: '已完成：{percent}%',
     copyright: '© {year} 短剧应用',
     version: '版本 {version}',
     unlockContent: '解锁内容',
@@ -49,6 +47,20 @@ export default {
     passwordLength: '口令必须是6位字符',
     unlockHint: '输入正确口令可解锁新姿势',
     unlockExpired: '解锁已过期，请重新输入口令'
+  },
+
+  // 应用更新
+  update: {
+    newVersionFound: '发现新版本, 是否更新?',
+    currentVersion: '当前版本号：{version}',
+    newVersion: '待更新版本号：{version}',
+    cancel: '取消',
+    updateNow: '立即更新',
+    downloadComplete: '应用下载完成，是否立即更新？',
+    open: '打开',
+    updateProgress: '正在下载更新，请稍等...',
+    updateCompleted: '已完成：{percent}%',
+    alreadyLatest: '已是最新版！'
   },
 
       // 通用

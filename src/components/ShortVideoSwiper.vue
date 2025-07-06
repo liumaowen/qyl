@@ -156,15 +156,11 @@ const openAd = async (src: string) => {
   }
 };
 const pauseAll = () => {
-  // 清理广告计时器
-  if (adTimer) clearInterval(adTimer);
   playingIndex.value = -1;
 };
 defineExpose({ pauseAll });
 
 onUnmounted(() => {
-  // 清理广告计时器
-  if (adTimer) clearInterval(adTimer);
   // 暂停所有视频
   playingIndex.value = -1;
 });

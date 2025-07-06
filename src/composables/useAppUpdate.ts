@@ -4,8 +4,10 @@ import { Capacitor } from '@capacitor/core';
 import { FileTransfer } from '@capacitor/file-transfer';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileOpener, FileOpenerOptions } from '@capacitor-community/file-opener';
-import { alertController } from '@ionic/vue';
+import { alertController, toastController } from '@ionic/vue';
 import { getVersion } from '@/api/video';
+import { useI18n } from 'vue-i18n';
+import { checkmarkCircle } from 'ionicons/icons';
 
 const showDownloadAlert = ref(false);
 const progress = ref(0);
@@ -39,14 +41,15 @@ function compareVersion(v1: string, v2: string): number {
 }
 
 const presentAlert = async () => {
+  const { t } = useI18n();
   const alert = await alertController.create({
-    header: '发现新版本, 是否更新?',
+    header: t('update.newVersionFound'),
     cssClass: 'update-pop',
     backdropDismiss: false,
-    message: `当前版本号：${escapeHtml(localVersion)}<br/>待更新版本号：${escapeHtml(versionName)}`,
+    message: `${t('update.currentVersion', { version: escapeHtml(localVersion) })}<br/>${t('update.newVersion', { version: escapeHtml(versionName) })}`,
     buttons: [
-      { text: '取消', role: 'cancel' },
-      { text: '立即更新', handler: startUpdate }
+      { text: t('update.cancel'), role: 'cancel' },
+      { text: t('update.updateNow'), handler: startUpdate }
     ]
   });
   await alert.present();
@@ -81,13 +84,14 @@ async function startUpdate() {
 }
 
 const open = async (url: string) => {
+  const { t } = useI18n();
   showDownloadAlert.value = false;
   const openalert = await alertController.create({
-    message: '应用下载完成，是否立即更新？',
+    message: t('update.downloadComplete'),
     backdropDismiss: false,
     buttons: [
       {
-        text: '打开',
+        text: t('update.open'),
         handler: async () => {
           try {
             const fileOpenerOptions: FileOpenerOptions = {
@@ -115,8 +119,23 @@ async function checkUpdate() {
   const res = await getVersion();
   versionName = res.versionName;
   downloadUrl = res.downloadUrl;
-  if (compareVersion(versionName, localVersion) > 0) {
+  
+  const versionComparison = compareVersion(versionName, localVersion);
+  
+  if (versionComparison > 0) {
+    // 有新版本
     presentAlert();
+  } else {
+    // 已是最新版本
+    const { t } = useI18n();
+    const toast = await toastController.create({
+      message: t('update.alreadyLatest'),
+      duration: 2000,
+      position: 'top',
+      color: 'success',
+      icon: checkmarkCircle
+    });
+    await toast.present();
   }
 }
 
@@ -129,8 +148,23 @@ onMounted(async () => {
   const res = await getVersion();
   versionName = res.versionName;
   downloadUrl = res.downloadUrl;
-  if (compareVersion(versionName, localVersion) > 0) {
+  
+  const versionComparison = compareVersion(versionName, localVersion);
+  
+  if (versionComparison > 0) {
+    // 有新版本
     presentAlert();
+  } else {
+    // 已是最新版本
+    const { t } = useI18n();
+    const toast = await toastController.create({
+      message: t('update.alreadyLatest'),
+      duration: 2000,
+      position: 'top',
+      color: 'success',
+      icon: checkmarkCircle
+    });
+    await toast.present();
   }
 });
 

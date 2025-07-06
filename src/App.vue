@@ -3,13 +3,13 @@
     <ion-router-outlet />
     <div v-if="showDownloadAlert" class="download-pop-mask">
       <div class="download-pop">
-        <div class="download-title">{{ $t('my.downloadingUpdate') }}</div>
+        <div class="download-title">{{ $t('update.updateProgress') }}</div>
         <div class="download-bar">
           <div class="progress-bar">
             <div class="progress-inner" :style="{ width: Math.round(progress * 100) + '%' }"></div>
           </div>
         </div>
-        <div class="download-text">{{ $t('my.completed', { percent: Math.round(progress * 100) }) }}</div>
+        <div class="download-text">{{ $t('update.updateCompleted', { percent: Math.round(progress * 100) }) }}</div>
       </div>
     </div>
   </ion-app>
