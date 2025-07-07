@@ -295,16 +295,18 @@ export const fetchduanju = async (params: MovieFormType): Promise<VideoItem[]> =
       const list100 = list99?.data?.items || [];
       console.log('短句视频列表:', list100);
       // 处理每个视频
-      const result = list100.map((element: any) => {
+      const result = await Promise.all(list100.map(async (element: any) => {
         const mm = getm3u8(PLAYDOMAIN, element['first']['playUrl']);
+        const picblob = await fetchAndDecrypt(PLAYDOMAIN + element['imgUrl']);
         return {
           src: mm,
           id: element['id'],
+          poster: URL.createObjectURL(picblob),
           videotype:'dm',
           title: element['title'],
           type: 'application/x-mpegURL', // 设置视频类型为 m3u8
         };
-      });
+      }));
       return result;
     }
     return [];
