@@ -46,7 +46,8 @@ export default {
     unlockFailed: '口令错误，请重试',
     passwordLength: '口令必须是6位字符',
     unlockHint: '输入正确口令可解锁新姿势',
-    unlockExpired: '解锁已过期，请重新输入口令'
+    unlockExpired: '解锁已过期，请重新输入口令',
+    contactMe: '联系我'
   },
 
   // 应用更新

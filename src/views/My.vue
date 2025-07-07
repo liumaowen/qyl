@@ -23,12 +23,15 @@
 
         <!-- 功能按钮区域 -->
         <div class="function-section">
+          <!-- 隐私政策 -->
           <ion-button expand="block" fill="clear" class="function-btn" @click="openPrivacy">
             {{ $t('common.privacyPolicy') }}
           </ion-button>
+          <!-- 用户协议 -->
           <ion-button expand="block" fill="clear" class="function-btn" @click="openAgreement">
             {{ $t('common.userAgreement') }}
           </ion-button>
+          <!-- 查看官网 -->
           <ion-button 
             expand="block" 
             fill="clear" 
@@ -37,7 +40,7 @@
             <ion-icon :icon="globe" slot="start"></ion-icon>
             {{ $t('my.viewWebsite') }}
           </ion-button>
-          
+          <!-- 检查更新 -->
           <ion-button 
             expand="block" 
             fill="clear" 
@@ -46,7 +49,16 @@
             <ion-icon :icon="refresh" slot="start"></ion-icon>
             {{ $t('my.checkUpdate') }}
           </ion-button>
-
+          <!-- 联系我显示 -->
+          <ion-button 
+            expand="block" 
+            fill="clear" 
+            class="function-btn"
+            @click="showContactModal = true">
+            <ion-icon :icon="mail" slot="start"></ion-icon>
+            {{ $t('my.contactMe') }}
+          </ion-button>
+          <!-- 解锁 -->
           <ion-button 
             expand="block" 
             fill="clear" 
@@ -63,6 +75,7 @@
               <ion-label>{{ $t('common.unlocked') }} - {{ remainingTime }}小时</ion-label>
             </ion-chip>
           </div>
+
 
           <LanguageSwitcher />
         </div>
@@ -118,6 +131,32 @@
           </ion-content>
         </ion-modal>
         <LegalModal :show="showLegal" :type="legalType" :onClose="closeLegal" />
+        <!-- 联系方式Modal -->
+        <ion-modal :is-open="showContactModal" @did-dismiss="showContactModal = false">
+          <ion-header>
+            <ion-toolbar>
+              <ion-title>{{ $t('my.contactMe') }}</ion-title>
+              <ion-buttons slot="end">
+                <ion-button @click="showContactModal = false">
+                  <ion-icon :icon="close"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content class="ion-padding">
+            <div class="contact-list">
+              <ion-list>
+                <ion-item v-for="item in contactLinks" :key="item.label" :button="item.type !== 'coming'" :detail="false" 
+                  @click="openContact(item)">
+                  <ion-icon :icon="item.icon" slot="start"></ion-icon>
+                  <ion-label>{{ item.label }}</ion-label>
+                  <span v-if="item.type !== 'coming'" class="contact-link">{{ item.display }}</span>
+                  <span v-else class="contact-coming">{{ item.display }}</span>
+                </ion-item>
+              </ion-list>
+            </div>
+          </ion-content>
+        </ion-modal>
         <!-- 底部信息 -->
         <div class="footer-info">
           <p class="year">{{ $t('my.copyright', { year: currentYear,apptitle:environment.appTitle }) }}</p>
@@ -146,9 +185,10 @@ import {
   IonLabel,
   IonInput,
   IonChip,
+  IonList,
   toastController
 } from '@ionic/vue';
-import { person, globe, refresh, lockOpen, close,closeCircle,checkmarkCircle } from 'ionicons/icons';
+import { person, globe, refresh, lockOpen, close,closeCircle,checkmarkCircle, mail,logoFacebook,logoDiscord,paperPlane } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
 import { InAppBrowser } from '@capacitor/inappbrowser';
 import { useAppUpdate } from '@/composables/useAppUpdate';
@@ -169,6 +209,39 @@ const password = ref('');
 const passwordError = ref('');
 const remainingTime = ref(0);
 
+// 联系方式
+const contactLinks = [
+  {
+    label: 'Gmail',
+    icon: mail,
+    url: 'mailto:maowenliu@gmail.com',
+    display: 'maowenliu@gmail.com',
+    type: 'email',
+  },
+  {
+    label: 'Telegram',
+    icon: paperPlane,
+    url: 'https://t.me/+oWEbySMuv4g4NmJl',
+    display: 't.me/mytelegram',
+    type: 'link',
+  },
+  // 预留扩展
+  {
+    label: 'Discord',
+    icon: logoDiscord,
+    url: '',
+    display: '敬请期待',
+    type: 'coming',
+  },
+  {
+    label: 'Facebook',
+    icon: logoFacebook,
+    url: '',
+    display: '敬请期待',
+    type: 'coming',
+  },
+];
+
 // 更新剩余时间
 const updateRemainingTime = () => {
   remainingTime.value = getRemainingUnlockTime();
@@ -185,6 +258,21 @@ const onPasswordInput = (event: any) => {
     password.value = value.slice(0, 6);
   }
 };
+const openContact = async (item:any) => {
+  try {
+    if (Capacitor.isNativePlatform()) {
+      await InAppBrowser.openInExternalBrowser({ url: item.url });
+    } else {
+      if(item.type === 'link') {
+        window.open(item.url, '_blank')
+      } else if (item.type === 'email') {
+        window.open(item.url)
+      }
+    }
+  } catch (error) {
+    console.error('打开联系失败:', error);
+  }
+}
 
 // 验证口令
 const verifyPasswordHandler = async () => {
@@ -302,6 +390,8 @@ const closeLegal = () => {
   showLegal.value = false;
 };
 
+const showContactModal = ref(false);
+
 onMounted(async () => {
   // 获取应用版本信息
   await getAppVersion();
@@ -312,6 +402,10 @@ onMounted(async () => {
   // 每分钟更新一次剩余时间
   setInterval(updateRemainingTime, 60000);
 });
+
+// @ts-ignore
+// eslint-disable-next-line
+declare const window: any;
 
 </script>
 
@@ -451,5 +545,18 @@ ion-content {
   text-align: center;
 }
 
+.contact-list {
+  margin-top: 10px;
+}
+.contact-link {
+  color: #007bff;
+  margin-left: 8px;
+  font-size: 14px;
+}
+.contact-coming {
+  color: #aaa;
+  margin-left: 8px;
+  font-size: 14px;
+}
 
 </style>

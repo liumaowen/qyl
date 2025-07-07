@@ -43,7 +43,8 @@ export default {
     unlockFailed: 'Password incorrect, please try again',
     passwordLength: 'Password must be 6 characters',
     unlockHint: 'Enter the secret code to unlock premium content',
-    unlockExpired: 'Unlock expired, please enter password again'
+    unlockExpired: 'Unlock expired, please enter password again',
+    contactMe: 'Contact Me'
   },
 
   // 应用更新

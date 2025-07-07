@@ -10,11 +10,6 @@ import { IonicVue } from '@ionic/vue';
 // Vue 生产模式配置
 configureVueForProduction();
 
-// 设置调试构建标识
-if (typeof window !== 'undefined') {
-  (window as any).__DEBUG_BUILD__ = process.env.DEBUG_BUILD === 'true';
-}
-
 if (environment.production) {
   if (debug.isDebugBuild()) {
     console.log('Running in production debug mode');
