@@ -25,10 +25,12 @@
         <div class="function-section">
           <!-- 隐私政策 -->
           <ion-button expand="block" fill="clear" class="function-btn" @click="openPrivacy">
+            <ion-icon :icon="lockClosed" slot="start"></ion-icon>
             {{ $t('common.privacyPolicy') }}
           </ion-button>
           <!-- 用户协议 -->
           <ion-button expand="block" fill="clear" class="function-btn" @click="openAgreement">
+            <ion-icon :icon="documentText" slot="start"></ion-icon>
             {{ $t('common.userAgreement') }}
           </ion-button>
           <!-- 查看官网 -->
@@ -188,7 +190,7 @@ import {
   IonList,
   toastController
 } from '@ionic/vue';
-import { person, globe, refresh, lockOpen, close,closeCircle,checkmarkCircle, mail,logoFacebook,logoDiscord,paperPlane } from 'ionicons/icons';
+import { person, globe, refresh, lockOpen, close,closeCircle,checkmarkCircle, mail,logoFacebook,logoDiscord,paperPlane, lockClosed, documentText } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
 import { InAppBrowser } from '@capacitor/inappbrowser';
 import { useAppUpdate } from '@/composables/useAppUpdate';
@@ -415,9 +417,9 @@ ion-header {
 }
 
 ion-toolbar {
-  --background: rgba(0, 0, 0, 0);
+  /* --background: rgba(0, 0, 0, 0); */
   --border-style: none;
-  --color: #fff;
+  /* --color: #fff; */
 }
 .title{
     padding-left: 0!important;
@@ -426,7 +428,7 @@ ion-toolbar {
     box-shadow:none!important;
 }
 .fullscreen-content {
-  --background: #000;
+  /* --background: #000; */
   --padding-top: 0;
   --padding-bottom: 0;
   --padding-start: 0;

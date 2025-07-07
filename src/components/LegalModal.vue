@@ -36,10 +36,10 @@
     let file = '';
     if (props.type === 'privacy') {
       title.value = t('common.privacyPolicy');
-      file = locale.value === 'zh-CN' ? '/src/assets/privacy-policy.zh.md' : '/src/assets/privacy-policy.en.md';
+      file = locale.value === 'zh-CN' ? '/privacy-policy.zh.md' : '/privacy-policy.en.md';
     } else {
       title.value = t('common.userAgreement');
-      file = locale.value === 'zh-CN' ? '/src/assets/user-agreement.zh.md' : '/src/assets/user-agreement.en.md';
+      file = locale.value === 'zh-CN' ? '/user-agreement.zh.md' : '/user-agreement.en.md';
     }
     const res = await fetch(file);
     content.value = (await res.text())
