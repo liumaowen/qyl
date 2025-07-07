@@ -32,10 +32,13 @@ import {
   IonTitle, 
   IonContent, 
   IonBackButton, 
-  IonButtons
+  IonButtons,
+  onIonViewWillEnter
 } from '@ionic/vue';
 import { getShortdetail, type MovieDetail, type VideoItem,getAd,type AdItem } from '@/api/video';
 import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 const route = useRoute();
 const dramaDetails = ref<MovieDetail[]>([]);
@@ -96,6 +99,11 @@ onMounted(async () => {
     }
   }
 });
+onIonViewWillEnter(async () => {
+  if (Capacitor.isNativePlatform()) {
+    await StatusBar.setStyle({ style: Style.Dark });
+  }
+})
 // 在数据加载时插入广告
 const insertAds = (videos: MovieDetail[]) => {
   // 每10个视频插入一个广告

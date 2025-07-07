@@ -188,7 +188,8 @@ import {
   IonInput,
   IonChip,
   IonList,
-  toastController
+  toastController,
+  onIonViewWillEnter
 } from '@ionic/vue';
 import { person, globe, refresh, lockOpen, close,closeCircle,checkmarkCircle, mail,logoFacebook,logoDiscord,paperPlane, lockClosed, documentText } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
@@ -396,9 +397,6 @@ const closeLegal = () => {
 const showContactModal = ref(false);
 
 onMounted(async () => {
-  if (Capacitor.isNativePlatform()) {
-    await StatusBar.setStyle({ style: Style.Light });
-  }
   // 获取应用版本信息
   await getAppVersion();
   
@@ -408,6 +406,11 @@ onMounted(async () => {
   // 每分钟更新一次剩余时间
   setInterval(updateRemainingTime, 60000);
 });
+onIonViewWillEnter(async () => {
+  if (Capacitor.isNativePlatform()) {
+    await StatusBar.setStyle({ style: Style.Light });
+  }
+})
 
 // @ts-ignore
 // eslint-disable-next-line

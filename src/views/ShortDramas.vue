@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-import { IonPage, IonContent, onIonViewDidEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
+import { IonPage, IonContent, onIonViewWillEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
 import { getAd, AdItem, MovieFormType, fetchduanju, VideoItem,getShortdetail,MovieDetail } from '@/api/video';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -110,9 +110,6 @@ const getAds = async () => {
 }
 
 onMounted(async () => {
-  if (Capacitor.isNativePlatform()) {
-    await StatusBar.setStyle({ style: Style.Dark });
-  }
   window.addEventListener('resize', updateSize);
   updateSize();
   const initialData = await fetchduanju(params.value);
@@ -125,7 +122,10 @@ onMounted(async () => {
     videoList.value[0].info = {count:infos.length};
   }
 });
-onIonViewDidEnter(async () => {
+onIonViewWillEnter(async () => {
+  if (Capacitor.isNativePlatform()) {
+    await StatusBar.setStyle({ style: Style.Dark });
+  }
 })
 onIonViewWillLeave(() => {
   swiperRef.value?.pauseAll();

@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-import { IonPage, IonContent, onIonViewDidEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
+import { IonPage, IonContent, onIonViewDidEnter,onIonViewWillEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
 import { fetchApiOpenTopVideos, getAd, AdItem, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, fetchduanju, VideoItem } from '@/api/video';
 import { shortVideoConfig, ShortVideoConfigType } from '@/store/state';
 import { Capacitor } from '@capacitor/core';
@@ -94,9 +94,6 @@ const onProgressUpdate = ({ index, value }: { index: number, value: number }) =>
 };
 
 onMounted(async () => {
-  if (Capacitor.isNativePlatform()) {
-    await StatusBar.setStyle({ style: Style.Dark });
-  }
   window.addEventListener('resize', updateSize);
   updateSize();
   const initialData = await fetchApiOpenTopVideos(currentPage, pageSize);
@@ -116,6 +113,11 @@ onIonViewDidEnter(async () => {
     });
   }
   unlocked.value = isContentUnlocked();
+})
+onIonViewWillEnter(async () => {
+  if (Capacitor.isNativePlatform()) {
+    await StatusBar.setStyle({ style: Style.Dark });
+  }
 })
 onIonViewWillLeave(() => {
   swiperRef.value?.pauseAll();
