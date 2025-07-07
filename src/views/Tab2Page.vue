@@ -31,7 +31,6 @@ const pageSize = 4;
 // 广告数据
 let adData: VideoItem[] = [];
 const swiperRef = ref();
-const unlocked = ref(isContentUnlocked());
 
 const updateSize = () => {
   containerWidth.value = window.innerWidth;
@@ -41,7 +40,7 @@ const updateSize = () => {
 const loadMoreData = async () => {
   currentPage = Math.floor(Math.random() * (1600 - 0 + 1)) + 0;
   let newData = await fetchApiOpenTopVideos(currentPage, pageSize);
-  if(!unlocked.value) {
+  if(!isContentUnlocked()) {
     const fulfilledVideos = await fetchVideo1();
     newData = [...newData, ...fulfilledVideos];
   }else{
@@ -64,9 +63,6 @@ const loadMoreData = async () => {
       const newIndex = videoList.value.length - newDataWithAds.length + index;
       progress.value[newIndex] = 0;
     });
-  }
-  if(unlocked.value) {
-
   }
 };
 // 在数据加载时插入广告
@@ -112,7 +108,6 @@ onIonViewDidEnter(async () => {
       });
     });
   }
-  unlocked.value = isContentUnlocked();
 })
 onIonViewWillEnter(async () => {
   if (Capacitor.isNativePlatform()) {
