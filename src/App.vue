@@ -24,7 +24,7 @@ import { fetchConfig } from '@/api/video';
 const { showDownloadAlert, progress, checkUpdate } = useAppUpdate();
 onMounted(() => {
   fetchConfig();
-  checkUpdate();
+  checkUpdate(false);
 });
 </script>
 

@@ -40,8 +40,7 @@ function compareVersion(v1: string, v2: string): number {
   return 0;
 }
 
-const presentAlert = async () => {
-  const { t } = useI18n();
+const presentAlert = async (t: any) => {
   const alert = await alertController.create({
     header: t('update.newVersionFound'),
     cssClass: 'update-pop',
@@ -49,13 +48,13 @@ const presentAlert = async () => {
     message: `${t('update.currentVersion', { version: escapeHtml(localVersion) })}<br/>${t('update.newVersion', { version: escapeHtml(versionName) })}`,
     buttons: [
       { text: t('update.cancel'), role: 'cancel' },
-      { text: t('update.updateNow'), handler: startUpdate }
+      { text: t('update.updateNow'), handler: () => startUpdate(t) }
     ]
   });
   await alert.present();
 };
 
-async function startUpdate() {
+async function startUpdate(t: any) {
   const top = await alertController.getTop();
   if (top) await top.dismiss();
   showDownloadAlert.value = true;
@@ -71,7 +70,7 @@ async function startUpdate() {
         showDownloadAlert.value = false;
         FileTransfer.removeAllListeners();
         if (fileInfo.uri) {
-          open(fileInfo.uri);
+          open(fileInfo.uri, t);
         }
       }, 800);
     }
@@ -83,8 +82,7 @@ async function startUpdate() {
   });
 }
 
-const open = async (url: string) => {
-  const { t } = useI18n();
+const open = async (url: string, t: any) => {
   showDownloadAlert.value = false;
   const openalert = await alertController.create({
     message: t('update.downloadComplete'),
@@ -110,7 +108,7 @@ const open = async (url: string) => {
   await openalert.present();
 };
 
-async function checkUpdate() {
+async function checkUpdate(t: any,isship:boolean) {
   if (Capacitor.getPlatform() !== 'android') {
     return;
   }
@@ -124,54 +122,58 @@ async function checkUpdate() {
   
   if (versionComparison > 0) {
     // 有新版本
-    presentAlert();
+    presentAlert(t);
   } else {
-    // 已是最新版本
-    const { t } = useI18n();
-    const toast = await toastController.create({
-      message: t('update.alreadyLatest'),
-      duration: 2000,
-      position: 'top',
-      color: 'success',
-      icon: checkmarkCircle
-    });
-    await toast.present();
+    if(isship) {
+      // 已是最新版本
+      const toast = await toastController.create({
+        message: t('update.alreadyLatest'),
+        duration: 2000,
+        position: 'top',
+        color: 'success',
+        icon: checkmarkCircle
+      });
+      await toast.present();
+    }
   }
 }
 
-onMounted(async () => {
-  if (Capacitor.getPlatform() !== 'android') {
-    return;
-  }
-  const info = await App.getInfo();
-  localVersion = info.version;
-  const res = await getVersion();
-  versionName = res.versionName;
-  downloadUrl = res.downloadUrl;
-  
-  const versionComparison = compareVersion(versionName, localVersion);
-  
-  if (versionComparison > 0) {
-    // 有新版本
-    presentAlert();
-  } else {
-    // 已是最新版本
-    const { t } = useI18n();
-    const toast = await toastController.create({
-      message: t('update.alreadyLatest'),
-      duration: 2000,
-      position: 'top',
-      color: 'success',
-      icon: checkmarkCircle
-    });
-    await toast.present();
-  }
-});
+function useAppUpdate() {
+  const { t } = useI18n();
 
-export function useAppUpdate() {
+  onMounted(async () => {
+    // if (Capacitor.getPlatform() !== 'android') {
+    //   return;
+    // }
+    // const info = await App.getInfo();
+    // localVersion = info.version;
+    // const res = await getVersion();
+    // versionName = res.versionName;
+    // downloadUrl = res.downloadUrl;
+    
+    // const versionComparison = compareVersion(versionName, localVersion);
+    
+    // if (versionComparison > 0) {
+    //   // 有新版本
+    //   presentAlert(t);
+    // } else {
+    //   // 已是最新版本
+    //   const toast = await toastController.create({
+    //     message: t('update.alreadyLatest'),
+    //     duration: 2000,
+    //     position: 'top',
+    //     color: 'success',
+    //     icon: checkmarkCircle
+    //   });
+    //   await toast.present();
+    // }
+  });
+
   return {
     showDownloadAlert,
     progress,
-    checkUpdate
+    checkUpdate: (chip:boolean) => checkUpdate(t,chip)
   };
-} 
+}
+
+export { useAppUpdate }; 

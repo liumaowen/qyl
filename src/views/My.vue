@@ -47,7 +47,7 @@
             expand="block" 
             fill="clear" 
             class="function-btn"
-            @click="checkUpdate">
+            @click="checkUpdate(true)">
             <ion-icon :icon="refresh" slot="start"></ion-icon>
             {{ $t('my.checkUpdate') }}
           </ion-button>
@@ -192,6 +192,7 @@ import {
 } from '@ionic/vue';
 import { person, globe, refresh, lockOpen, close,closeCircle,checkmarkCircle, mail,logoFacebook,logoDiscord,paperPlane, lockClosed, documentText } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { InAppBrowser } from '@capacitor/inappbrowser';
 import { useAppUpdate } from '@/composables/useAppUpdate';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
@@ -395,6 +396,9 @@ const closeLegal = () => {
 const showContactModal = ref(false);
 
 onMounted(async () => {
+  if (Capacitor.isNativePlatform()) {
+    await StatusBar.setStyle({ style: Style.Light });
+  }
   // 获取应用版本信息
   await getAppVersion();
   
