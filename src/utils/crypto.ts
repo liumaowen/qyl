@@ -1,4 +1,5 @@
 import CryptoJS from 'crypto-js';
+import axios from 'axios';
 
 /**
  * AES 加密
@@ -52,4 +53,82 @@ export const getm3u8 = (e : string, t : string, n = "wB760Vqpk76oRSVA1TNz") => {
 	const r = Math.floor(Date.now() / 1e3).toString()
 		, o = CreatMD5(`${n}/${t}${r}`).toString().toLowerCase();
 	return `${t.includes("http") ? t : e + t}?sign=${o}&t=${r}`
+}
+export const fetchAndDecrypt = async (url:string) => {
+  try {
+      // 从URL中提取文件信息，包括MIME类型
+      const { mimeType } = extractFileInfo(url);
+      // 发起GET请求获取加密数据（arraybuffer格式）
+      const response = await axios.get(url, {
+          responseType: 'arraybuffer'
+      });
+
+      const arrayBuffer = response.data;
+
+      // 尝试将arraybuffer解码为UTF-8字符串
+      const decoder = new TextDecoder('utf-8');
+      const dataString = decoder.decode(arrayBuffer);
+      let decryptedData;
+      const base64String = arrayBufferToBase64(arrayBuffer);
+      decryptedData = decryptBase64Data(base64String);
+      // 返回解密后的Blob对象，指定正确的MIME类型
+      return new Blob([decryptedData], {
+          type: mimeType
+      });
+  } catch (error) {
+      // 捕获并抛出异常
+      throw error;
+  }
+}
+interface MimeTypeMap {
+  [key: string]: string[];
+}
+const Me:MimeTypeMap  = {
+  pic: ["image/jpeg", "image/jpg", "image/png", "image/apng", "image/gif", "image/webp", "image/ico"],
+  video: ["video/mp4", "video/x-flv", "video/webm", "video/quicktime"],
+  audio: ["audio/mpeg", "audio/x-wav"],
+  app: ["application/octet-stream", "application/x-msdownload", "application/x-apple-diskimage", "application/vnd.android.package-archive"],
+  zip: ["application/x-zip-compressed", "application/x-gzip"]
+};
+function extractFileInfo(url: string) {
+  const fileName = url.substring(url.lastIndexOf('/') + 1);
+  const fileExtension = fileName.includes('.') ? fileName.split('.').pop() : 'jpg';
+  return {
+      fileName,
+      mimeType: getMimeType(`.${fileExtension}`)
+  };
+}
+function getMimeType(ext: string): string {
+  for (const key in Me) {
+    if (Object.prototype.hasOwnProperty.call(Me, key)) {
+      const types = Me[key] as string[];
+      if (types.some(type => type.includes(ext))) {
+        return types[0];
+      }
+    }
+  }
+  return "image/jpeg";
+}
+function arrayBufferToBase64(buffer: any) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+}
+function decryptBase64Data(base64Str:any) {
+  const decryptor = CryptoJS.AES.decrypt(base64Str, KEY, {
+      iv: iv,
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7
+  }).toString(CryptoJS.enc.Utf8);
+
+  const parsed = CryptoJS.enc.Base64.parse(decryptor);
+  return new Uint8Array(parsed.words.flatMap(word => [
+      (word >> 24) & 0xff,
+      (word >> 16) & 0xff,
+      (word >> 8) & 0xff,
+      word & 0xff
+  ]));
 }

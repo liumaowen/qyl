@@ -110,13 +110,10 @@ const getAds = async () => {
 }
 
 onMounted(async () => {
-  // window.addEventListener('resize', updateSize);
-  // updateSize();
-  alert('onMounted')
+  window.addEventListener('resize', updateSize);
+  updateSize();
   const initialData = await fetchduanju(params.value);
-  alert('请求后')
   videoList.value = [...initialData];
-  alert(JSON.stringify(videoList.value))
   progress.value = initialData.map(() => 0);
   await nextTick();
   getAds();

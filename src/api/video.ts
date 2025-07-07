@@ -1,4 +1,4 @@
-import { AES_Decrypt, AES_Encrypt, getm3u8, AES_UUID } from '@/utils/crypto';
+import { AES_Decrypt, AES_Encrypt, getm3u8, AES_UUID,fetchAndDecrypt } from '@/utils/crypto';
 import { apiopenRequest, mmpRequest, mgtvRequest } from './http';
 import { PLAYDOMAIN, ShortVideoConfigType, shortVideoConfig } from '@/store/state';
 
@@ -246,15 +246,18 @@ export const fetchMGTVVideoList = async (params: FormType): Promise<VideoItem[]>
       console.log('MGTV视频列表:', list99)
       const list100 = list99?.data?.items || [];
       console.log('MGTV视频列表:', list100);
-      // 处理每个视频
-      const result = list100.map((element: any) => {
+
+      // 使用 Promise.all 并行处理异步 map
+      const result: VideoItem[] = await Promise.all(list100.map(async (element: any) => {
         const mm = getm3u8(PLAYDOMAIN, element['playUrl']);
+        const picblob = await fetchAndDecrypt(PLAYDOMAIN + element['imgUrl']);
         return {
           src: mm,
+          poster: URL.createObjectURL(picblob),
           title: element['title'],
-          type: 'application/x-mpegURL', // 设置视频类型为 m3u8
+          type: 'application/x-mpegURL',
         };
-      });
+      }));
       return result;
     }
     return [];
