@@ -37,7 +37,7 @@ export default {
     vip: 'VIP',
     viewWebsite: '查看官网',
     checkUpdate: '检查更新',
-    copyright: '© {year} 短剧应用',
+    copyright: '© {year} {apptitle}',
     version: '版本 {version}',
     unlockContent: '解锁内容',
     enterPassword: '输入口令',

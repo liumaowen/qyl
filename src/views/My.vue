@@ -120,7 +120,7 @@
         <LegalModal :show="showLegal" :type="legalType" :onClose="closeLegal" />
         <!-- 底部信息 -->
         <div class="footer-info">
-          <p class="year">{{ $t('my.copyright', { year: currentYear }) }}</p>
+          <p class="year">{{ $t('my.copyright', { year: currentYear,apptitle:environment.appTitle }) }}</p>
           <p class="version">{{ $t('my.version', { version: appVersion }) }}</p>
         </div>
       </div>
@@ -131,6 +131,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { environment } from '@/config/environment'
 import { 
   IonPage, 
   IonContent, 

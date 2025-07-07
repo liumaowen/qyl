@@ -2,8 +2,28 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router';
 import i18n from './locales';
+import { environment, configureVueForProduction } from './config/environment';
+import { debug } from './utils/debug';
 
 import { IonicVue } from '@ionic/vue';
+
+// Vue 生产模式配置
+configureVueForProduction();
+
+// 设置调试构建标识
+if (typeof window !== 'undefined') {
+  (window as any).__DEBUG_BUILD__ = process.env.DEBUG_BUILD === 'true';
+}
+
+if (environment.production) {
+  if (debug.isDebugBuild()) {
+    console.log('Running in production debug mode');
+  } else {
+    console.log('Running in production mode');
+  }
+} else {
+  console.log('Running in development mode');
+}
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';

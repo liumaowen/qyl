@@ -41,7 +41,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: 构建前端
-        run: npm run build
+        run: ${{ github.event.inputs.buildType == 'release' && 'npm run build' || 'npm run build:debug' }}
 
       - name: 安装 Capacitor 依赖
         run: npx cap sync android

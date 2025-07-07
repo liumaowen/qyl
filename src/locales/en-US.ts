@@ -34,7 +34,7 @@ export default {
     vip: 'VIP',
     viewWebsite: 'View Website',
     checkUpdate: 'Check Update',
-    copyright: '© {year} Short Drama App',
+    copyright: '© {year} {apptitle}',
     version: 'Version {version}',
     unlockContent: 'Unlock Content',
     enterPassword: 'Enter Password',
