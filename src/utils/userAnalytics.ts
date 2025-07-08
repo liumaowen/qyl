@@ -103,8 +103,7 @@ class UserAnalytics {
    */
   private async createUserInfo(): Promise<AnalyticsData> {
     const deviceInfo = await Device.getInfo();
-    // const appInfo = await App.getInfo();
-    const appInfo = {version:'1.0.0'};
+    const appInfo = await App.getInfo();
     const now = new Date().toISOString();
     return {
       deviceId: await this.generateDeviceId(),
