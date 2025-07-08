@@ -3,7 +3,7 @@ import { Device } from '@capacitor/device';
 import { Preferences } from '@capacitor/preferences';
 import { App } from '@capacitor/app';
 import { ANALYTICS_CONFIG } from '@/config/analytics';
-import { savedevice } from '@/api/video';
+import { savedevice,getip } from '@/api/video';
 import axios from 'axios';
 import {formatDate} from '@/utils/crypto';
 
@@ -102,7 +102,8 @@ class UserAnalytics {
    */
   private async createUserInfo(): Promise<AnalyticsData> {
     const deviceInfo = await Device.getInfo();
-    const appInfo = await App.getInfo();
+    // const appInfo = await App.getInfo();
+    const appInfo = {version:''};
     const now = formatDate(new Date());
     return {
       deviceId: await this.generateDeviceId(),
@@ -167,13 +168,11 @@ class UserAnalytics {
   private async getIpAddress(): Promise<void> {
     try {
       // 使用免费的IP查询服务
-      const response = await axios.get('https://my.ip.cn/json');
-      const d = response.data;
-      const data = d.data;
+      const data = await getip();
       
-      if (this.userInfo && d.code === 0 && data.ip) {
+      if (this.userInfo && data.ip) {
         this.userInfo.ipAddress = data.ip;
-        this.userInfo.address = data.country && data.province && data.district && data.isp;
+        this.userInfo.address = data.addr;
         await this.saveUserInfo();
       }
     } catch (error) {

@@ -1,5 +1,5 @@
 import { AES_Decrypt, AES_Encrypt, getm3u8, AES_UUID,fetchAndDecrypt } from '@/utils/crypto';
-import { apiopenRequest, mmpRequest, mgtvRequest } from './http';
+import { apiopenRequest, mmpRequest, mgtvRequest,ipapiRequest } from './http';
 import { PLAYDOMAIN, ShortVideoConfigType, shortVideoConfig } from '@/store/state';
 import { type AnalyticsData } from '@/utils/userAnalytics';
 
@@ -15,6 +15,10 @@ export interface VideoItem {
   info?: {
     count: number;
   };
+}
+export interface Ipitem {
+  ip:string,
+  addr:string
 }
 export interface MovieDetail{
   id: string;
@@ -101,10 +105,22 @@ export const fetchVideo1_ = async (): Promise<VideoItem[]> => {
     return [];
   }
 };
+// 获取本地IP
+export const getip = async (): Promise<Ipitem> => {
+  try {
+    const response = await mmpRequest.get('/ipapi/ipJson.jsp',{
+        params: { json:true }
+      });
+      return response.data;
+  } catch (error) {
+    console.error('获取视频1失败:', error);
+    return {} as Ipitem;
+  }
+};
 // 自己的接口
 export const fetchVideo1 = async (): Promise<VideoItem[]> => {
   try {
-    const response = await mmpRequest.get(`/api/ksvideo`);
+    const response = await ipapiRequest.get(`/api/ksvideo`);
     return (response.data || []).map((item: any) => ({
       src: item.link,
     }));

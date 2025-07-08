@@ -71,10 +71,10 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: path => path.replace(/^\/mgtv/, '')
         },
-        '/ossgp': {
-          target: 'https://ossgp.oss-cn-hangzhou.aliyuncs.com',
+        '/ipapi': {
+          target: 'https://whois.pconline.com.cn',
           changeOrigin: true,
-          rewrite: path => path.replace(/^\/ossgp/, '')
+          rewrite: path => path.replace(/^\/ipapi/, '')
         }
       }
     }

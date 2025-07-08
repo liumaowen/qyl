@@ -14,6 +14,10 @@ const apiConfig = {
   mgtv: {
     dev: '/mgtv', // 走 Vite 代理
     prod: 'https://api.mgtv109.cc'
+  },
+  ipapi: {
+    dev: '/ipapi', // 走 Vite 代理
+    prod: 'https://whois.pconline.com.cn'
   }
 };
 
@@ -34,6 +38,9 @@ export const mmpRequest = axios.create({
 });
 export const mgtvRequest = axios.create({
   baseURL: getBaseURL('mgtv')
+});
+export const ipapiRequest = axios.create({
+  baseURL: getBaseURL('ipapi')
 });
 
 // 添加响应拦截器
@@ -57,6 +64,13 @@ mgtvRequest.interceptors.response.use(
   response => response,
   error => {
     console.error('MGTV 请求错误:', error);
+    return Promise.reject(error);
+  }
+);
+ipapiRequest.interceptors.response.use(
+  response => response,
+  error => {
+    console.error('IP 请求错误:', error);
     return Promise.reject(error);
   }
 );
