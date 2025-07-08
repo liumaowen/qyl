@@ -51,13 +51,13 @@
               <ion-item>
                 <ion-label>
                   <h3>首次使用时间</h3>
-                  <p>{{ formatDate(userInfo.firstUseTime) }}</p>
+                  <p>{{ userInfo.firstUseTime }}</p>
                 </ion-label>
               </ion-item>
               <ion-item>
                 <ion-label>
                   <h3>最后使用时间</h3>
-                  <p>{{ formatDate(userInfo.lastUseTime) }}</p>
+                  <p>{{ userInfo.lastUseTime }}</p>
                 </ion-label>
               </ion-item>
               <ion-item>
@@ -165,10 +165,6 @@ const {
 } = useUserAnalytics();
 
 const isDevelopment = computed(() => process.env.NODE_ENV === 'development');
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleString('zh-CN');
-};
 
 const showToast = async (message: string) => {
   const toast = await toastController.create({

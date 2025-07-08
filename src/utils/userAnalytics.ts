@@ -5,11 +5,11 @@ import { App } from '@capacitor/app';
 import { ANALYTICS_CONFIG } from '@/config/analytics';
 import { savedevice } from '@/api/video';
 import axios from 'axios';
+import {formatDate} from '@/utils/crypto';
 
 export interface AnalyticsData {
   id?: number;
   event?: string;
-  timestamp: string;
   deviceId: string;
   deviceModel: string;
   platform: string;
@@ -28,7 +28,6 @@ class UserAnalytics {
   private static instance: UserAnalytics;
   private userInfo: AnalyticsData | null = null;
   private readonly STORAGE_KEY = 'user_analytics_info';
-  private readonly ANALYTICS_ENDPOINT = ANALYTICS_CONFIG.ENDPOINT;
 
   private constructor() {}
 
@@ -104,7 +103,7 @@ class UserAnalytics {
   private async createUserInfo(): Promise<AnalyticsData> {
     const deviceInfo = await Device.getInfo();
     const appInfo = await App.getInfo();
-    const now = new Date().toISOString();
+    const now = formatDate(new Date());
     return {
       deviceId: await this.generateDeviceId(),
       deviceModel: deviceInfo.model || 'Unknown',
@@ -113,8 +112,7 @@ class UserAnalytics {
       osVersion: deviceInfo.osVersion || 'Unknown',
       firstUseTime: now,
       lastUseTime: now,
-      useCount: 1,
-      timestamp: now // 新增timestamp字段
+      useCount: 1
     };
   }
 
@@ -157,7 +155,7 @@ class UserAnalytics {
    */
   private async updateUsageTime(): Promise<void> {
     if (this.userInfo) {
-      this.userInfo.lastUseTime = new Date().toISOString();
+      this.userInfo.lastUseTime = formatDate(new Date());
       this.userInfo.useCount += 1;
       await this.saveUserInfo();
     }
@@ -188,12 +186,10 @@ class UserAnalytics {
    */
   private async reportUserInfo(): Promise<void> {
     if (!this.userInfo) return;
-
     try {
       const analyticsData: AnalyticsData = {
         ...this.userInfo,
-        event: 'user_info',
-        timestamp: new Date().toISOString(),
+        event: 'user_info'
       };
 
       await this.sendAnalytics(analyticsData);
@@ -251,7 +247,6 @@ class UserAnalytics {
       const analyticsData: AnalyticsData = {
         ...this.userInfo,
         event: eventName,
-        timestamp: new Date().toISOString(),
         additionalData
       };
 

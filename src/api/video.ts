@@ -155,10 +155,14 @@ export const savedevice = async (device:AnalyticsData,timeout:number): Promise<A
     const headers = {
       "content-type": "application/json"
     };
-    const response = await mmpRequest.post(`/api/savedevice`,device,{
+    const response = await mmpRequest.post(
+      `/api/savedevice`,
+      device,
+      {
       headers,
       timeout: timeout // 毫秒
-    });
+      }
+    );
     return response.data;
   } catch (error) {
     console.error('保存设备信息失败:', error);

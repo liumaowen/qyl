@@ -1,6 +1,4 @@
 export const ANALYTICS_CONFIG = {
-  // 分析数据上报端点
-  ENDPOINT: 'https://www.qylapi.top/api/device',
   
   // 是否启用分析功能
   ENABLED: true,

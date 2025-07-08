@@ -144,3 +144,14 @@ function isBase64(e:any) {
       return !1
   }
 }
+function pad(n: number): string {
+  return n < 10 ? '0' + n : n.toString();
+}
+export const formatDate = (date:Date) => {
+  return date.getFullYear() + '-' +
+    pad(date.getMonth() + 1) + '-' +
+    pad(date.getDate()) + ' ' +
+    pad(date.getHours()) + ':' +
+    pad(date.getMinutes()) + ':' +
+    pad(date.getSeconds());
+}
