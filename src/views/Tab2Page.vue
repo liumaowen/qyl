@@ -21,6 +21,7 @@ import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
 import { isContentUnlocked } from '@/utils/unlock';
+import { useUserAnalytics } from '@/composables/useUserAnalytics';
 
 const videoList = ref<VideoItem[]>([]);
 const progress = ref<number[]>([]);
@@ -36,6 +37,9 @@ const updateSize = () => {
   containerWidth.value = window.innerWidth;
   containerHeight.value = window.innerHeight - 50.8;
 };
+const { 
+  trackPageView
+} = useUserAnalytics();
 
 const loadMoreData = async () => {
   currentPage = Math.floor(Math.random() * (1600 - 0 + 1)) + 0;
@@ -96,6 +100,7 @@ onMounted(async () => {
   videoList.value = [...initialData];
   progress.value = initialData.map(() => 0);
   await nextTick();
+  await trackPageView('Tab2Page');
 });
 onIonViewDidEnter(async () => {
   const ads = await getAd();

@@ -72,7 +72,7 @@ export default defineConfig(({ mode }) => {
           rewrite: path => path.replace(/^\/mgtv/, '')
         },
         '/ipapi': {
-          target: 'https://whois.pconline.com.cn',
+          target: 'https://ifconfig.co',
           changeOrigin: true,
           rewrite: path => path.replace(/^\/ipapi/, '')
         }

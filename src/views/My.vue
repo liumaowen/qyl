@@ -65,7 +65,7 @@
             expand="block" 
             fill="clear" 
             class="function-btn unlock-btn"
-            @click="showPasswordModal = true">
+            @click="openlock">
             <ion-icon :icon="lockOpen" slot="start"></ion-icon>
             {{ $t('my.unlockContent') }}
           </ion-button>
@@ -201,14 +201,19 @@ import { verifyPassword } from '@/api/video';
 import { useI18n } from 'vue-i18n';
 import { setContentUnlocked, isContentUnlocked, getRemainingUnlockTime } from '@/utils/unlock';
 import LegalModal from '@/components/LegalModal.vue';
+import { useUserAnalytics } from '@/composables/useUserAnalytics';
 
 const { showDownloadAlert, progress, checkUpdate } = useAppUpdate();
 const { t } = useI18n();
 const showLegal = ref(false);
 const legalType = ref<'privacy' | 'agreement'>('privacy');
+const { 
+  trackPageView,
+  trackFeatureUsage
+} = useUserAnalytics();
 
 // 口令相关状态
-const showPasswordModal = ref(false);
+let showPasswordModal = ref(false);
 const password = ref('');
 const passwordError = ref('');
 const remainingTime = ref(0);
@@ -225,8 +230,8 @@ const contactLinks = [
   {
     label: 'Telegram',
     icon: paperPlane,
-    url: 'https://t.me/+oWEbySMuv4g4NmJl',
-    display: 't.me/mytelegram',
+    url: 'https://t.me/shunleqyl',
+    display: 't.me/shunleqyl',
     type: 'link',
   },
   // 预留扩展
@@ -266,11 +271,26 @@ const openContact = async (item:any) => {
   try {
     if (Capacitor.isNativePlatform()) {
       await InAppBrowser.openInExternalBrowser({ url: item.url });
+      await trackFeatureUsage('InAppBrowser', { 
+        action: 'openurl',
+        url: item.url,
+        timestamp: Date.now()
+      });
     } else {
       if(item.type === 'link') {
         window.open(item.url, '_blank')
+        await trackFeatureUsage('windowopen', { 
+          action: 'openwebiste',
+          link: item.url,
+          timestamp: Date.now()
+        });
       } else if (item.type === 'email') {
         window.open(item.url)
+        await trackFeatureUsage('windowopen', { 
+          action: 'openwebiste',
+          email: item.url,
+          timestamp: Date.now()
+        });
       }
     }
   } catch (error) {
@@ -317,6 +337,10 @@ const verifyPasswordHandler = async () => {
         icon: checkmarkCircle
       });
       await toast.present();
+      await trackFeatureUsage('lock_feature', { 
+        action: 'locksuccess',
+        timestamp: Date.now()
+      });
     } else {
       passwordError.value = t('my.unlockFailed');
       // 显示错误 Toast
@@ -328,6 +352,11 @@ const verifyPasswordHandler = async () => {
         icon: closeCircle
       });
       await errorToast.present();
+      await trackFeatureUsage('lock_feature', { 
+        action: 'lockfailed',
+        password: password.value,
+        timestamp: Date.now()
+      });
     }
   } catch (error) {
     console.error('口令验证失败:', error);
@@ -381,6 +410,10 @@ const openWebsite = async () => {
   } catch (error) {
     console.error('打开官网失败:', error);
   }
+  await trackFeatureUsage('openwebsite_feature', { 
+    action: 'openwebiste',
+    timestamp: Date.now()
+  });
 };
 const openPrivacy = () => {
   legalType.value = 'privacy';
@@ -405,12 +438,20 @@ onMounted(async () => {
   
   // 每分钟更新一次剩余时间
   setInterval(updateRemainingTime, 60000);
+  await trackPageView('My');
 });
 onIonViewWillEnter(async () => {
   if (Capacitor.isNativePlatform()) {
     await StatusBar.setStyle({ style: Style.Light });
   }
 })
+const openlock = async () => {
+  showPasswordModal.value = true;
+  await trackFeatureUsage('lock_feature', { 
+    action: 'openlock',
+    timestamp: Date.now()
+  });
+}
 
 // @ts-ignore
 // eslint-disable-next-line

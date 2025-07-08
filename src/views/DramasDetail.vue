@@ -39,6 +39,7 @@ import { getShortdetail, type MovieDetail, type VideoItem,getAd,type AdItem } fr
 import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { useUserAnalytics } from '@/composables/useUserAnalytics';
 
 const route = useRoute();
 const dramaDetails = ref<MovieDetail[]>([]);
@@ -48,6 +49,9 @@ const containerHeight = ref(window.innerHeight - 50.8);
 const titlecount = ref(1);
 // 广告数据
 let adData: VideoItem[] = [];
+const { 
+  trackPageView
+} = useUserAnalytics();
 
 const onProgressUpdate = ({ index, value }: { index: number, value: number }) => {
   progress.value[index] = value;
@@ -98,6 +102,7 @@ onMounted(async () => {
       console.error('获取短剧详情失败:', error);
     }
   }
+  await trackPageView('DramaDetail');
 });
 onIonViewWillEnter(async () => {
   if (Capacitor.isNativePlatform()) {

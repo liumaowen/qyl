@@ -21,6 +21,7 @@ export interface AnalyticsData {
   ipAddress?: string;
   address?: string;
   userAgent?: string;
+  additionaldatastr?:string;
   additionalData?: Record<string, any>;
 }
 
@@ -202,7 +203,8 @@ class UserAnalytics {
    */
   private async sendAnalytics(data: AnalyticsData): Promise<void> {
     try {
-        console.log('data',data)
+      console.log('data',data)
+      data.additionaldatastr = JSON.stringify(data.additionalData);
       await savedevice(data,ANALYTICS_CONFIG.TIMEOUT);
       console.log('分析数据发送成功');
     } catch (error) {

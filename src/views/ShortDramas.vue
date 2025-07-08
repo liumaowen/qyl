@@ -19,6 +19,7 @@ import { getAd, AdItem, MovieFormType, fetchduanju, VideoItem,getShortdetail,Mov
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
+import { useUserAnalytics } from '@/composables/useUserAnalytics';
 
 const videoList = ref<VideoItem[]>([]);
 const progress = ref<number[]>([]);
@@ -30,6 +31,9 @@ const params = ref<MovieFormType>({
   ChannelId: "",
   GenderChannelType: ""
 })
+const { 
+  trackPageView
+} = useUserAnalytics();
 
 // 广告数据
 let adData: VideoItem[] = [];
@@ -121,6 +125,7 @@ onMounted(async () => {
     const infos = await getShortdetail(videoList.value[0].id);
     videoList.value[0].info = {count:infos.length};
   }
+  await trackPageView('ShortDramas');
 });
 onIonViewWillEnter(async () => {
   if (Capacitor.isNativePlatform()) {

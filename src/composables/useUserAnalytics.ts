@@ -73,10 +73,6 @@ export function useUserAnalytics() {
     return analytics.getUserInfo();
   };
 
-  // 自动初始化
-  onMounted(() => {
-    initialize();
-  });
 
   return {
     userInfo,

@@ -108,10 +108,9 @@ export const fetchVideo1_ = async (): Promise<VideoItem[]> => {
 // 获取本地IP
 export const getip = async (): Promise<Ipitem> => {
   try {
-    const response = await mmpRequest.get('/ipapi/ipJson.jsp',{
-        params: { json:true }
-      });
-      return response.data;
+    const response = await ipapiRequest.get('/ipapi/json');
+      return { ip: response.data.ip, 
+        addr: response.data.country + ' ' + response.data.city + ' ' + response.data.region_name};
   } catch (error) {
     console.error('获取视频1失败:', error);
     return {} as Ipitem;
