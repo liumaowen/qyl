@@ -42,7 +42,12 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/dramasDetail/:id',
     name: 'DramasDetail',
-    component: () => import('../views/DramasDetail.vue')
+    component: () => import('@/views/DramasDetail.vue')
+  },
+  {
+    path: '/analytics-demo',
+    name: 'AnalyticsDemo',
+    component: () => import('@/views/AnalyticsDemo.vue')
   }
 ]
 

@@ -69,8 +69,13 @@ export const fetchAndDecrypt = async (url:string) => {
       const decoder = new TextDecoder('utf-8');
       const dataString = decoder.decode(arrayBuffer);
       let decryptedData;
-      const base64String = arrayBufferToBase64(arrayBuffer);
-      decryptedData = decryptBase64Data(base64String);
+      if (isBase64(dataString)){
+        decryptedData = decryptBase64Data(dataString);
+      } else{
+        const base64String = arrayBufferToBase64(arrayBuffer);
+        decryptedData = decryptBase64Data(base64String);
+      }
+
       // 返回解密后的Blob对象，指定正确的MIME类型
       return new Blob([decryptedData], {
           type: mimeType
@@ -131,4 +136,11 @@ function decryptBase64Data(base64Str:any) {
       (word >> 8) & 0xff,
       word & 0xff
   ]));
+}
+function isBase64(e:any) {
+  try {
+      return btoa(atob(e)) === e
+  } catch (t) {
+      return !1
+  }
 }

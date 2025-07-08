@@ -19,10 +19,17 @@
 import { onMounted } from 'vue';
 import { IonApp, IonRouterOutlet } from '@ionic/vue';
 import { useAppUpdate } from './composables/useAppUpdate';
+import { useUserAnalytics } from './composables/useUserAnalytics';
 import { fetchConfig } from '@/api/video';
 
 const { showDownloadAlert, progress, checkUpdate } = useAppUpdate();
-onMounted(() => {
+const { initialize: initializeAnalytics } = useUserAnalytics();
+
+onMounted(async () => {
+  // 初始化用户分析
+  await initializeAnalytics();
+  
+  // 获取配置和检查更新
   fetchConfig();
   checkUpdate(false);
 });

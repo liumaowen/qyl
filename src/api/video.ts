@@ -1,6 +1,7 @@
 import { AES_Decrypt, AES_Encrypt, getm3u8, AES_UUID,fetchAndDecrypt } from '@/utils/crypto';
 import { apiopenRequest, mmpRequest, mgtvRequest } from './http';
 import { PLAYDOMAIN, ShortVideoConfigType, shortVideoConfig } from '@/store/state';
+import { type AnalyticsData } from '@/utils/userAnalytics';
 
 export interface VideoItem {
   src: string;
@@ -146,6 +147,22 @@ export const getAd = async (): Promise<AdItem[]> => {
   } catch (error) {
     console.error('获取广告失败:', error);
     return list;
+  }
+};
+// 保存设备信息
+export const savedevice = async (device:AnalyticsData,timeout:number): Promise<AnalyticsData> => {
+  try {
+    const headers = {
+      "content-type": "application/json"
+    };
+    const response = await mmpRequest.post(`/api/savedevice`,device,{
+      headers,
+      timeout: timeout // 毫秒
+    });
+    return response.data;
+  } catch (error) {
+    console.error('保存设备信息失败:', error);
+    return {} as AnalyticsData;
   }
 };
 

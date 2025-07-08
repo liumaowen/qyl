@@ -17,6 +17,7 @@
     "@capacitor/android": "^7.2.0",
     "@capacitor/app": "7.0.1",
     "@capacitor/core": "7.2.0",
+    "@capacitor/device": "^7.0.1",
     "@capacitor/file-transfer": "^1.0.0",
     "@capacitor/filesystem": "^7.1.1",
     "@capacitor/haptics": "7.0.1",
@@ -55,5 +56,5 @@
     "vitest": "^0.34.6",
     "vue-tsc": "^2.1.10"
   },
-  "description": "An Ionic project"
+  "description": "Shunle"
 }
