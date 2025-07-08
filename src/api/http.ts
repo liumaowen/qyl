@@ -17,7 +17,7 @@ const apiConfig = {
   },
   ipapi: {
     dev: '/ipapi', // 走 Vite 代理
-    prod: 'https://ifconfig.co'
+    prod: 'https://ipapi.co'
   }
 };
 

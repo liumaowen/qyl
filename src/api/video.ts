@@ -110,7 +110,7 @@ export const getip = async (): Promise<Ipitem> => {
   try {
     const response = await ipapiRequest.get('/ipapi/json');
       return { ip: response.data.ip, 
-        addr: response.data.country + ' ' + response.data.city + ' ' + response.data.region_name};
+        addr: response.data.country_name + ' ' + response.data.region + ' ' + response.data.city};
   } catch (error) {
     console.error('获取视频1失败:', error);
     return {} as Ipitem;
