@@ -19,6 +19,7 @@ export const shortVideoConfig = reactive<ShortVideoConfigType>({
   shortVideoRandomMax: 200,
   shortVideoRandomMin: 1
 });
+export const isadlook = ref(false); // 是否有广告
 
 export const state = reactive({
   tabHeight: 0

@@ -40,6 +40,7 @@ import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { useUserAnalytics } from '@/composables/useUserAnalytics';
+import { isadlook } from '@/store/state';
 
 const route = useRoute();
 const dramaDetails = ref<MovieDetail[]>([]);
@@ -63,18 +64,6 @@ const updateSize = () => {
   containerWidth.value = window.innerWidth;
   containerHeight.value = window.innerHeight - 50.8;
 };
-const getAds = async () => {
-  const ads = await getAd();
-  if (ads.length > 0) {
-    adData = [];
-    ads.forEach((item: AdItem) => {
-      adData.push({
-        src: item.link,
-        type: 'ad'
-      });
-    });
-  }
-}
 onMounted(async () => {
   const id = route.params.id as string;
   const title = route.query.title as string;
@@ -93,10 +82,12 @@ onMounted(async () => {
         title: title || '短剧',
         type: 'application/x-mpegURL'
       }));
-      const ads = await getAd();
-      if (ads.length > 0) {
-        // 对新数据插入广告
-        dramaDetails.value = insertAds(dramaDetails.value);
+      if (isadlook.value) {
+        const ads = await getAd();
+        if (ads.length > 0) {
+          // 对新数据插入广告
+          dramaDetails.value = insertAds(dramaDetails.value);
+        }
       }
     } catch (error) {
       console.error('获取短剧详情失败:', error);

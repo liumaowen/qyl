@@ -16,7 +16,7 @@
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { IonPage, IonContent, onIonViewDidEnter,onIonViewWillEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
 import { fetchApiOpenTopVideos, getAd, AdItem, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, fetchduanju, VideoItem } from '@/api/video';
-import { shortVideoConfig, ShortVideoConfigType } from '@/store/state';
+import { shortVideoConfig, ShortVideoConfigType,isadlook } from '@/store/state';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
@@ -103,15 +103,17 @@ onMounted(async () => {
   await trackPageView('Tab2Page');
 });
 onIonViewDidEnter(async () => {
-  const ads = await getAd();
-  if (ads.length > 0) {
-    adData = [];
-    ads.forEach((item: AdItem) => {
-      adData.push({
-        src: item.link,
-        type: 'ad'
+  if(isadlook.value) {
+    const ads = await getAd();
+    if (ads.length > 0) {
+      adData = [];
+      ads.forEach((item: AdItem) => {
+        adData.push({
+          src: item.link,
+          type: 'ad'
+        });
       });
-    });
+    }
   }
 })
 onIonViewWillEnter(async () => {

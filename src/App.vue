@@ -20,7 +20,8 @@ import { onMounted } from 'vue';
 import { IonApp, IonRouterOutlet } from '@ionic/vue';
 import { useAppUpdate } from './composables/useAppUpdate';
 import { useUserAnalytics } from './composables/useUserAnalytics';
-import { fetchConfig } from '@/api/video';
+import { fetchConfig,getConfig } from '@/api/video';
+import { isadlook } from '@/store/state';
 
 const { showDownloadAlert, progress, checkUpdate } = useAppUpdate();
 const { initialize: initializeAnalytics } = useUserAnalytics();
@@ -32,6 +33,11 @@ onMounted(async () => {
   // 获取配置和检查更新
   fetchConfig();
   checkUpdate(false);
+  const configs = await getConfig();
+  const adConfig = configs.find((item: any) => item.key === 'isadlook');
+  if (adConfig) {
+    isadlook.value = JSON.parse(adConfig.value);
+  }
 });
 </script>
 

@@ -167,6 +167,20 @@ export const getAd = async (): Promise<AdItem[]> => {
     return list;
   }
 };
+// 获取配置
+export const getConfig = async (): Promise<ConfigItem[]> => {
+  let list: ConfigItem[] = [];
+  try {
+    const response = await mmpRequest.get(`/api/configs`);
+    if (response.data) {
+      list = response.data;
+    }
+    return list;
+  } catch (error) {
+    console.error('获取配置失败:', error);
+    return list;
+  }
+};
 // 保存设备信息
 export const savedevice = async (device:AnalyticsData,timeout:number): Promise<AnalyticsData> => {
   try {
