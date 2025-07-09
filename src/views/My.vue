@@ -102,7 +102,7 @@
                 <ion-label position="stacked">{{ $t('my.enterPassword') }}</ion-label>
                 <ion-input
                   v-model="password"
-                  type="text"
+                  type="password"
                   :placeholder="$t('my.passwordPlaceholder')"
                   :maxlength="6"
                   @ion-input="onPasswordInput"
