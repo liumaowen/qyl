@@ -4,17 +4,32 @@ import { Preferences  } from '@capacitor/preferences'
 // 导入语言包
 import zh from './zh-CN';
 import en from './en-US';
+import fr from './fr-FR';
+import de from './de-DE';
+import es from './es-ES';
+import pt from './pt-PT';
+import ru from './ru-RU';
 
 // 支持的语言列表
 export const supportedLocales = [
-  { code: 'zh-CN', name: '简体中文', flag: '🇨🇳' },
   { code: 'en-US', name: 'English', flag: '🇺🇸' },
+  { code: 'zh-CN', name: '简体中文', flag: '🇨🇳' },
+  { code: 'fr-FR', name: 'Français', flag: '🇫🇷' },
+  { code: 'de-DE', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'es-ES', name: 'Español', flag: '🇪🇸' },
+  { code: 'pt-PT', name: 'Português', flag: '🇵🇹' },
+  { code: 'ru-RU', name: 'Русский', flag: '🇷🇺' },
 ]
 
 // 语言包配置
 const messages = {
+  'en-US': en,
   'zh-CN': zh,
-  'en-US': en
+  'fr-FR': fr,
+  'de-DE': de,
+  'es-ES': es,
+  'pt-PT': pt,
+  'ru-RU': ru
 }
 
 // 获取默认语言（同步版本）
@@ -45,7 +60,7 @@ const getDefaultLocale = (): string => {
   }
   
   // 默认返回中文
-  return 'zh-CN'
+  return 'en-US'
 }
 
 // 异步初始化语言设置
@@ -66,7 +81,7 @@ const initializeLocale = async () => {
 const i18n = createI18n({
   legacy: false, // 使用Composition API模式
   locale: getDefaultLocale(),
-  fallbackLocale: 'zh-CN',
+  fallbackLocale: 'en-US',
   messages,
   globalInjection: true, // 全局注入$t方法
 })
