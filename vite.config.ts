@@ -61,8 +61,7 @@ export default defineConfig(({ mode }) => {
           rewrite: path => path.replace(/^\/apiopen/, '')
         },
         '/mmpapi': {
-          // target: 'https://www.qylapi.top/',
-          target: 'http://localhost:8081/',
+          target: 'https://www.qylapi.top',
           changeOrigin: true,
           rewrite: path => path.replace(/^\/mmpapi/, '')
         },

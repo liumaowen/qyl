@@ -29,6 +29,7 @@ class UserAnalytics {
   private static instance: UserAnalytics;
   private userInfo: AnalyticsData | null = null;
   private readonly STORAGE_KEY = 'user_analytics_info';
+  private isUpdatingUsage = false; // 防止重复更新使用次数
 
   private constructor() {}
 
@@ -103,8 +104,7 @@ class UserAnalytics {
    */
   private async createUserInfo(): Promise<AnalyticsData> {
     const deviceInfo = await Device.getInfo();
-    // const appInfo = await App.getInfo();
-    const appInfo = {version:''};
+    const appInfo = await App.getInfo();
     const now = formatDate(new Date());
     return {
       deviceId: await this.generateDeviceId(),
@@ -114,7 +114,7 @@ class UserAnalytics {
       osVersion: deviceInfo.osVersion || 'Unknown',
       firstUseTime: now,
       lastUseTime: now,
-      useCount: 1
+      useCount: 0
     };
   }
 
@@ -156,10 +156,15 @@ class UserAnalytics {
    * 更新使用时间
    */
   private async updateUsageTime(): Promise<void> {
-    if (this.userInfo) {
-      this.userInfo.lastUseTime = formatDate(new Date());
-      this.userInfo.useCount += 1;
-      await this.saveUserInfo();
+    if (this.userInfo && !this.isUpdatingUsage) {
+      this.isUpdatingUsage = true;
+      try {
+        this.userInfo.lastUseTime = formatDate(new Date());
+        this.userInfo.useCount += 1;
+        await this.saveUserInfo();
+      } finally {
+        this.isUpdatingUsage = false;
+      }
     }
   }
 

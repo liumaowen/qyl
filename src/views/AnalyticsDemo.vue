@@ -132,7 +132,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { 
   IonPage, 
   IonHeader, 
@@ -153,15 +153,16 @@ import {
   toastController
 } from '@ionic/vue';
 import { useUserAnalytics } from '@/composables/useUserAnalytics';
+import { isInitialized } from '@/store/state';
 
 const { 
   userInfo, 
-  isInitialized, 
   trackEvent, 
   trackPageView, 
   trackFeatureUsage, 
   trackError, 
-  retryFailedAnalytics 
+  retryFailedAnalytics,
+  initialize
 } = useUserAnalytics();
 
 const isDevelopment = computed(() => process.env.NODE_ENV === 'development');
@@ -207,6 +208,24 @@ const retryFailedData = async () => {
   await retryFailedAnalytics();
   await showToast('重试失败数据完成');
 };
+
+onMounted(async () => {
+  console.log('=== 测试并发初始化 ===');
+  
+  // 模拟多个地方同时调用初始化
+  const promises = [
+    initialize(),
+    initialize(),
+    initialize(),
+    initialize()
+  ];
+  
+  console.log('同时发起4个初始化请求');
+  await Promise.all(promises);
+  console.log('所有初始化请求完成');
+  
+  await trackPageView('analytics_demo');
+});
 </script>
 
 <style scoped>

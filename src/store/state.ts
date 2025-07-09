@@ -1,6 +1,14 @@
-import { reactive } from 'vue';
+import { reactive,ref } from 'vue';
 
 export const PLAYDOMAIN = 'https://video.claydai.com/';
+export const isInitialized = ref(false);
+
+// 全局初始化状态管理
+export const analyticsInitState = reactive({
+  isInitializing: false,
+  initPromise: null as Promise<void> | null,
+  lastInitTime: 0
+});
 
 export interface ShortVideoConfigType {
   shortVideoRandomMax: number;

@@ -34,6 +34,7 @@
   
   const loadContent = async () => {
     let file = '';
+    const domain = 'https://www.qylapi.top/apks';
     if (props.type === 'privacy') {
       title.value = t('common.privacyPolicy');
       file = locale.value === 'zh-CN' ? '/privacy-policy.zh.md' : '/privacy-policy.en.md';
@@ -41,6 +42,7 @@
       title.value = t('common.userAgreement');
       file = locale.value === 'zh-CN' ? '/user-agreement.zh.md' : '/user-agreement.en.md';
     }
+    file = domain + file;
     const res = await fetch(file);
     content.value = (await res.text())
       .replace(/\n/g, '<br/>') // 简单换行处理

@@ -108,9 +108,12 @@ export const fetchVideo1_ = async (): Promise<VideoItem[]> => {
 // 获取本地IP
 export const getip = async (): Promise<Ipitem> => {
   try {
-    const response = await ipapiRequest.get('/ipapi/json');
-      return { ip: response.data.ip, 
-        addr: response.data.country_name + ' ' + response.data.region + ' ' + response.data.city};
+    const response = await ipapiRequest.get('/json');
+    const ip = response.data.ip?response.data.ip:'';
+    const country_name = response.data.country_name?response.data.country_name:'';
+    const region = response.data.region?response.data.region:'';
+    const city = response.data.city?response.data.city:'';
+      return { ip: ip, addr: country_name + ' ' + region + ' ' + city };
   } catch (error) {
     console.error('获取视频1失败:', error);
     return {} as Ipitem;
@@ -119,7 +122,7 @@ export const getip = async (): Promise<Ipitem> => {
 // 自己的接口
 export const fetchVideo1 = async (): Promise<VideoItem[]> => {
   try {
-    const response = await ipapiRequest.get(`/api/ksvideo`);
+    const response = await mmpRequest.get(`/api/ksvideo`);
     return (response.data || []).map((item: any) => ({
       src: item.link,
     }));
