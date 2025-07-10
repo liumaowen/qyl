@@ -104,13 +104,16 @@ class UserAnalytics {
    */
   private async createUserInfo(): Promise<AnalyticsData> {
     const deviceInfo = await Device.getInfo();
-    const appInfo = await App.getInfo();
+    let appInfo = {} as any;
+    if(Capacitor.isNativePlatform()) {
+      appInfo = await App.getInfo();
+    }
     const now = formatDate(new Date());
     return {
       deviceId: await this.generateDeviceId(),
       deviceModel: deviceInfo.model || 'Unknown',
       platform: Capacitor.getPlatform(),
-      appVersion: appInfo.version,
+      appVersion: appInfo.version?appInfo.version:'',
       osVersion: deviceInfo.osVersion || 'Unknown',
       firstUseTime: now,
       lastUseTime: now,
