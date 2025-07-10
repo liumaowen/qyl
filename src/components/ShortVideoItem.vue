@@ -242,22 +242,6 @@ ion-progress-bar {
   display: none !important;
 }
 
-/* 隐藏 Video.js 加载图标 */
-.vjs-loading-spinner {
-  display: none !important;
-}
-
-/* 隐藏其他可能的加载指示器 */
-.vjs-load-progress,
-.vjs-loading,
-.vjs-waiting {
-  display: none !important;
-}
-
-/* 隐藏缓冲指示器 */
-.vjs-buffering {
-  display: none !important;
-}
 
 .video-title-bar {
   position: absolute;
