@@ -401,15 +401,17 @@ export const getShortdetail = async (id:string): Promise<MovieDetail[]> => {
       //id :  "35677"
       //playUrl :  "MGTV/20250604/bd4494ebc035c1ba401f531789325993/index2.m3u8"
       // 处理每个视频
-      const result:MovieDetail[] = list100.map((element: any) => {
+      const result:MovieDetail[] = await Promise.all(list100.map(async (element: any) => {
         const mm = getm3u8(PLAYDOMAIN, element['playUrl']);
+        const picblob = await fetchAndDecrypt(PLAYDOMAIN + element['imgUrl']);
         return {
           src: mm,
+          poster: URL.createObjectURL(picblob),
           id: element['id'],
           collectionIndex: element['collectionIndex'],
           type: 'application/x-mpegURL', // 设置视频类型为 m3u8
         };
-      });
+      }));
       return result;
     }
     return [];

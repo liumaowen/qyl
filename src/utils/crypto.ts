@@ -1,5 +1,4 @@
 import CryptoJS from 'crypto-js';
-import axios from 'axios';
 
 /**
  * AES 加密
@@ -59,11 +58,11 @@ export const fetchAndDecrypt = async (url:string) => {
       // 从URL中提取文件信息，包括MIME类型
       const { mimeType } = extractFileInfo(url);
       // 发起GET请求获取加密数据（arraybuffer格式）
-      const response = await axios.get(url, {
-          responseType: 'arraybuffer'
-      });
-
-      const arrayBuffer = response.data;
+      const response = await fetch(url);
+      if (!response.ok) {
+          console.log(`HTTP error! status: ${response.status}`);
+      }
+      const arrayBuffer = await response.arrayBuffer();
 
       // 尝试将arraybuffer解码为UTF-8字符串
       const decoder = new TextDecoder('utf-8');
