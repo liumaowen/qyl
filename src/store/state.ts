@@ -1,6 +1,6 @@
 import { reactive,ref } from 'vue';
 
-export const PLAYDOMAIN = 'https://video.claydai.com/';
+export const PLAYDOMAIN = ref('https://video.claydai.com/');
 export const isInitialized = ref(false);
 
 // 全局初始化状态管理
@@ -16,10 +16,11 @@ export interface ShortVideoConfigType {
 }
 
 export const shortVideoConfig = reactive<ShortVideoConfigType>({
-  shortVideoRandomMax: 200,
+  shortVideoRandomMax: 10,
   shortVideoRandomMin: 1
 });
 export const isadlook = ref(false); // 是否有广告
+export const ismgtv = ref(false);  // 是否开启mgtv
 
 export const state = reactive({
   tabHeight: 0

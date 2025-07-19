@@ -122,19 +122,19 @@ function arrayBufferToBase64(buffer: any) {
   return window.btoa(binary);
 }
 function decryptBase64Data(base64Str:any) {
-  const decryptor = CryptoJS.AES.decrypt(base64Str, KEY, {
-      iv: iv,
-      mode: CryptoJS.mode.CBC,
-      padding: CryptoJS.pad.Pkcs7
-  }).toString(CryptoJS.enc.Utf8);
-
-  const parsed = CryptoJS.enc.Base64.parse(decryptor);
-  return new Uint8Array(parsed.words.flatMap(word => [
-      (word >> 24) & 0xff,
-      (word >> 16) & 0xff,
-      (word >> 8) & 0xff,
-      word & 0xff
-  ]));
+    const decryptor = CryptoJS.AES.decrypt(base64Str, KEY, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+    }).toString(CryptoJS.enc.Utf8);
+    const parsed = CryptoJS.enc.Base64.parse(decryptor);
+    const a = new Uint8Array(parsed.words.flatMap(word => [
+        (word >> 24) & 0xff,
+        (word >> 16) & 0xff,
+        (word >> 8) & 0xff,
+        word & 0xff
+    ]));
+    return a;
 }
 function isBase64(e:any) {
   try {

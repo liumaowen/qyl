@@ -15,8 +15,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { IonPage, IonContent, onIonViewDidEnter,onIonViewWillEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
-import { fetchApiOpenTopVideos, getAd, AdItem, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, fetchduanju, VideoItem } from '@/api/video';
-import { shortVideoConfig, ShortVideoConfigType,isadlook } from '@/store/state';
+import { fetchApiOpenTopVideos, getAd, AdItem, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, getConfig, VideoItem } from '@/api/video';
+import { shortVideoConfig, ShortVideoConfigType,isadlook,ismgtv } from '@/store/state';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
@@ -43,20 +43,39 @@ const {
 
 const loadMoreData = async () => {
   currentPage = Math.floor(Math.random() * (1600 - 0 + 1)) + 0;
-  let newData = await fetchApiOpenTopVideos(currentPage, pageSize);
-  if(!isContentUnlocked()) {
-    const fulfilledVideos = await fetchVideo1();
-    newData = [...newData, ...fulfilledVideos];
-  }else{
+  let newData:VideoItem[] = [];
+  if(ismgtv.value) {
     const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
     const params = {
       PageIndex: indd + '',
-      PageSize: 10 + '',
+      PageSize: 5 + '',
       VideoType: "1",
       SortType: "7"
     };
-    const mgtvlist = await fetchMGTVVideoList(params);
+    let mgtvlist = await fetchMGTVVideoList(params);
+    if(!mgtvlist.length) {
+        mgtvlist = await fetchVideo1();
+      }
     newData = [...newData, ...mgtvlist];
+  } else {
+    newData = await fetchApiOpenTopVideos(currentPage, pageSize);
+    if(!isContentUnlocked()) {
+      const fulfilledVideos = await fetchVideo1();
+      newData = [...newData, ...fulfilledVideos];
+    }else{
+      const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
+      const params = {
+        PageIndex: indd + '',
+        PageSize: 5 + '',
+        VideoType: "1",
+        SortType: "7"
+      };
+      let mgtvlist = await fetchMGTVVideoList(params);
+      if(!mgtvlist.length) {
+        mgtvlist = await fetchVideo1();
+      }
+      newData = [...newData, ...mgtvlist];
+    }
   }
   if (newData.length > 0) {
     // 对新数据插入广告
@@ -96,8 +115,20 @@ const onProgressUpdate = ({ index, value }: { index: number, value: number }) =>
 onMounted(async () => {
   window.addEventListener('resize', updateSize);
   updateSize();
+  await getConfig();
   const initialData = await fetchApiOpenTopVideos(currentPage, pageSize);
-  videoList.value = [...initialData];
+  let mgtvlist:VideoItem[] = [];
+  if(ismgtv.value) {
+    const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
+    const params = {
+      PageIndex: indd + '',
+      PageSize: 5 + '',
+      VideoType: "1",
+      SortType: "7"
+    };
+    mgtvlist = await fetchMGTVVideoList(params);
+  }
+  videoList.value = [...initialData,...mgtvlist];
   progress.value = initialData.map(() => 0);
   await nextTick();
   await trackPageView('Tab2Page');

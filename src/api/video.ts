@@ -1,6 +1,6 @@
 import { AES_Decrypt, AES_Encrypt, getm3u8, AES_UUID,fetchAndDecrypt } from '@/utils/crypto';
 import { apiopenRequest, mmpRequest, mgtvRequest,ipapiRequest } from './http';
-import { PLAYDOMAIN, ShortVideoConfigType, shortVideoConfig } from '@/store/state';
+import { PLAYDOMAIN, ShortVideoConfigType, shortVideoConfig,isadlook,ismgtv } from '@/store/state';
 import { type AnalyticsData } from '@/utils/userAnalytics';
 
 export interface VideoItem {
@@ -174,6 +174,14 @@ export const getConfig = async (): Promise<ConfigItem[]> => {
     const response = await mmpRequest.get(`/api/configs`);
     if (response.data) {
       list = response.data;
+      const adConfig = list.find((item: any) => item.key === 'isadlook');
+      if (adConfig) {
+        isadlook.value = JSON.parse(adConfig.value);
+      }
+      const mgConfig = list.find((item: any) => item.key === 'ismgtv');
+      if (mgConfig) {
+        ismgtv.value = JSON.parse(mgConfig.value);
+      }
     }
     return list;
   } catch (error) {
@@ -254,9 +262,12 @@ export const fetchConfig = async () => {
       console.log('list99', list99);
       const list100 = list99?.data || [];
       list100.forEach((element: any) => {
-        if (element.id === '102') {
+        if (element.pKey === 'ShortVideoRandomPage') {
           shortVideoConfig.shortVideoRandomMax = Number(element.value2);
           shortVideoConfig.shortVideoRandomMin = Number(element.value1);
+        }
+        if (element.pKey === 'PlayDomain') {
+          PLAYDOMAIN.value = element.value1;
         }
       });
     }
@@ -302,8 +313,8 @@ export const fetchMGTVVideoList = async (params: FormType): Promise<VideoItem[]>
 
       // 使用 Promise.all 并行处理异步 map
       const result: VideoItem[] = await Promise.all(list100.map(async (element: any) => {
-        const mm = getm3u8(PLAYDOMAIN, element['playUrl']);
-        const picblob = await fetchAndDecrypt(PLAYDOMAIN + element['imgUrl']);
+        const mm = getm3u8(PLAYDOMAIN.value, element['playUrl']);
+        const picblob = await fetchAndDecrypt(PLAYDOMAIN.value + element['imgUrl']);
         return {
           src: mm,
           poster: URL.createObjectURL(picblob),
@@ -349,8 +360,8 @@ export const fetchduanju = async (params: MovieFormType): Promise<VideoItem[]> =
       console.log('短句视频列表:', list100);
       // 处理每个视频
       const result = await Promise.all(list100.map(async (element: any) => {
-        const mm = getm3u8(PLAYDOMAIN, element['first']['playUrl']);
-        const picblob = await fetchAndDecrypt(PLAYDOMAIN + element['imgUrl']);
+        const mm = getm3u8(PLAYDOMAIN.value, element['first']['playUrl']);
+        const picblob = await fetchAndDecrypt(PLAYDOMAIN.value + element['imgUrl']);
         return {
           src: mm,
           id: element['id'],
@@ -402,7 +413,7 @@ export const getShortdetail = async (id:string): Promise<MovieDetail[]> => {
       //playUrl :  "MGTV/20250604/bd4494ebc035c1ba401f531789325993/index2.m3u8"
       // 处理每个视频
       const result:MovieDetail[] = await Promise.all(list100.map(async (element: any) => {
-        const mm = getm3u8(PLAYDOMAIN, element['playUrl']);
+        const mm = getm3u8(PLAYDOMAIN.value, element['playUrl']);
         return {
           src: mm,
           id: element['id'],
