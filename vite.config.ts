@@ -77,6 +77,7 @@ export default defineConfig(({ mode }) => {
           rewrite: path => path.replace(/^\/ipapi/, '')
         }
       }
-    }
+    },
+    // base: '/open/', // 打包H5时使用
   }
 })
