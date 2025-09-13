@@ -1,5 +1,5 @@
 <template>
-  <div class="video-wrap" :style="{
+  <div class="video-wrap" :class="{ 'portrait-video': isPortrait }" :style="{
     width: containerWidth + 'px',
     height: containerHeight + 'px',
   }">
@@ -39,6 +39,7 @@ import { type VideoItem } from '@/api/video';
 import { useIonRouter } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
+import { Capacitor } from '@capacitor/core';
 
 videojs.addLanguage('zh-CN', videoLanguage);
 
@@ -59,7 +60,7 @@ const videoRef = ref<HTMLVideoElement | null>(null);
 const player = ref<any>(null);
 const isDragging = ref(false);
 const showRotateBtn = ref(false);
-const isRotated = ref(false);
+const isPortrait = ref(false);
 const isFullscreen = ref(false);
 
 const toggleFullscreen = async () => {
@@ -71,7 +72,8 @@ const toggleFullscreen = async () => {
       } catch (e) {
         console.warn('横屏锁定失败', e);
       }
-      player.value.requestFullscreen();
+      isFullscreen.value = true;
+      // player.value.requestFullscreen();
     } else {
       // 退出全屏时恢复竖屏
       try {
@@ -79,7 +81,8 @@ const toggleFullscreen = async () => {
       } catch (e) {
         console.warn('竖屏锁定失败', e);
       }
-      player.value.exitFullscreen();
+      isFullscreen.value = false;
+      // player.value.exitFullscreen();
     }
   }
 };
@@ -92,10 +95,16 @@ onMounted(() => {
       const w = videoRef.value?.videoWidth || 0;
       const h = videoRef.value?.videoHeight || 1;
       // 判断宽高比，宽屏时显示旋转按钮
-      showRotateBtn.value = w / h > 1.1;
+      showRotateBtn.value = w / h > 1.1 && Capacitor.getPlatform() !== 'web';
+      isPortrait.value = h > w; // 竖屏
     };
     player.value = videojs(videoRef.value, {
-      controls: false,
+      controls: Capacitor.getPlatform() === 'web' ? true : false,
+      controlBar: {
+        children: [
+          'fullscreenToggle'
+        ]
+      },
       autoplay: false,
       preload: 'metadata',
       language: 'zh-CN',
@@ -244,10 +253,13 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
   max-width: 100% !important;
   object-fit: cover;
 }
+.portrait-video .video-js .vjs-tech {
+  object-fit: cover;
+}
 
 .center-pause-btn {
   position: absolute;
-  top: 0;
+  bottom: 5%;
   left: 0;
   width: 100%;
   height: 100%;
@@ -266,8 +278,8 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
 .my_progress_bar {
   position: absolute;
   bottom: -1.5px;
-  left: 5%;
-  width: 90%;
+  left: 10%;
+  width: 80%;
   height: 20px;
   line-height: 20px;
   display: flex;
@@ -336,7 +348,7 @@ ion-progress-bar {
 
 .fullscreen-btn {
   position: absolute;
-  bottom: 260px;
+  bottom: 20%;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;

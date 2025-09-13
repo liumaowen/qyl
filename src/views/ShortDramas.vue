@@ -316,6 +316,7 @@ onUnmounted(() => {
   border: none;
   box-shadow: none;
   padding: 8px 8px;
+  margin-top:8px;
   background: transparent !important;
 }
 
@@ -327,8 +328,8 @@ ion-segment-button {
   font-size: 16px;
   font-weight: 500;
   min-width: unset;
-  padding: 0 12px;
-  margin: 0 2px;
+  /* padding: 0 12px;
+  margin: 0 2px; */
   transition: color 0.2s, border-bottom 0.2s;
   /* 去除安卓水波纹效果 */
   --ripple-color: transparent;
