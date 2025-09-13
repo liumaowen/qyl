@@ -1,21 +1,24 @@
 <template>
   <ion-page>
     <ion-content :fullscreen="true" class="video-container">
-      <ShortVideoSwiper ref="swiperRef" 
-        :video-list="videoList" 
-        :container-width="containerWidth"
-        :container-height="containerHeight" 
-        :progress="progress" 
-        @loadMore="loadMoreData"
+      <div class="tabs-wrapper">
+        <ion-segment v-model="activeCategory" scrollable class="category-tabs">
+          <ion-segment-button v-for="cat in categories" :key="cat.id" :value="cat.id">
+            {{ cat.name }}
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+      <ShortVideoSwiper ref="swiperRef" :video-list="videoList" :container-width="containerWidth"
+        :container-height="containerHeight" :progress="progress" @loadMore="loadMoreData"
         @update:progress="onProgressUpdate" />
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-import { IonPage, IonContent, onIonViewWillEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
-import { getAd, AdItem, MovieFormType, fetchduanju, VideoItem,getShortdetail,MovieDetail } from '@/api/video';
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import { IonPage, IonContent, onIonViewWillEnter, onIonViewWillLeave, onIonViewDidLeave, IonSegment, IonSegmentButton } from '@ionic/vue';
+import { getAd, AdItem, MovieFormType, fetchduanju, VideoItem, getShortdetail, MovieDetail, fetchMGTVVideoList } from '@/api/video';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
@@ -31,22 +34,86 @@ const params = ref<MovieFormType>({
   ChannelId: "",
   GenderChannelType: ""
 })
-const { 
+const {
   trackPageView
 } = useUserAnalytics();
 
 // 广告数据
 let adData: VideoItem[] = [];
 const swiperRef = ref();
+const categories = ref([
+  { id: 0, name: '黑料', PageIndex: 1 },
+  { id: 1, name: '麻豆', PageIndex: 1 },
+  { id: 2, name: '爱情', PageIndex: 1 },
+  { id: 3, name: '动作', PageIndex: 1 },
+  // ...更多分类
+]);
+const activeCategory = ref(categories.value[0].id);
 
 const updateSize = () => {
   containerWidth.value = window.innerWidth;
   containerHeight.value = window.innerHeight - 50.8;
 };
 
+// 监听分类变化，重新加载数据
+watch(activeCategory, async (newCat: number) => {
+  console.log('Category changed to:', newCat);
+  swiperRef.value?.pauseAll();
+  videoList.value = [];
+  let data: VideoItem[] = [];
+  params.value.PageIndex = categories.value[newCat].PageIndex;
+  switch (newCat) {
+    case 0: // 黑料
+      data = await fetchduanju(params.value);
+      break;
+    case 1: // 麻豆
+      data = await getmadou(params.value.PageIndex);
+      break;
+    case 2: // 爱情
+      break;
+    case 3: // 动作
+      break;
+    // 添加更多分类的处理逻辑
+    default:
+      params.value.ChannelId = "";
+      params.value.GenderChannelType = "";
+  }
+  videoList.value = [...data];
+  progress.value = data.map(() => 0);
+});
+
+const getmadou = async (PageIndex: number): Promise<VideoItem[]> => {
+  const params = {
+    PageIndex: PageIndex + '',
+    PageSize: 5 + '',
+    VideoType: "",
+    CollectionId: "152",
+    SortType: "0"
+  };
+  return await fetchMGTVVideoList(params);
+}
+
 const loadMoreData = async () => {
+  params.value.PageIndex = categories.value[activeCategory.value].PageIndex;
   params.value.PageIndex = params.value.PageIndex + 1;
-  let newData = await fetchduanju(params.value);
+  categories.value[activeCategory.value].PageIndex = params.value.PageIndex;
+  let newData: VideoItem[] = [];
+    switch (activeCategory.value) {
+    case 0: // 黑料
+      newData = await fetchduanju(params.value);
+      break;
+    case 1: // 麻豆
+      newData = await getmadou(params.value.PageIndex);
+      break;
+    case 2: // 爱情
+      break;
+    case 3: // 动作
+      break;
+    // 添加更多分类的处理逻辑
+    default:
+      params.value.ChannelId = "";
+      params.value.GenderChannelType = "";
+  }
   if (newData.length > 0) {
     // 对新数据插入广告
     const newDataWithAds = insertAds(newData);
@@ -123,7 +190,7 @@ onMounted(async () => {
   getAds();
   if (videoList.value.length && videoList.value[0].id) {
     const infos = await getShortdetail(videoList.value[0].id);
-    videoList.value[0].info = {count:infos.length};
+    videoList.value[0].info = { count: infos.length };
   }
   await trackPageView('ShortDramas');
 });
@@ -149,5 +216,49 @@ onUnmounted(() => {
 .video-container {
   padding: 0;
   margin: 0;
+}
+
+.tabs-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 100vw;
+  background: transparent !important;
+  pointer-events: auto;
+  /* 保证可以点击 */
+}
+
+.category-tabs {
+  --background: transparent !important;
+  --indicator-color: red !important;
+  --color: #fff !important;
+  border: none;
+  box-shadow: none;
+  padding: 8px 8px;
+  background: transparent !important;
+}
+
+ion-segment-button {
+  --background: transparent;
+  --color: #efefef;
+  border: none;
+  box-shadow: none;
+  font-size: 16px;
+  font-weight: 500;
+  min-width: unset;
+  padding: 0 12px;
+  margin: 0 2px;
+  transition: color 0.2s, border-bottom 0.2s;
+  /* 去除安卓水波纹效果 */
+  --ripple-color: transparent;
+  outline: none;
+}
+
+.segment-button-checked {
+  color: #fff !important;
+  --indicator-color: transparent !important;
+  border-bottom: 2px solid #fff !important;
+  border-radius: 0;
 }
 </style>

@@ -1,6 +1,7 @@
 import { reactive,ref } from 'vue';
 
 export const PLAYDOMAIN = 'https://video.claydai.com/';
+// export let PLAYDOMAIN = 'https://woailixiaoran.ythjjt.com/';
 export const isInitialized = ref(false);
 
 // 全局初始化状态管理
@@ -22,7 +23,8 @@ export const shortVideoConfig = reactive<ShortVideoConfigType>({
 export const isadlook = ref(false); // 是否有广告
 
 export const state = reactive({
-  tabHeight: 0
+  tabHeight: 0,
+  PLAYDOMAIN: PLAYDOMAIN
 })
 
 export const setTabHeight = (height: number) => {

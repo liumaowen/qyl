@@ -1,6 +1,6 @@
 import { AES_Decrypt, AES_Encrypt, getm3u8, AES_UUID,fetchAndDecrypt } from '@/utils/crypto';
 import { apiopenRequest, mmpRequest, mgtvRequest,ipapiRequest } from './http';
-import { PLAYDOMAIN, ShortVideoConfigType, shortVideoConfig } from '@/store/state';
+import { ShortVideoConfigType, shortVideoConfig,state } from '@/store/state';
 import { type AnalyticsData } from '@/utils/userAnalytics';
 
 export interface VideoItem {
@@ -258,6 +258,9 @@ export const fetchConfig = async () => {
           shortVideoConfig.shortVideoRandomMax = Number(element.value2);
           shortVideoConfig.shortVideoRandomMin = Number(element.value1);
         }
+        if (element.pKey === "PlayDomain") {
+          state.PLAYDOMAIN = element.value1;
+        }
       });
     }
     return {
@@ -302,8 +305,8 @@ export const fetchMGTVVideoList = async (params: FormType): Promise<VideoItem[]>
 
       // 使用 Promise.all 并行处理异步 map
       const result: VideoItem[] = await Promise.all(list100.map(async (element: any) => {
-        const mm = getm3u8(PLAYDOMAIN, element['playUrl']);
-        const picblob = await fetchAndDecrypt(PLAYDOMAIN + element['imgUrl']);
+        const mm = getm3u8(state.PLAYDOMAIN, element['playUrl']);
+        const picblob = await fetchAndDecrypt(state.PLAYDOMAIN + element['imgUrl']);
         return {
           src: mm,
           poster: URL.createObjectURL(picblob),
@@ -349,8 +352,8 @@ export const fetchduanju = async (params: MovieFormType): Promise<VideoItem[]> =
       console.log('短句视频列表:', list100);
       // 处理每个视频
       const result = await Promise.all(list100.map(async (element: any) => {
-        const mm = getm3u8(PLAYDOMAIN, element['first']['playUrl']);
-        const picblob = await fetchAndDecrypt(PLAYDOMAIN + element['imgUrl']);
+        const mm = getm3u8(state.PLAYDOMAIN, element['first']['playUrl']);
+        const picblob = await fetchAndDecrypt(state.PLAYDOMAIN + element['imgUrl']);
         return {
           src: mm,
           id: element['id'],
@@ -402,7 +405,7 @@ export const getShortdetail = async (id:string): Promise<MovieDetail[]> => {
       //playUrl :  "MGTV/20250604/bd4494ebc035c1ba401f531789325993/index2.m3u8"
       // 处理每个视频
       const result:MovieDetail[] = await Promise.all(list100.map(async (element: any) => {
-        const mm = getm3u8(PLAYDOMAIN, element['playUrl']);
+        const mm = getm3u8(state.PLAYDOMAIN, element['playUrl']);
         return {
           src: mm,
           id: element['id'],

@@ -1,6 +1,13 @@
 <template>
-  <div class="video-wrap" :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
+  <div class="video-wrap" :style="{
+    width: containerWidth + 'px',
+    height: containerHeight + 'px',
+  }">
     <video :class="'video-js vjs-big-play-button-hidden'" :poster="video.poster" ref="videoRef"></video>
+    <!-- 自定义全屏按钮 -->
+    <button v-show="!isPlaying && showRotateBtn" class="fullscreen-btn" @click.stop="toggleFullscreen" title="全屏">
+      <ion-icon class="fullscreen-icon" :icon="isFullscreen ? contractOutline : expandOutline" />
+    </button>
     <div class="center-pause-btn" @click="togglePlay">
       <ion-icon v-show="!isPlaying" class="play" :icon="play" color="#fff"></ion-icon>
     </div>
@@ -27,10 +34,11 @@ import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import videoLanguage from 'video.js/dist/lang/zh-CN.json';
 import { IonIcon, IonProgressBar } from '@ionic/vue';
-import { play,chevronForwardOutline } from 'ionicons/icons';
+import { play, chevronForwardOutline, contractOutline, expandOutline } from 'ionicons/icons';
 import { type VideoItem } from '@/api/video';
 import { useIonRouter } from '@ionic/vue';
 import { useRouter } from 'vue-router';
+import { ScreenOrientation } from '@capacitor/screen-orientation';
 
 videojs.addLanguage('zh-CN', videoLanguage);
 
@@ -50,11 +58,42 @@ const router = useRouter();
 const videoRef = ref<HTMLVideoElement | null>(null);
 const player = ref<any>(null);
 const isDragging = ref(false);
+const showRotateBtn = ref(false);
+const isRotated = ref(false);
+const isFullscreen = ref(false);
+
+const toggleFullscreen = async () => {
+  if (player.value) {
+    if (!isFullscreen.value) {
+      // 先锁定横屏
+      try {
+        await ScreenOrientation.lock({ orientation: 'landscape' });
+      } catch (e) {
+        console.warn('横屏锁定失败', e);
+      }
+      player.value.requestFullscreen();
+    } else {
+      // 退出全屏时恢复竖屏
+      try {
+        await ScreenOrientation.lock({ orientation: 'portrait' });
+      } catch (e) {
+        console.warn('竖屏锁定失败', e);
+      }
+      player.value.exitFullscreen();
+    }
+  }
+};
 // 判断是否为手机端（屏幕宽度<768px）
 const isMobile = () => window.innerWidth < 768;
 
 onMounted(() => {
   if (videoRef.value) {
+    videoRef.value.onloadedmetadata = () => {
+      const w = videoRef.value?.videoWidth || 0;
+      const h = videoRef.value?.videoHeight || 1;
+      // 判断宽高比，宽屏时显示旋转按钮
+      showRotateBtn.value = w / h > 1.1;
+    };
     player.value = videojs(videoRef.value, {
       controls: false,
       autoplay: false,
@@ -77,6 +116,19 @@ onMounted(() => {
         emit('progressChange', props.index, currentTime / duration);
       }
     });
+    if (player.value) {
+      player.value.on('fullscreenchange', async () => {
+        isFullscreen.value = player.value.isFullscreen();
+        if (!isFullscreen.value) {
+          // 退出全屏自动恢复竖屏
+          try {
+            await ScreenOrientation.lock({ orientation: 'portrait' });
+          } catch (e) {
+            console.warn('竖屏锁定失败', e);
+          }
+        }
+      });
+    }
     player.value.on('error', () => {
       // 错误处理
     });
@@ -123,7 +175,7 @@ const goShortdetail = (id?: string) => {
         // 备用方案：使用 router
         router.push({
           name: 'DramasDetail',
-          params: { 
+          params: {
             id: id,
             title: props.video.title || '短剧'
           },
@@ -263,7 +315,8 @@ ion-progress-bar {
   font-weight: bold;
   line-height: 1.3;
 }
-.video-info-bar{
+
+.video-info-bar {
   padding: 6px 10px;
   background: rgb(110 104 104 / 70%);
   border-radius: 8px;
@@ -279,5 +332,28 @@ ion-progress-bar {
   height: 16px;
   position: relative;
   flex-shrink: 0;
+}
+
+.fullscreen-btn {
+  position: absolute;
+  bottom: 260px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: #fff;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.fullscreen-icon {
+  font-size: 24px;
 }
 </style>
