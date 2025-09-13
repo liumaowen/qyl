@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { IonPage, IonContent, onIonViewWillEnter, onIonViewWillLeave, onIonViewDidLeave, IonSegment, IonSegmentButton } from '@ionic/vue';
-import { getAd, AdItem, MovieFormType, fetchduanju, VideoItem, getShortdetail, MovieDetail, fetchMGTVVideoList } from '@/api/video';
+import { getAd, AdItem, FormType, MovieFormType, fetchduanju, VideoItem, getShortdetail, MovieDetail, fetchMGTVVideoList } from '@/api/video';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
@@ -44,8 +44,10 @@ const swiperRef = ref();
 const categories = ref([
   { id: 0, name: '黑料', PageIndex: 1 },
   { id: 1, name: '麻豆', PageIndex: 1 },
-  { id: 2, name: '爱情', PageIndex: 1 },
-  { id: 3, name: '动作', PageIndex: 1 },
+  { id: 2, name: '绿帽', PageIndex: 1 },
+  { id: 3, name: '萝莉', PageIndex: 1 },
+  { id: 4, name: '深喉', PageIndex: 1 },
+  { id: 5, name: '泄密', PageIndex: 1 },
   // ...更多分类
 ]);
 const activeCategory = ref(categories.value[0].id);
@@ -67,11 +69,54 @@ watch(activeCategory, async (newCat: number) => {
       data = await fetchduanju(params.value);
       break;
     case 1: // 麻豆
-      data = await getmadou(params.value.PageIndex);
+      const params1 = {
+        PageIndex: params.value.PageIndex + '',
+        PageSize: 5 + '',
+        VideoType: "",
+        CollectionId: "152",
+        SortType: "0"
+      };
+      data = await getmadou(params1);
       break;
-    case 2: // 爱情
+    case 2: // 绿帽
+      const params2 = {
+        PageIndex: params.value.PageIndex + '',
+        PageSize: 5 + '',
+        VideoType: "",
+        CollectionId: "25",
+        SortType: "2"
+      };
+      data = await getmadou(params2);
       break;
-    case 3: // 动作
+    case 3: // 萝莉
+      const params3 = {
+        PageIndex: params.value.PageIndex + '',
+        PageSize: 5 + '',
+        VideoType: "",
+        CollectionId: "31",
+        SortType: "0"
+      };
+      data = await getmadou(params3);
+      break;
+    case 4:
+      const params4 = {
+        PageIndex: params.value.PageIndex + '',
+        PageSize: 5 + '',
+        VideoType: "",
+        CollectionId: "11",
+        SortType: "2"
+      };
+      data = await getmadou(params4);
+      break;
+    case 5:
+      const params5 = {
+        PageIndex: params.value.PageIndex + '',
+        PageSize: 5 + '',
+        VideoType: "",
+        CollectionId: "8",
+        SortType: "2"
+      };
+      data = await getmadou(params5);
       break;
     // 添加更多分类的处理逻辑
     default:
@@ -82,14 +127,7 @@ watch(activeCategory, async (newCat: number) => {
   progress.value = data.map(() => 0);
 });
 
-const getmadou = async (PageIndex: number): Promise<VideoItem[]> => {
-  const params = {
-    PageIndex: PageIndex + '',
-    PageSize: 5 + '',
-    VideoType: "",
-    CollectionId: "152",
-    SortType: "0"
-  };
+const getmadou = async (params: FormType): Promise<VideoItem[]> => {
   return await fetchMGTVVideoList(params);
 }
 
@@ -98,16 +136,58 @@ const loadMoreData = async () => {
   params.value.PageIndex = params.value.PageIndex + 1;
   categories.value[activeCategory.value].PageIndex = params.value.PageIndex;
   let newData: VideoItem[] = [];
-    switch (activeCategory.value) {
+  switch (activeCategory.value) {
     case 0: // 黑料
       newData = await fetchduanju(params.value);
       break;
     case 1: // 麻豆
-      newData = await getmadou(params.value.PageIndex);
+      const params1 = {
+        PageIndex: params.value.PageIndex + '',
+        PageSize: 5 + '',
+        VideoType: "",
+        CollectionId: "152",
+        SortType: "0"
+      };
+      newData = await getmadou(params1);
       break;
-    case 2: // 爱情
+    case 2: // 绿帽
+      const params2 = {
+        PageIndex: params.value.PageIndex + '',
+        PageSize: 5 + '',
+        VideoType: "",
+        CollectionId: "25",
+        SortType: "2"
+      };
+      newData = await getmadou(params2);
       break;
-    case 3: // 动作
+    case 3: // 萝莉
+      const params3 = {
+        PageIndex: params.value.PageIndex + '',
+        PageSize: 5 + '',
+        VideoType: "",
+        CollectionId: "31",
+        SortType: "0"
+      };
+      newData = await getmadou(params3);
+    case 4:
+      const params4 = {
+        PageIndex: params.value.PageIndex + '',
+        PageSize: 5 + '',
+        VideoType: "",
+        CollectionId: "11",
+        SortType: "2"
+      };
+      newData = await getmadou(params4);
+      break;
+    case 5:
+      const params5 = {
+        PageIndex: params.value.PageIndex + '',
+        PageSize: 5 + '',
+        VideoType: "",
+        CollectionId: "8",
+        SortType: "2"
+      };
+      newData = await getmadou(params5);
       break;
     // 添加更多分类的处理逻辑
     default:
