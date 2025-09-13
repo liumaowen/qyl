@@ -67,6 +67,7 @@ export default defineConfig(({ mode }) => {
         },
         '/mgtv': {
           target: 'https://api.mgtv109.cc',
+          // target: 'https://lb0b.mgtv1266.cc',
           changeOrigin: true,
           rewrite: path => path.replace(/^\/mgtv/, '')
         },
@@ -76,6 +77,7 @@ export default defineConfig(({ mode }) => {
           rewrite: path => path.replace(/^\/ipapi/, '')
         }
       }
-    }
+    },
+    // base: '/open/', // 打包H5时使用
   }
 })
