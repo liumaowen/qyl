@@ -116,14 +116,14 @@ jobs:
           ls -R app/build/outputs/apk/
 
       - name: 上传 APK 到服务器（SFTP）
-        # if: ${{ github.event.inputs.buildType == 'release' }}
+        if: ${{ github.event.inputs.buildType == 'release' }}
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
           key: ${{ secrets.SFTP_KEY }}
           port: ${{ secrets.SFTP_PORT }}
-          source: android/app/build/outputs/apk/${{ github.event.inputs.buildType }}/${{ env.NEW_APK_NAME }}
+          source: android/app/build/outputs/apk/release/${{ env.NEW_APK_NAME }}
           target: ${{ secrets.SFTP_TARGET_DIR }}
           strip_components: 6
 

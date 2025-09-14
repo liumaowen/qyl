@@ -14,7 +14,7 @@
     <div class="my_progress_bar" @mousedown="startDrag" @touchstart="startDrag">
       <ion-progress-bar :value="progress" :class="['custom-progress', { dragging: isDragging }]"></ion-progress-bar>
     </div>
-    <div class="video-title-bar" v-if="video.title">
+    <div class="video-title-bar" v-if="video.title" :class="{ 'hide-tab-bar': isFullscreen }">
       <h6>{{ video.title }}</h6>
       <div v-if="video.info?.count && video.info?.count > 1">
         <p style="margin: 0;font-size: 13px;">{{ $t('video.firstEpisode') }}</p>
@@ -276,9 +276,9 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
   object-fit: cover;
 }
 
-.portrait-video .video-js .vjs-tech {
+/* .portrait-video .video-js .vjs-tech {
   object-fit: cover;
-}
+} */
 
 .center-pause-btn {
   position: absolute;
@@ -390,5 +390,8 @@ ion-progress-bar {
 
 .fullscreen-icon {
   font-size: 24px;
+}
+.hide-tab-bar {
+  display: none !important;
 }
 </style>
