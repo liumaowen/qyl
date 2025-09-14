@@ -5,24 +5,19 @@
     <swiper-slide v-for="(video, index) in videoList" :key="index" :virtualIndex="index" class="slide-item"
       :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }">
       <!-- 视频内容 -->
-      <ShortVideoItem v-if="video.type !== 'ad'" 
-        :video="video" 
-        :index="index" 
-        :container-width="containerWidth"
-        :container-height="containerHeight" 
-        :progress="progress[index] || 0" 
-        :is-playing="playingIndex === index"
-        @play="handlePlay" 
-        @pause="handlePause" 
-        @progressChange="handleProgressChange" />
+      <ShortVideoItem v-if="video.type !== 'ad'" :video="video" :index="index" :container-width="containerWidth"
+        :container-height="containerHeight" :progress="progress[index] || 0" :is-playing="playingIndex === index"
+        @play="handlePlay" @pause="handlePause" @progressChange="handleProgressChange" />
       <!-- 广告内容 -->
       <div v-else class="ad-wrap">
         <div class="ad-container" @click="openAd(video.src)">
           <iframe :src="video.src" class="ad-iframe" frameborder="0" allowfullscreen @error="onAdIframeError">
           </iframe>
           <div class="ad-overlay">
-            <div v-if="adCountdown > 0 && currentAdIndex === index" class="ad-countdown">{{ $t('ad.skipAfter', { seconds: adCountdown }) }}</div>
-            <button v-else-if="currentAdIndex === index" @click.stop="skipAd" class="skip-btn">{{ $t('ad.skipAd') }}</button>
+            <div v-if="adCountdown > 0 && currentAdIndex === index" class="ad-countdown">{{ $t('ad.skipAfter', {
+              seconds: adCountdown }) }}</div>
+            <button v-else-if="currentAdIndex === index" @click.stop="skipAd" class="skip-btn">{{ $t('ad.skipAd')
+              }}</button>
           </div>
         </div>
       </div>
@@ -39,7 +34,7 @@ import 'swiper/css';
 import ShortVideoItem from './ShortVideoItem.vue';
 import { Capacitor } from '@capacitor/core';
 import { InAppBrowser } from '@capacitor/inappbrowser';
-import { VideoItem,getShortdetail } from '@/api/video';
+import { VideoItem, getShortdetail } from '@/api/video';
 import eventBus from '@/eventBus';
 import { exit } from 'ionicons/icons';
 
@@ -50,7 +45,7 @@ const props = defineProps<{
   progress: number[];
 }>();
 
-const emit = defineEmits(['update:progress', 'loadMore','update:swiperChange']);
+const emit = defineEmits(['update:progress', 'loadMore', 'update:swiperChange']);
 
 const playingIndex = ref(0);
 const swiperRef = ref<any>();
@@ -67,7 +62,7 @@ const onSlideChange = async (e: any) => {
   const currentIndex = e.activeIndex;
   playingIndex.value = currentIndex;
   const video = props.videoList[currentIndex];
-  console.log('播放短剧',video)
+  console.log('播放短剧', video)
   if (video && video.type === 'ad') {
     currentAdIndex.value = currentIndex;
     if (video.isAdlook) {
@@ -103,18 +98,14 @@ const onSlideChange = async (e: any) => {
       clearInterval(adTimer);
       adTimer = null;
     }
-    if (isFullscreen) {
-      swiperRef.value.allowTouchMove = false; // 禁止滑动
-      swiperRef.value.update();
-    }
     if (swiperRef.value) {
       swiperRef.value.allowTouchMove = true;
       swiperRef.value.update();
     }
     if (video && video.videotype === 'dm' && video.id) {
-      console.log('播放短剧',video)
+      console.log('播放短剧', video)
       const infos = await getShortdetail(video.id);
-      video.info = {count:infos.length};
+      video.info = { count: infos.length };
     }
   }
   // 滑到倒数第三个时加载更多
@@ -175,6 +166,10 @@ onUnmounted(() => {
 onMounted(() => {
   eventBus.on('fullscreen-change-swiper', (fullscreen) => {
     isFullscreen.value = fullscreen as boolean;
+    if (isFullscreen) {
+      swiperRef.value.allowTouchMove = false; // 禁止滑动
+      swiperRef.value.update();
+    }
   });
 });
 

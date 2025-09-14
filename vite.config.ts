@@ -78,6 +78,6 @@ export default defineConfig(({ mode }) => {
         }
       }
     },
-    base: '/open/', // 打包H5时使用
+    // base: '/open/', // 打包H5时使用
   }
 })
