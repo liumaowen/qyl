@@ -106,7 +106,6 @@ const onSlideChange = async (e: any) => {
     if (isFullscreen) {
       swiperRef.value.allowTouchMove = false; // 禁止滑动
       swiperRef.value.update();
-      return;
     }
     if (swiperRef.value) {
       swiperRef.value.allowTouchMove = true;
