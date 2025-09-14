@@ -1,7 +1,7 @@
 import { reactive,ref } from 'vue';
 
-export const PLAYDOMAIN = 'https://video.claydai.com/';
-// export let PLAYDOMAIN = 'https://woailixiaoran.ythjjt.com/';
+// export const PLAYDOMAIN = 'https://video.claydai.com/';
+export let PLAYDOMAIN = 'https://woailixiaoran.ythjjt.com/';
 export const isInitialized = ref(false);
 
 // 全局初始化状态管理

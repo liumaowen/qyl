@@ -56,7 +56,11 @@ const activeCategory = ref(categories.value[0].id);
 
 const updateSize = () => {
   containerWidth.value = window.innerWidth;
-  containerHeight.value = window.innerHeight - 50.8;
+  if (isFullscreen.value) {
+    containerHeight.value = window.innerHeight;
+  } else {
+    containerHeight.value = window.innerHeight - 50.8;
+  }
 };
 
 // 监听分类变化，重新加载数据
@@ -276,7 +280,9 @@ onMounted(async () => {
   }
   await trackPageView('ShortDramas');
   eventBus.on('fullscreen-change', (fullscreen) => {
+    console.log('短', fullscreen);
     isFullscreen.value = fullscreen as boolean;
+    updateSize();
   });
 });
 onIonViewWillEnter(async () => {
@@ -347,5 +353,8 @@ ion-segment-button {
   --indicator-color: transparent !important;
   border-bottom: 2px solid #fff !important;
   border-radius: 0;
+}
+.hide-tab-bar {
+  display: none !important;
 }
 </style>

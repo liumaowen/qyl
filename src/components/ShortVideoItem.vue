@@ -67,7 +67,6 @@ const isPortrait = ref(false);
 const isFullscreen = ref<boolean>(false);
 
 const toggleFullscreen = async () => {
-  const wrap = document.querySelector('.video-wrap') as HTMLElement;
   if (player.value) {
     if (!isFullscreen.value) {
       // 先锁定横屏
