@@ -166,10 +166,10 @@ onUnmounted(() => {
 onMounted(() => {
   eventBus.on('fullscreen-change-swiper', (fullscreen) => {
     isFullscreen.value = fullscreen as boolean;
-    if (isFullscreen) {
+    if (isFullscreen.value) {
       swiperRef.value.allowTouchMove = false; // 禁止滑动
       swiperRef.value.update();
-    }else {
+    } else {
       swiperRef.value.allowTouchMove = true; // 允许滑动
       swiperRef.value.update();
     }

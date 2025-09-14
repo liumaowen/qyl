@@ -5,9 +5,9 @@
   }">
     <video :class="'video-js vjs-big-play-button-hidden'" :poster="video.poster" ref="videoRef"></video>
     <!-- 自定义全屏按钮 -->
-    <button v-show="!isPlaying && showRotateBtn" class="fullscreen-btn" @click.stop="toggleFullscreen" title="全屏">
+    <!-- <button v-show="!isPlaying && showRotateBtn" class="fullscreen-btn" @click.stop="toggleFullscreen" title="全屏">
       <ion-icon class="fullscreen-icon" :icon="isFullscreen ? contractOutline : expandOutline" />
-    </button>
+    </button> -->
     <div class="center-pause-btn" @click="togglePlay">
       <ion-icon v-show="!isPlaying" class="play" :icon="play" color="#fff"></ion-icon>
     </div>
