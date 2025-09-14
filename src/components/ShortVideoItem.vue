@@ -82,9 +82,9 @@ const toggleFullscreen = async () => {
       } catch (e) {
         console.warn('状态栏隐藏失败', e);
       }
-      if (wrap?.requestFullscreen) {
-        await wrap.requestFullscreen();
-      }
+      // if (wrap?.requestFullscreen) {
+      //   await wrap.requestFullscreen();
+      // }
       isFullscreen.value = true;
       // player.value.requestFullscreen();
     } else {
@@ -100,9 +100,9 @@ const toggleFullscreen = async () => {
       } catch (e) {
         console.warn('状态栏显示失败', e);
       }
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      }
+      // if (document.fullscreenElement) {
+      //   await document.exitFullscreen();
+      // }
       isFullscreen.value = false;
       // player.value.exitFullscreen();
     }
