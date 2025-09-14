@@ -169,6 +169,9 @@ onMounted(() => {
     if (isFullscreen) {
       swiperRef.value.allowTouchMove = false; // 禁止滑动
       swiperRef.value.update();
+    }else {
+      swiperRef.value.allowTouchMove = true; // 允许滑动
+      swiperRef.value.update();
     }
   });
 });
