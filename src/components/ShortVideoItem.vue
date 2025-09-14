@@ -40,6 +40,9 @@ import { useIonRouter } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { Capacitor } from '@capacitor/core';
+import { StatusBar } from '@capacitor/status-bar';
+import eventBus from '@/eventBus';
+import { b } from 'vite/dist/node/types.d-aGj9QkWt';
 
 videojs.addLanguage('zh-CN', videoLanguage);
 
@@ -61,9 +64,10 @@ const player = ref<any>(null);
 const isDragging = ref(false);
 const showRotateBtn = ref(false);
 const isPortrait = ref(false);
-const isFullscreen = ref(false);
+const isFullscreen = ref<boolean>(false);
 
 const toggleFullscreen = async () => {
+  const wrap = document.querySelector('.video-wrap') as HTMLElement;
   if (player.value) {
     if (!isFullscreen.value) {
       // 先锁定横屏
@@ -71,6 +75,15 @@ const toggleFullscreen = async () => {
         await ScreenOrientation.lock({ orientation: 'landscape' });
       } catch (e) {
         console.warn('横屏锁定失败', e);
+      }
+      // 隐藏状态栏
+      try {
+        await StatusBar.hide();
+      } catch (e) {
+        console.warn('状态栏隐藏失败', e);
+      }
+      if (wrap?.requestFullscreen) {
+        await wrap.requestFullscreen();
       }
       isFullscreen.value = true;
       // player.value.requestFullscreen();
@@ -81,9 +94,19 @@ const toggleFullscreen = async () => {
       } catch (e) {
         console.warn('竖屏锁定失败', e);
       }
+      // 显示状态栏
+      try {
+        await StatusBar.show();
+      } catch (e) {
+        console.warn('状态栏显示失败', e);
+      }
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
       isFullscreen.value = false;
       // player.value.exitFullscreen();
     }
+    eventBus.emit('fullscreen-change', isFullscreen.value);
   }
 };
 // 判断是否为手机端（屏幕宽度<768px）
@@ -253,6 +276,7 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
   max-width: 100% !important;
   object-fit: cover;
 }
+
 .portrait-video .video-js .vjs-tech {
   object-fit: cover;
 }

@@ -1,7 +1,7 @@
 <template>
   <ion-page>
     <ion-content :fullscreen="true" class="video-container">
-      <div class="tabs-wrapper">
+      <div class="tabs-wrapper" :class="{ 'hide-tab-bar': isFullscreen }">
         <ion-segment v-model="activeCategory" scrollable class="category-tabs">
           <ion-segment-button v-for="cat in categories" :key="cat.id" :value="cat.id">
             {{ cat.name }}
@@ -23,6 +23,7 @@ import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
 import { useUserAnalytics } from '@/composables/useUserAnalytics';
+import eventBus from '@/eventBus';
 
 const videoList = ref<VideoItem[]>([]);
 const progress = ref<number[]>([]);
@@ -37,6 +38,7 @@ const params = ref<MovieFormType>({
 const {
   trackPageView
 } = useUserAnalytics();
+const isFullscreen = ref<boolean>(false);
 
 // 广告数据
 let adData: VideoItem[] = [];
@@ -273,6 +275,9 @@ onMounted(async () => {
     videoList.value[0].info = { count: infos.length };
   }
   await trackPageView('ShortDramas');
+  eventBus.on('fullscreen-change', (fullscreen) => {
+    isFullscreen.value = fullscreen as boolean;
+  });
 });
 onIonViewWillEnter(async () => {
   if (Capacitor.isNativePlatform()) {
@@ -288,6 +293,7 @@ onIonViewDidLeave(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', updateSize);
   swiperRef.value?.pauseAll();
+  eventBus.off('fullscreen-change');
 });
 
 </script>
@@ -316,7 +322,7 @@ onUnmounted(() => {
   border: none;
   box-shadow: none;
   padding: 8px 8px;
-  margin-top:8px;
+  margin-top: 8px;
   background: transparent !important;
 }
 
