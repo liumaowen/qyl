@@ -40,6 +40,8 @@ import ShortVideoItem from './ShortVideoItem.vue';
 import { Capacitor } from '@capacitor/core';
 import { InAppBrowser } from '@capacitor/inappbrowser';
 import { VideoItem,getShortdetail } from '@/api/video';
+import eventBus from '@/eventBus';
+import { exit } from 'ionicons/icons';
 
 const props = defineProps<{
   videoList: any[];
@@ -55,6 +57,7 @@ const swiperRef = ref<any>();
 const adCountdown = ref(0);
 const currentAdIndex = ref(-1);
 let adTimer: any = null;
+const isFullscreen = ref<boolean>(false);
 
 const setSwiperRef = (swiper: any) => {
   swiperRef.value = swiper;
@@ -99,6 +102,11 @@ const onSlideChange = async (e: any) => {
     if (adTimer) {
       clearInterval(adTimer);
       adTimer = null;
+    }
+    if (isFullscreen) {
+      swiperRef.value.allowTouchMove = false; // 禁止滑动
+      swiperRef.value.update();
+      return;
     }
     if (swiperRef.value) {
       swiperRef.value.allowTouchMove = true;
@@ -163,6 +171,12 @@ defineExpose({ pauseAll });
 onUnmounted(() => {
   // 暂停所有视频
   playingIndex.value = -1;
+  eventBus.off('fullscreen-change-swiper');
+});
+onMounted(() => {
+  eventBus.on('fullscreen-change-swiper', (fullscreen) => {
+    isFullscreen.value = fullscreen as boolean;
+  });
 });
 
 onIonViewWillLeave(() => {

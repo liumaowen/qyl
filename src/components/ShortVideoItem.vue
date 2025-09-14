@@ -14,7 +14,7 @@
     <div class="my_progress_bar" @mousedown="startDrag" @touchstart="startDrag">
       <ion-progress-bar :value="progress" :class="['custom-progress', { dragging: isDragging }]"></ion-progress-bar>
     </div>
-    <div class="video-title-bar" v-if="video.title" :class="{ 'hide-tab-bar': isFullscreen }">
+    <div class="video-title-bar" v-if="video.title && !isFullscreen">
       <h6>{{ video.title }}</h6>
       <div v-if="video.info?.count && video.info?.count > 1">
         <p style="margin: 0;font-size: 13px;">{{ $t('video.firstEpisode') }}</p>
@@ -42,7 +42,6 @@ import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar } from '@capacitor/status-bar';
 import eventBus from '@/eventBus';
-import { b } from 'vite/dist/node/types.d-aGj9QkWt';
 
 videojs.addLanguage('zh-CN', videoLanguage);
 
@@ -106,6 +105,7 @@ const toggleFullscreen = async () => {
       // player.value.exitFullscreen();
     }
     eventBus.emit('fullscreen-change', isFullscreen.value);
+    eventBus.emit('fullscreen-change-swiper', isFullscreen.value);
   }
 };
 // 判断是否为手机端（屏幕宽度<768px）
