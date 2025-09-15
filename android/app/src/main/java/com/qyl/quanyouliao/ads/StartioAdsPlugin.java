@@ -9,7 +9,7 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.startapp.sdk.adsbase.Ad;
-import com.startapp.sdk.adsbase.AdEventListener;
+import com.startapp.sdk.adsbase.adlisteners.AdEventListener;
 import com.startapp.sdk.adsbase.StartAppAd;
 
 @CapacitorPlugin(name = "StartioAds")
@@ -88,13 +88,13 @@ public class StartioAdsPlugin extends Plugin {
     @PluginMethod
     public void showRewarded(PluginCall call) {
         if (rewardedAd != null && rewardedAd.isReady()) {
-            rewardedAd.showAd(new AdEventListener() {
+            rewardedAd.showAd(new com.startapp.sdk.adsbase.adlisteners.AdDisplayListener() {
                 @Override
-                public void onReceiveAd(Ad ad) {
+                public void adHidden(Ad ad) {
                     // noop
                 }
                 @Override
-                public void onFailedToReceiveAd(Ad ad) {
+                public void adDisplayed(Ad ad) {
                     // noop
                 }
             });
