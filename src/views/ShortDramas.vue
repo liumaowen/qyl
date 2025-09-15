@@ -131,6 +131,7 @@ watch(activeCategory, async (newCat: number) => {
   }
   videoList.value = [...data];
   progress.value = data.map(() => 0);
+  await trackPageView(categories.value[newCat].name);
 });
 
 const getmadou = async (params: FormType): Promise<VideoItem[]> => {

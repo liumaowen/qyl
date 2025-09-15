@@ -14,6 +14,7 @@ const progress = ref(0);
 let downloadUrl = '';
 let localVersion = '';
 let versionName = '';
+let updatedLog = '';
 
 function escapeHtml(str: string) {
   return str.replace(/[&<>"']/g, function (m) {
@@ -45,9 +46,9 @@ const presentAlert = async (t: any) => {
     header: t('update.newVersionFound'),
     cssClass: 'update-pop',
     backdropDismiss: false,
-    message: `${t('update.currentVersion', { version: escapeHtml(localVersion) })}<br/>${t('update.newVersion', { version: escapeHtml(versionName) })}`,
+    message: `${t('update.currentVersion', { version: escapeHtml(localVersion) })}<br/>${t('update.newVersion', { version: escapeHtml(versionName) })}<br/>${updatedLog}`,
     buttons: [
-      { text: t('update.cancel'), role: 'cancel' },
+      // { text: t('update.cancel'), role: 'cancel' },
       { text: t('update.updateNow'), handler: () => startUpdate(t) }
     ]
   });
@@ -117,6 +118,8 @@ async function checkUpdate(t: any,isship:boolean) {
   const res = await getVersion();
   versionName = res.versionName;
   downloadUrl = res.downloadUrl;
+  updatedLog = res.updatedLog;
+  
   
   const versionComparison = compareVersion(versionName, localVersion);
   
