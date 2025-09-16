@@ -97,6 +97,10 @@ public class StartioAdsPlugin extends Plugin {
                 public void adDisplayed(Ad ad) {
                     // noop
                 }
+                @Override
+                public void adNotDisplayed(Ad ad) {
+                    // noop
+                }
             });
             call.resolve();
         } else {

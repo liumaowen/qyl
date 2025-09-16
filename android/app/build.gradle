@@ -74,7 +74,7 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
     // Start.io (StartApp) Android SDK
-    implementation 'com.startapp:inapp-sdk:4.8.9'
+    implementation 'com.startapp:inapp-sdk:5.+'
 }
 
 apply from: 'capacitor.build.gradle'
