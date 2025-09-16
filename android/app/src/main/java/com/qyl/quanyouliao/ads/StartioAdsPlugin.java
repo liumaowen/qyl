@@ -19,6 +19,16 @@ public class StartioAdsPlugin extends Plugin {
     private StartAppAd interstitialAd;
     private StartAppAd rewardedAd;
 
+    @Override
+    public void load() {
+        super.load();
+        // Initialize Start.io SDK when plugin loads
+        StartAppSDK.init(getContext(), "208466650", false);
+        StartAppSDK.setTestAdsEnabled(true);
+        StartAppSDK.setUserConsent(getContext(), "pas", System.currentTimeMillis(), true);
+        Log.d(TAG, "StartioAds plugin loaded and SDK initialized");
+    }
+
     @PluginMethod
     public void init(PluginCall call) {
         Log.d(TAG, "StartioAds plugin initialized");
