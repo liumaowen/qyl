@@ -44,7 +44,7 @@ public class StartioAdsPlugin extends Plugin {
         logData.put("message", "Loading interstitial ad...");
         notifyListeners("debugLog", logData);
         
-        interstitialAd.loadAd(StartAppAd.AdMode.INTERSTITIAL, new AdEventListener() {
+        interstitialAd.loadAd(StartAppAd.AdMode.AUTOMATIC, new AdEventListener() {
             @Override
             public void onReceiveAd(Ad ad) {
                 Log.d(TAG, "Interstitial ad loaded successfully");
@@ -111,7 +111,7 @@ public class StartioAdsPlugin extends Plugin {
         logData.put("message", "Loading rewarded ad...");
         notifyListeners("debugLog", logData);
         
-        rewardedAd.loadAd(StartAppAd.AdMode.REWARDED_VIDEO, new AdEventListener() {
+        rewardedAd.loadAd(StartAppAd.AdMode.VIDEO, new AdEventListener() {
             @Override
             public void onReceiveAd(Ad ad) {
                 Log.d(TAG, "Rewarded ad loaded successfully");
