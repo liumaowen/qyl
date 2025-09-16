@@ -98,6 +98,10 @@ public class StartioAdsPlugin extends Plugin {
                     // noop
                 }
                 @Override
+                public void adClicked(Ad ad) {
+                    // noop
+                }
+                @Override
                 public void adNotDisplayed(Ad ad) {
                     // noop
                 }
