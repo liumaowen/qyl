@@ -11,5 +11,7 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
         // Initialize Start.io SDK with APP ID
         StartAppSDK.init(this, "208466650", false);
+        // Enable test ads for debugging
+        StartAppSDK.setTestAdsEnabled(true);
     }
 }

@@ -24,11 +24,11 @@ onMounted(async () => {
 
   onInterstitialEvent(async (e: any) => {
     if (e?.event === 'loaded') await toast('插屏已加载', 'success')
-    if (e?.event === 'failed') await toast('插屏加载失败', 'danger')
+    if (e?.event === 'failed') await toast('插屏加载失败'+JSON.stringify(e), 'danger')
   })
   onRewardedEvent(async (e: any) => {
     if (e?.event === 'loaded') await toast('激励已加载', 'success')
-    if (e?.event === 'failed') await toast('激励加载失败', 'danger')
+    if (e?.event === 'failed') await toast('激励加载失败'+JSON.stringify(e), 'danger')
   })
 })
 
