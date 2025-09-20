@@ -5,7 +5,7 @@
       <ion-button @click="testDebugLog" style="position: absolute; top: 50px; right: 10px; z-index: 1000;">测试日志</ion-button>
       <ShortVideoSwiper ref="swiperRef" :video-list="videoList" :container-width="containerWidth"
         :container-height="containerHeight" :progress="progress" @loadMore="loadMoreData"
-        @update:progress="onProgressUpdate" />
+        @update:progress="onProgressUpdate" @debugLog="addDebugLogFromChild" />
 
       <!-- 广告调试日志显示区域 -->
       <div v-if="showDebugLogs" style="position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); color: white; padding: 10px; max-height: 200px; overflow-y: auto; z-index: 1000; border-top: 2px solid #4CAF50;">
@@ -63,6 +63,13 @@ const addDebugLog = (message: string) => {
 // 清空调试日志
 const clearDebugLogs = () => {
   debugLogs.value = [];
+};
+
+// 处理来自子组件的调试日志
+const addDebugLogFromChild = (log: any) => {
+  if (log?.message) {
+    addDebugLog(log.message);
+  }
 };
 
 const updateSize = () => {
