@@ -53,7 +53,7 @@
           </ion-button>
           
           <!-- Start.io 广告测试按钮 -->
-          <AdsTest />
+          <!-- <AdsTest /> -->
 
           <!-- 联系我显示 -->
           <ion-button 

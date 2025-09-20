@@ -327,6 +327,7 @@ onIonViewDidLeave(() => {
   width: 100%;
   height: 100%;
   background: #000;
+  z-index: 9999;
 }
 
 .ad-container {
@@ -334,6 +335,7 @@ onIonViewDidLeave(() => {
   width: 100%;
   height: 100%;
   cursor: pointer;
+  z-index: 9999;
 }
 
 .ad-iframe {
@@ -350,6 +352,7 @@ onIonViewDidLeave(() => {
   width: 100%;
   height: 100%;
   pointer-events: none;
+  z-index: 9999;
 }
 
 .ad-countdown {
@@ -362,6 +365,7 @@ onIonViewDidLeave(() => {
   border-radius: 20px;
   font-size: 14px;
   pointer-events: none;
+  z-index: 9999;
 }
 
 .skip-btn {

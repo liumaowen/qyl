@@ -1,10 +1,6 @@
 <template>
   <ion-page>
     <ion-content :fullscreen="true" class="video-container">
-      <ion-button @click="testAdInit"
-        style="position: absolute; top: 10px; right: 10px; z-index: 1000;">测试广告</ion-button>
-      <ion-button @click="testDebugLog"
-        style="position: absolute; top: 50px; right: 10px; z-index: 1000;">测试日志</ion-button>
       <ShortVideoSwiper ref="swiperRef" :video-list="videoList" :container-width="containerWidth"
         :container-height="containerHeight" :progress="progress" @loadMore="loadMoreData"
         @update:progress="onProgressUpdate" @debugLog="addDebugLogFromChild" />
@@ -236,36 +232,6 @@ onUnmounted(() => {
   swiperRef.value?.pauseAll();
 });
 
-// 测试广告初始化
-const testAdInit = async () => {
-  try {
-    addDebugLog('开始测试广告初始化...');
-    console.log('开始测试广告初始化...');
-    await StartioAds.init();
-    addDebugLog('✅ 广告初始化成功');
-    console.log('广告初始化成功');
-
-    // 预加载插屏广告
-    addDebugLog('🚀 开始预加载插屏广告...');
-    await StartioAds.loadInterstitial();
-    addDebugLog('🎉 插屏广告预加载成功');
-    console.log('插屏广告预加载成功');
-
-    // 更新全局广告加载状态
-    setAdLoaded(true);
-    addDebugLog('🔄 全局广告加载状态已更新: true');
-  } catch (error) {
-    addDebugLog('❌ 广告初始化失败: ' + error);
-    console.error('广告初始化失败:', error);
-  }
-};
-
-// 测试调试日志
-const testDebugLog = () => {
-  addDebugLog('🧪 测试调试日志功能');
-  addDebugLog('🕒 当前时间: ' + new Date().toLocaleTimeString());
-  addDebugLog('✅ 调试日志功能正常');
-};
 
 </script>
 
