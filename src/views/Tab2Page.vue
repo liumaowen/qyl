@@ -50,7 +50,7 @@ const swiperRef = ref();
 
 // 调试日志相关
 const debugLogs = ref<string[]>([]);
-const showDebugLogs = ref(true);
+const showDebugLogs = ref(false);
 
 // 添加调试日志
 const addDebugLog = (message: string) => {
@@ -138,7 +138,7 @@ const insertAds = (videos: VideoItem[]) => {
     result.push(video);
 
     // 每10个视频插入一个广告，且确保有广告可用
-    if ((index + 1) % 1 === 0 && adData.length) {
+    if ((index + 1) % 10 === 0 && adData.length) {
       // 复制广告对象，避免重复使用同一个,插入完广告后，将广告对象push到adData数组中
       const adCopy = adData.shift() as VideoItem;
       if (adCopy) {
@@ -187,7 +187,6 @@ onMounted(async () => {
     addDebugLog('开始初始化广告...');
     await StartioAds.init();
     addDebugLog('✅ 广告初始化成功');
-    console.log('Tab2Page 广告初始化成功');
     // 预加载插屏广告
     addDebugLog('🚀 开始预加载插屏广告...');
     await StartioAds.loadInterstitial();
@@ -199,7 +198,6 @@ onMounted(async () => {
     addDebugLog('🔄 全局广告加载状态已更新: true');
   } catch (error) {
     addDebugLog('❌ 广告初始化失败: ' + error);
-    console.error('Tab2Page 广告初始化失败:', error);
   }
 });
 

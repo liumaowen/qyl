@@ -36,8 +36,7 @@ import ShortVideoItem from './ShortVideoItem.vue';
 import { Capacitor } from '@capacitor/core';
 import { InAppBrowser } from '@capacitor/inappbrowser';
 import { VideoItem, getShortdetail } from '@/api/video';
-import eventBus from '@/eventBus';
-import { StartioAds, onDebugLog } from '@/utils/startioAds';
+import { StartioAds } from '@/utils/startioAds';
 import { adStore, setAdLoaded } from '@/store/state';
 
 const props = defineProps<{
@@ -69,10 +68,10 @@ const onSlideChange = async (e: any) => {
   console.log('播放短剧', video);
 
   // 发送滑动日志到父组件
-  const slideLog = {
-    message: `🔄 滑动到第 ${currentIndex + 1} 个视频`
-  };
-  emit('debugLog', slideLog);
+  // const slideLog = {
+  //   message: `🔄 滑动到第 ${currentIndex + 1} 个视频`
+  // };
+  // emit('debugLog', slideLog);
 
   if (video && video.type === 'ad') {
     currentAdIndex.value = currentIndex;
@@ -101,7 +100,7 @@ const onSlideChange = async (e: any) => {
         swiperRef.value.allowTouchMove = false; // 禁止滑动
         swiperRef.value.update();
       }
-      adCountdown.value = video.duration || 6; // 广告倒计时，默认6秒
+      adCountdown.value = video.duration || 2; // 广告倒计时，默认2秒
 
       const countdownLog = {
         message: `⏱️ 开始广告倒计时: ${adCountdown.value}秒`
