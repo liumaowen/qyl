@@ -2,18 +2,22 @@
   <ion-page>
     <ion-content :fullscreen="true" class="video-container">
       <ion-button @click="testAdInit" style="position: absolute; top: 10px; right: 10px; z-index: 1000;">测试广告</ion-button>
+      <ion-button @click="testDebugLog" style="position: absolute; top: 50px; right: 10px; z-index: 1000;">测试日志</ion-button>
       <ShortVideoSwiper ref="swiperRef" :video-list="videoList" :container-width="containerWidth"
         :container-height="containerHeight" :progress="progress" @loadMore="loadMoreData"
         @update:progress="onProgressUpdate" />
 
       <!-- 广告调试日志显示区域 -->
-      <div v-if="showDebugLogs" style="position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.8); color: white; padding: 10px; max-height: 200px; overflow-y: auto; z-index: 1000;">
+      <div v-if="showDebugLogs" style="position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); color: white; padding: 10px; max-height: 200px; overflow-y: auto; z-index: 1000; border-top: 2px solid #4CAF50;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-          <h4 style="margin: 0; font-size: 14px;">广告调试日志:</h4>
-          <ion-button size="small" @click="clearDebugLogs" style="font-size: 12px;">清空</ion-button>
+          <h4 style="margin: 0; font-size: 14px;">📢 广告调试日志:</h4>
+          <ion-button size="small" @click="clearDebugLogs" style="font-size: 12px;">清空日志</ion-button>
         </div>
-        <div v-for="(log, index) in debugLogs" :key="index" style="font-size: 12px; margin-bottom: 2px;">
+        <div v-for="(log, index) in debugLogs" :key="index" style="font-size: 12px; margin-bottom: 2px; padding: 2px 4px; border-radius: 2px;" :style="index % 2 === 0 ? { backgroundColor: 'rgba(255,255,255,0.1)' } : {}">
           {{ log }}
+        </div>
+        <div v-if="debugLogs.length === 0" style="font-size: 12px; color: #aaa; font-style: italic; text-align: center; padding: 10px;">
+          等待广告日志...
         </div>
       </div>
     </ion-content>
@@ -229,6 +233,13 @@ const testAdInit = async () => {
     addDebugLog('❌ 广告初始化失败: ' + error);
     console.error('广告初始化失败:', error);
   }
+};
+
+// 测试调试日志
+const testDebugLog = () => {
+  addDebugLog('🧪 测试调试日志功能');
+  addDebugLog('🕒 当前时间: ' + new Date().toLocaleTimeString());
+  addDebugLog('✅ 调试日志功能正常');
 };
 
 </script>

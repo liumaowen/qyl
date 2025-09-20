@@ -219,11 +219,6 @@ onUnmounted(() => {
   playingIndex.value = -1;
 });
 onMounted(async () => {
-  // 监听调试日志事件
-  onDebugLog((e: any) => {
-    console.log('ShortVideoSwiper 广告调试日志:', e);
-  });
-  await toast('ShortVideoSwiper 广告调试日志:', 'success')
   // 初始化广告
   await initAds();
 });
@@ -265,6 +260,13 @@ const initAds = async () => {
     await toast(loadSuccessLog.message, 'success')
     // @ts-ignore
     StartioAds.notifyListeners('debugLog', loadSuccessLog);
+
+    // 添加一个测试日志，确保日志系统工作正常
+    const testLog = {
+      message: '🧪 ShortVideoSwiper 广告系统初始化完成'
+    };
+    // @ts-ignore
+    StartioAds.notifyListeners('debugLog', testLog);
   } catch (error) {
     console.error('StartioAds 初始化失败:', error);
     const errorLog = {
