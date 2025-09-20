@@ -30,7 +30,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
 import { isContentUnlocked } from '@/utils/unlock';
 import { useUserAnalytics } from '@/composables/useUserAnalytics';
-import { StartioAds } from '@/utils/startioAds';
+import { StartioAds, onDebugLog } from '@/utils/startioAds';
 
 const videoList = ref<VideoItem[]>([]);
 const progress = ref<number[]>([]);
@@ -160,6 +160,13 @@ onMounted(async () => {
   progress.value = initialData.map(() => 0);
   await nextTick();
   await trackPageView('Tab2Page');
+
+  // 监听调试日志事件
+  onDebugLog((e: any) => {
+    if (e?.message) {
+      addDebugLog(e.message);
+    }
+  });
 
   // 初始化广告
   try {

@@ -31,3 +31,26 @@ export const state = reactive({
 export const setTabHeight = (height: number) => {
   state.tabHeight = height
 };
+
+// 广告状态管理
+export const adStore = reactive({
+  isAdLoaded: false,
+  isAdShowing: false,
+  adCount: 0
+});
+
+export const setAdLoaded = (loaded: boolean) => {
+  adStore.isAdLoaded = loaded;
+};
+
+export const setAdShowing = (showing: boolean) => {
+  adStore.isAdShowing = showing;
+};
+
+export const incrementAdCount = () => {
+  adStore.adCount++;
+};
+
+export const resetAdCount = () => {
+  adStore.adCount = 0;
+};

@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue';
 import { onIonViewWillLeave, onIonViewDidLeave, toastController } from '@ionic/vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Virtual } from 'swiper/modules';
@@ -38,6 +38,7 @@ import { InAppBrowser } from '@capacitor/inappbrowser';
 import { VideoItem, getShortdetail } from '@/api/video';
 import eventBus from '@/eventBus';
 import { StartioAds, onDebugLog } from '@/utils/startioAds';
+import { adStore, setAdLoaded } from '@/store/state';
 
 const props = defineProps<{
   videoList: any[];
@@ -53,8 +54,9 @@ const swiperRef = ref<any>();
 const adCountdown = ref(0);
 const currentAdIndex = ref(-1);
 let adTimer: any = null;
-const isFullscreen = ref<boolean>(false);
-let isAdLoaded = false; // 广告是否已加载
+
+// 使用全局状态管理广告加载状态
+const isAdLoaded = computed(() => adStore.isAdLoaded);
 
 const setSwiperRef = (swiper: any) => {
   swiperRef.value = swiper;
@@ -255,7 +257,7 @@ const initAds = async () => {
     StartioAds.notifyListeners('debugLog', loadLog);
 
     await StartioAds.loadInterstitial();
-    isAdLoaded = true;
+    setAdLoaded(true); // 使用全局状态
 
     const loadSuccessLog = {
       message: '🎉 插屏广告预加载成功'
