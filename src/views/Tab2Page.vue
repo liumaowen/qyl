@@ -1,22 +1,18 @@
 <template>
   <ion-page>
     <ion-content :fullscreen="true" class="video-container">
-      <ShortVideoSwiper ref="swiperRef" 
-      :video-list="videoList" 
-      :container-width="containerWidth"
-      :container-height="containerHeight" 
-      :progress="progress" 
-      @loadMore="loadMoreData"
-      @update:progress="onProgressUpdate" />
+      <ShortVideoSwiper ref="swiperRef" :video-list="videoList" :container-width="containerWidth"
+        :container-height="containerHeight" :progress="progress" @loadMore="loadMoreData"
+        @update:progress="onProgressUpdate" />
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-import { IonPage, IonContent, onIonViewDidEnter,onIonViewWillEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
-import { fetchApiOpenTopVideos, getAd, AdItem, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, getConfig, VideoItem } from '@/api/video';
-import { shortVideoConfig, ShortVideoConfigType,isadlook,ismgtv } from '@/store/state';
+import { IonPage, IonContent, onIonViewDidEnter, onIonViewWillEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
+import { fetchApiOpenTopVideos, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, getConfig, VideoItem } from '@/api/video';
+import { shortVideoConfig, ShortVideoConfigType, isadlook, ismgtv } from '@/store/state';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
@@ -37,14 +33,14 @@ const updateSize = () => {
   containerWidth.value = window.innerWidth;
   containerHeight.value = window.innerHeight - 50.8;
 };
-const { 
+const {
   trackPageView
 } = useUserAnalytics();
 
 const loadMoreData = async () => {
   currentPage = Math.floor(Math.random() * (1600 - 0 + 1)) + 0;
-  let newData:VideoItem[] = [];
-  if(ismgtv.value) {
+  let newData: VideoItem[] = [];
+  if (ismgtv.value) {
     const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
     const params = {
       PageIndex: indd + '',
@@ -53,16 +49,16 @@ const loadMoreData = async () => {
       SortType: "7"
     };
     let mgtvlist = await fetchMGTVVideoList(params);
-    if(!mgtvlist.length) {
-        mgtvlist = await fetchVideo1();
-      }
+    if (!mgtvlist.length) {
+      mgtvlist = await fetchVideo1();
+    }
     newData = [...newData, ...mgtvlist];
   } else {
     newData = await fetchApiOpenTopVideos(currentPage, pageSize);
-    if(!isContentUnlocked()) {
+    if (!isContentUnlocked()) {
       const fulfilledVideos = await fetchVideo1();
       newData = [...newData, ...fulfilledVideos];
-    }else{
+    } else {
       const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
       const params = {
         PageIndex: indd + '',
@@ -71,7 +67,7 @@ const loadMoreData = async () => {
         SortType: "7"
       };
       let mgtvlist = await fetchMGTVVideoList(params);
-      if(!mgtvlist.length) {
+      if (!mgtvlist.length) {
         mgtvlist = await fetchVideo1();
       }
       newData = [...newData, ...mgtvlist];
@@ -117,8 +113,8 @@ onMounted(async () => {
   updateSize();
   await getConfig();
   const initialData = await fetchApiOpenTopVideos(currentPage, pageSize);
-  let mgtvlist:VideoItem[] = [];
-  if(ismgtv.value) {
+  let mgtvlist: VideoItem[] = [];
+  if (ismgtv.value) {
     const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
     const params = {
       PageIndex: indd + '',
@@ -128,23 +124,21 @@ onMounted(async () => {
     };
     mgtvlist = await fetchMGTVVideoList(params);
   }
-  videoList.value = [...initialData,...mgtvlist];
+  videoList.value = [...initialData, ...mgtvlist];
   progress.value = initialData.map(() => 0);
   await nextTick();
   await trackPageView('Tab2Page');
 });
 onIonViewDidEnter(async () => {
-  if(isadlook.value) {
-    const ads = await getAd();
-    if (ads.length > 0) {
-      adData = [];
-      ads.forEach((item: AdItem) => {
-        adData.push({
-          src: item.link,
-          type: 'ad'
-        });
+  if (isadlook.value) {
+    let i = 0;
+    do {
+      adData.push({
+        src: '',
+        type: 'ad'
       });
-    }
+      i++;
+    } while (i < 10);
   }
 })
 onIonViewWillEnter(async () => {

@@ -10,14 +10,15 @@
         @play="handlePlay" @pause="handlePause" @progressChange="handleProgressChange" />
       <!-- 广告内容 -->
       <div v-else class="ad-wrap">
-        <div class="ad-container" @click="openAd(video.src)">
-          <iframe :src="video.src" class="ad-iframe" frameborder="0" allowfullscreen @error="onAdIframeError">
-          </iframe>
+        <div class="ad-container">
+          <!-- <iframe :src="video.src" class="ad-iframe" frameborder="0" allowfullscreen @error="onAdIframeError">
+          </iframe> -->
           <div class="ad-overlay">
             <div v-if="adCountdown > 0 && currentAdIndex === index" class="ad-countdown">{{ $t('ad.skipAfter', {
-              seconds: adCountdown }) }}</div>
+              seconds: adCountdown
+            }) }}</div>
             <button v-else-if="currentAdIndex === index" @click.stop="skipAd" class="skip-btn">{{ $t('ad.skipAd')
-              }}</button>
+            }}</button>
           </div>
         </div>
       </div>
@@ -36,7 +37,7 @@ import { Capacitor } from '@capacitor/core';
 import { InAppBrowser } from '@capacitor/inappbrowser';
 import { VideoItem, getShortdetail } from '@/api/video';
 import eventBus from '@/eventBus';
-import { exit } from 'ionicons/icons';
+import { StartioAds } from '@/utils/startioAds';
 
 const props = defineProps<{
   videoList: any[];
@@ -45,7 +46,7 @@ const props = defineProps<{
   progress: number[];
 }>();
 
-const emit = defineEmits(['update:progress', 'loadMore', 'update:swiperChange']);
+const emit = defineEmits(['update:progress', 'loadMore', 'update:swiperChange', 'slideChange']);
 
 const playingIndex = ref(0);
 const swiperRef = ref<any>();
@@ -53,6 +54,7 @@ const adCountdown = ref(0);
 const currentAdIndex = ref(-1);
 let adTimer: any = null;
 const isFullscreen = ref<boolean>(false);
+let isAdLoaded = false; // 广告是否已加载
 
 const setSwiperRef = (swiper: any) => {
   swiperRef.value = swiper;
@@ -65,14 +67,19 @@ const onSlideChange = async (e: any) => {
   console.log('播放短剧', video)
   if (video && video.type === 'ad') {
     currentAdIndex.value = currentIndex;
+
     if (video.isAdlook) {
       adCountdown.value = 0;
     } else {
+      if (isAdLoaded) {
+        console.log('准备显示全屏广告');
+        await showFullscreenAd();
+      }
       if (swiperRef.value) {
         swiperRef.value.allowTouchMove = false; // 禁止滑动
         swiperRef.value.update();
       }
-      adCountdown.value = video.duration || 10;
+      adCountdown.value = video.duration || 6; // 广告倒计时，默认6秒
     }
     if (adTimer) clearInterval(adTimer);
     adTimer = setInterval(() => {
@@ -128,13 +135,13 @@ const handleProgressChange = (index: number, value: number) => {
   emit('update:progress', { index, value });
 };
 
-const onAdIframeError = () => {
-  adCountdown.value = 0;
-  if (adTimer) {
-    clearInterval(adTimer);
-    adTimer = null;
-  }
-};
+// const onAdIframeError = () => {
+//   adCountdown.value = 0;
+//   if (adTimer) {
+//     clearInterval(adTimer);
+//     adTimer = null;
+//   }
+// };
 const skipAd = () => {
   const currentAdPosition = currentAdIndex.value;
   currentAdIndex.value = -1;
@@ -161,20 +168,38 @@ defineExpose({ pauseAll });
 onUnmounted(() => {
   // 暂停所有视频
   playingIndex.value = -1;
-  eventBus.off('fullscreen-change-swiper');
 });
-onMounted(() => {
-  eventBus.on('fullscreen-change-swiper', (fullscreen) => {
-    isFullscreen.value = fullscreen as boolean;
-    if (isFullscreen.value) {
-      swiperRef.value.allowTouchMove = false; // 禁止滑动
-      swiperRef.value.update();
-    } else {
-      swiperRef.value.allowTouchMove = true; // 允许滑动
-      swiperRef.value.update();
-    }
-  });
+onMounted(async () => {
+  // 初始化广告
+  await initAds();
 });
+// 初始化广告
+const initAds = async () => {
+  try {
+    await StartioAds.init();
+    console.log('StartioAds 初始化成功');
+    // 预加载插屏广告
+    await StartioAds.loadInterstitial();
+    isAdLoaded = true;
+  } catch (error) {
+    console.error('StartioAds 初始化失败:', error);
+  }
+};
+// 显示全屏广告
+const showFullscreenAd = async () => {
+  if (!isAdLoaded) {
+    console.log('广告未加载完成');
+    return;
+  }
+  try {
+    await StartioAds.showInterstitial();
+    console.log('全屏广告显示成功');
+    // 重新加载广告以备下次使用
+    await StartioAds.loadInterstitial();
+  } catch (error) {
+    console.error('显示全屏广告失败:', error);
+  }
+};
 
 onIonViewWillLeave(() => {
   playingIndex.value = -1;

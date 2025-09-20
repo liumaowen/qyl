@@ -315,11 +315,13 @@ onUnmounted(() => {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 100;
+  z-index: 9999;
   width: 100vw;
   background: transparent !important;
   pointer-events: auto;
   /* 保证可以点击 */
+  /* 添加安全区域适配 */
+  padding-top: env(safe-area-inset-top);
 }
 
 .category-tabs {
@@ -347,6 +349,10 @@ ion-segment-button {
   /* 去除安卓水波纹效果 */
   --ripple-color: transparent;
   outline: none;
+  /* 移动端优化 */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .segment-button-checked {
@@ -354,6 +360,9 @@ ion-segment-button {
   --indicator-color: transparent !important;
   border-bottom: 2px solid #fff !important;
   border-radius: 0;
+  /* 加强选中状态的可见性 */
+  font-weight: 600;
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }
 .hide-tab-bar {
   display: none !important;
