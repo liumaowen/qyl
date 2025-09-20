@@ -6,8 +6,8 @@ export interface StartioAdsPlugin {
   showInterstitial(): Promise<void>
   loadRewarded(): Promise<void>
   showRewarded(): Promise<void>
-  // 添加 notifyListeners 方法声明
-  notifyListeners?(eventName: string, data: any): Promise<void>
+  // 确保 notifyListeners 方法声明正确
+  notifyListeners(eventName: string, data: any): void
 }
 
 export const StartioAds = registerPlugin<StartioAdsPlugin>('StartioAds');

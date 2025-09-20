@@ -71,7 +71,7 @@ const onSlideChange = async (e: any) => {
     message: `🔄 滑动到第 ${currentIndex + 1} 个视频`
   };
   // @ts-ignore
-  StartioAds.notifyListeners?.('debugLog', slideLog);
+  StartioAds.notifyListeners('debugLog', slideLog);
 
   if (video && video.type === 'ad') {
     currentAdIndex.value = currentIndex;
@@ -82,7 +82,7 @@ const onSlideChange = async (e: any) => {
         message: `📢 广告已观看，跳过倒计时`
       };
       // @ts-ignore
-      StartioAds.notifyListeners?.('debugLog', adLog);
+      StartioAds.notifyListeners('debugLog', adLog);
     } else {
       if (isAdLoaded) {
         console.log('准备显示全屏广告');
@@ -90,14 +90,14 @@ const onSlideChange = async (e: any) => {
           message: `📢 准备显示全屏广告`
         };
         // @ts-ignore
-        StartioAds.notifyListeners?.('debugLog', adLog);
+        StartioAds.notifyListeners('debugLog', adLog);
         await showFullscreenAd();
       } else {
         const adLog = {
           message: `📢 广告未加载完成，跳过显示`
         };
         // @ts-ignore
-        StartioAds.notifyListeners?.('debugLog', adLog);
+        StartioAds.notifyListeners('debugLog', adLog);
       }
       if (swiperRef.value) {
         swiperRef.value.allowTouchMove = false; // 禁止滑动
@@ -109,7 +109,7 @@ const onSlideChange = async (e: any) => {
         message: `⏱️ 开始广告倒计时: ${adCountdown.value}秒`
       };
       // @ts-ignore
-      StartioAds.notifyListeners?.('debugLog', countdownLog);
+      StartioAds.notifyListeners('debugLog', countdownLog);
     }
     if (adTimer) clearInterval(adTimer);
     adTimer = setInterval(() => {
@@ -127,7 +127,7 @@ const onSlideChange = async (e: any) => {
           message: `✅ 广告倒计时结束，允许滑动`
         };
         // @ts-ignore
-        StartioAds.notifyListeners?.('debugLog', finishLog);
+        StartioAds.notifyListeners('debugLog', finishLog);
       }
     }, 1000);
     if (swiperRef.value) {
@@ -154,7 +154,7 @@ const onSlideChange = async (e: any) => {
         message: `🎬 播放短剧: ${video.title || '未知标题'}`
       };
       // @ts-ignore
-      StartioAds.notifyListeners?.('debugLog', dramaLog);
+      StartioAds.notifyListeners('debugLog', dramaLog);
     }
   }
   // 滑到倒数第三个时加载更多
@@ -164,7 +164,7 @@ const onSlideChange = async (e: any) => {
       message: `📥 触发加载更多数据`
     };
     // @ts-ignore
-    StartioAds.notifyListeners?.('debugLog', loadLog);
+    StartioAds.notifyListeners('debugLog', loadLog);
   }
 };
 
@@ -234,7 +234,7 @@ const initAds = async () => {
     };
     await toast(initLog.message, 'success')
     // @ts-ignore
-    StartioAds.notifyListeners?.('debugLog', initLog);
+    StartioAds.notifyListeners('debugLog', initLog);
 
     await StartioAds.init();
     console.log('StartioAds 初始化成功');
@@ -244,7 +244,7 @@ const initAds = async () => {
     };
     await toast(successLog.message, 'success')
     // @ts-ignore
-    StartioAds.notifyListeners?.('debugLog', successLog);
+    StartioAds.notifyListeners('debugLog', successLog);
 
     // 预加载插屏广告
     const loadLog = {
@@ -252,7 +252,7 @@ const initAds = async () => {
     };
     await toast(loadLog.message, 'success')
     // @ts-ignore
-    StartioAds.notifyListeners?.('debugLog', loadLog);
+    StartioAds.notifyListeners('debugLog', loadLog);
 
     await StartioAds.loadInterstitial();
     isAdLoaded = true;
@@ -262,7 +262,7 @@ const initAds = async () => {
     };
     await toast(loadSuccessLog.message, 'success')
     // @ts-ignore
-    StartioAds.notifyListeners?.('debugLog', loadSuccessLog);
+    StartioAds.notifyListeners('debugLog', loadSuccessLog);
   } catch (error) {
     console.error('StartioAds 初始化失败:', error);
     const errorLog = {
@@ -270,7 +270,7 @@ const initAds = async () => {
     };
     await toast(errorLog.message, 'danger')
     // @ts-ignore
-    StartioAds.notifyListeners?.('debugLog', errorLog);
+    StartioAds.notifyListeners('debugLog', errorLog);
   }
 };
 // 显示全屏广告
@@ -281,7 +281,7 @@ const showFullscreenAd = async () => {
       message: '⚠️ 广告未加载完成，无法显示'
     };
     // @ts-ignore
-    StartioAds.notifyListeners?.('debugLog', notReadyLog);
+    StartioAds.notifyListeners('debugLog', notReadyLog);
     return;
   }
 
@@ -290,7 +290,7 @@ const showFullscreenAd = async () => {
       message: '📺 开始显示全屏广告...'
     };
     // @ts-ignore
-    StartioAds.notifyListeners?.('debugLog', showLog);
+    StartioAds.notifyListeners('debugLog', showLog);
 
     await StartioAds.showInterstitial();
     console.log('全屏广告显示成功');
@@ -299,14 +299,14 @@ const showFullscreenAd = async () => {
       message: '✨ 全屏广告显示成功'
     };
     // @ts-ignore
-    StartioAds.notifyListeners?.('debugLog', successLog);
+    StartioAds.notifyListeners('debugLog', successLog);
 
     // 重新加载广告以备下次使用
     const reloadLog = {
       message: '🔄 重新加载广告以备下次使用...'
     };
     // @ts-ignore
-    StartioAds.notifyListeners?.('debugLog', reloadLog);
+    StartioAds.notifyListeners('debugLog', reloadLog);
 
     await StartioAds.loadInterstitial();
 
@@ -314,14 +314,14 @@ const showFullscreenAd = async () => {
       message: '✅ 广告重新加载成功'
     };
     // @ts-ignore
-    StartioAds.notifyListeners?.('debugLog', reloadSuccessLog);
+    StartioAds.notifyListeners('debugLog', reloadSuccessLog);
   } catch (error) {
     console.error('显示全屏广告失败:', error);
     const errorLog = {
       message: '❌ 显示全屏广告失败: ' + error
     };
     // @ts-ignore
-    StartioAds.notifyListeners?.('debugLog', errorLog);
+    StartioAds.notifyListeners('debugLog', errorLog);
   }
 };
 const toast = async (message: string, color: any = 'primary') => {
