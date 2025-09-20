@@ -89,14 +89,14 @@ const onSlideChange = async (e: any) => {
       if (isAdLoaded) {
         console.log('准备显示全屏广告');
         const adLog = {
-          message: `📢 准备显示全屏广告`
+          message: `📢 准备显示全屏广告 (广告已加载: ${adStore.isAdLoaded})`
         };
         // @ts-ignore
         StartioAds.notifyListeners('debugLog', adLog);
         await showFullscreenAd();
       } else {
         const adLog = {
-          message: `📢 广告未加载完成，跳过显示`
+          message: `📢 广告未加载完成，跳过显示 (广告加载状态: ${adStore.isAdLoaded})`
         };
         // @ts-ignore
         StartioAds.notifyListeners('debugLog', adLog);
@@ -229,7 +229,6 @@ const initAds = async () => {
     const initLog = {
       message: '🎬 开始初始化 StartioAds...'
     };
-    await toast(initLog.message, 'success')
     // @ts-ignore
     StartioAds.notifyListeners('debugLog', initLog);
 
@@ -239,7 +238,6 @@ const initAds = async () => {
     const successLog = {
       message: '✅ StartioAds 初始化成功'
     };
-    await toast(successLog.message, 'success')
     // @ts-ignore
     StartioAds.notifyListeners('debugLog', successLog);
 
@@ -247,7 +245,6 @@ const initAds = async () => {
     const loadLog = {
       message: '🚀 开始预加载插屏广告...'
     };
-    await toast(loadLog.message, 'success')
     // @ts-ignore
     StartioAds.notifyListeners('debugLog', loadLog);
 
@@ -257,7 +254,6 @@ const initAds = async () => {
     const loadSuccessLog = {
       message: '🎉 插屏广告预加载成功'
     };
-    await toast(loadSuccessLog.message, 'success')
     // @ts-ignore
     StartioAds.notifyListeners('debugLog', loadSuccessLog);
 
@@ -272,17 +268,17 @@ const initAds = async () => {
     const errorLog = {
       message: '❌ StartioAds 初始化失败: ' + error
     };
-    await toast(errorLog.message, 'danger')
     // @ts-ignore
     StartioAds.notifyListeners('debugLog', errorLog);
   }
 };
 // 显示全屏广告
 const showFullscreenAd = async () => {
+  console.log('检查广告加载状态:', adStore.isAdLoaded);
   if (!isAdLoaded) {
     console.log('广告未加载完成');
     const notReadyLog = {
-      message: '⚠️ 广告未加载完成，无法显示'
+      message: `⚠️ 广告未加载完成，无法显示 (当前状态: ${adStore.isAdLoaded})`
     };
     // @ts-ignore
     StartioAds.notifyListeners('debugLog', notReadyLog);
