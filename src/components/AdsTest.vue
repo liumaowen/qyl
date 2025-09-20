@@ -1,13 +1,8 @@
 <template>
   <div class="ads-test">
-    <ion-button size="small" @click="loadInterstitial">加载插屏</ion-button>
-    <ion-button size="small" color="secondary" @click="showInterstitial">展示插屏</ion-button>
-    <ion-button size="small" @click="loadRewarded">加载激励</ion-button>
-    <ion-button size="small" color="tertiary" @click="showRewarded">展示激励</ion-button>
-    
     <!-- 调试日志显示区域 -->
     <div class="debug-logs">
-      <h4>调试日志：</h4>
+      <h4>广告调试日志：</h4>
       <div class="log-container">
         <div v-for="(log, index) in debugLogs" :key="index" class="log-item">
           {{ log }}
@@ -21,7 +16,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { IonButton, toastController } from '@ionic/vue'
-import { StartioAds, onInterstitialEvent, onRewardedEvent } from '@/utils/startioAds'
+import { StartioAds, onInterstitialEvent, onRewardedEvent, onDebugLog } from '@/utils/startioAds'
 
 // 调试日志
 const debugLogs = ref<string[]>([])
@@ -44,17 +39,9 @@ const toast = async (message: string, color: any = 'primary') => {
   await t.present()
 }
 
-onMounted(async () => {
-  try {
-    await StartioAds.init()
-    addLog('StartioAds 初始化成功')
-  } catch (error) {
-    addLog('StartioAds 初始化失败: ' + error)
-  }
-
+onMounted(() => {
   // 监听调试日志事件
-  // @ts-ignore
-  StartioAds.addListener?.('debugLog', (e: any) => {
+  onDebugLog((e: any) => {
     if (e?.message) {
       addLog(e.message)
     }
@@ -126,15 +113,10 @@ const showRewarded = async () => {
 
 <style scoped>
 .ads-test {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  margin-top: 8px;
+  width: 100%;
 }
 
 .debug-logs {
-  grid-column: 1 / -1;
-  margin-top: 16px;
   padding: 12px;
   background-color: #f5f5f5;
   border-radius: 8px;
@@ -148,7 +130,7 @@ const showRewarded = async () => {
 }
 
 .log-container {
-  max-height: 200px;
+  max-height: 300px;
   overflow-y: auto;
   background-color: #fff;
   border: 1px solid #ccc;
