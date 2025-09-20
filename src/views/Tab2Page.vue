@@ -89,7 +89,7 @@ const loadMoreData = async () => {
     const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
     const params = {
       PageIndex: indd + '',
-      PageSize: 5 + '',
+      PageSize: 10 + '',
       VideoType: "1",
       SortType: "7"
     };
@@ -137,8 +137,8 @@ const insertAds = (videos: VideoItem[]) => {
   videos.forEach((video, index) => {
     result.push(video);
 
-    // 每10个视频插入一个广告，且确保有广告可用
-    if ((index + 1) % 10 === 0 && adData.length) {
+    // 每8个视频插入一个广告，且确保有广告可用
+    if ((index + 1) % 8 === 0 && adData.length) {
       // 复制广告对象，避免重复使用同一个,插入完广告后，将广告对象push到adData数组中
       const adCopy = adData.shift() as VideoItem;
       if (adCopy) {
