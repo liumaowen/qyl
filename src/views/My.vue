@@ -51,6 +51,10 @@
             <ion-icon :icon="refresh" slot="start"></ion-icon>
             {{ $t('my.checkUpdate') }}
           </ion-button>
+          
+          <!-- Start.io 广告测试按钮 -->
+          <!-- <AdsTest /> -->
+
           <!-- 联系我显示 -->
           <ion-button 
             expand="block" 
@@ -197,11 +201,13 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { InAppBrowser } from '@capacitor/inappbrowser';
 import { useAppUpdate } from '@/composables/useAppUpdate';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import AdsTest from '@/components/AdsTest.vue';
 import { verifyPassword } from '@/api/video';
 import { useI18n } from 'vue-i18n';
 import { setContentUnlocked, isContentUnlocked, getRemainingUnlockTime } from '@/utils/unlock';
 import LegalModal from '@/components/LegalModal.vue';
 import { useUserAnalytics } from '@/composables/useUserAnalytics';
+import { App } from '@capacitor/app';
 
 const { showDownloadAlert, progress, checkUpdate } = useAppUpdate();
 const { t } = useI18n();
@@ -385,8 +391,8 @@ const getAppVersion = async () => {
     // 如果使用 Capacitor，可以获取原生版本信息
     if (Capacitor.isNativePlatform()) {
       // 这里可以调用原生API获取版本
-      // 例如：const version = await App.getInfo();
-      appVersion.value = 'v1.0.0'; // 暂时使用默认值
+      const version = await App.getInfo();
+      appVersion.value = version.version?version.version:'v1.0.0';
     } else {
       // Web环境，尝试从环境变量获取版本
       const version = import.meta.env.VITE_APP_VERSION || 'v1.0.0';

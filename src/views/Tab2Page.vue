@@ -1,27 +1,42 @@
 <template>
   <ion-page>
     <ion-content :fullscreen="true" class="video-container">
-      <ShortVideoSwiper ref="swiperRef" 
-      :video-list="videoList" 
-      :container-width="containerWidth"
-      :container-height="containerHeight" 
-      :progress="progress" 
-      @loadMore="loadMoreData"
-      @update:progress="onProgressUpdate" />
+      <ShortVideoSwiper ref="swiperRef" :video-list="videoList" :container-width="containerWidth"
+        :container-height="containerHeight" :progress="progress" @loadMore="loadMoreData"
+        @update:progress="onProgressUpdate" @debugLog="addDebugLogFromChild" />
+
+      <!-- 广告调试日志显示区域 -->
+      <div v-if="showDebugLogs"
+        style="position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); color: white; padding: 10px; max-height: 200px; overflow-y: auto; z-index: 1000; border-top: 2px solid #4CAF50;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+          <h4 style="margin: 0; font-size: 14px;">📢 广告调试日志:</h4>
+          <ion-button size="small" @click="clearDebugLogs" style="font-size: 12px;">清空日志</ion-button>
+        </div>
+        <div v-for="(log, index) in debugLogs" :key="index"
+          style="font-size: 12px; margin-bottom: 2px; padding: 2px 4px; border-radius: 2px;"
+          :style="index % 2 === 0 ? { backgroundColor: 'rgba(255,255,255,0.1)' } : {}">
+          {{ log }}
+        </div>
+        <div v-if="debugLogs.length === 0"
+          style="font-size: 12px; color: #aaa; font-style: italic; text-align: center; padding: 10px;">
+          等待广告日志...
+        </div>
+      </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-import { IonPage, IonContent, onIonViewDidEnter,onIonViewWillEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
-import { fetchApiOpenTopVideos, getAd, AdItem, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, getConfig, VideoItem } from '@/api/video';
-import { shortVideoConfig, ShortVideoConfigType,isadlook,ismgtv } from '@/store/state';
+import { IonPage, IonContent, IonButton, onIonViewDidEnter, onIonViewWillEnter, onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
+import { fetchApiOpenTopVideos, fetchMGTVVideoList, fetchVideo1, fetchVideo2, fetchVideo3, getConfig, VideoItem } from '@/api/video';
+import { shortVideoConfig, ShortVideoConfigType, isadlook, ismgtv, setAdLoaded } from '@/store/state';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import ShortVideoSwiper from '@/components/ShortVideoSwiper.vue';
 import { isContentUnlocked } from '@/utils/unlock';
 import { useUserAnalytics } from '@/composables/useUserAnalytics';
+import { StartioAds, onDebugLog } from '@/utils/startioAds';
 
 const videoList = ref<VideoItem[]>([]);
 const progress = ref<number[]>([]);
@@ -33,18 +48,44 @@ const pageSize = 4;
 let adData: VideoItem[] = [];
 const swiperRef = ref();
 
+// 调试日志相关
+const debugLogs = ref<string[]>([]);
+const showDebugLogs = ref(false);
+
+// 添加调试日志
+const addDebugLog = (message: string) => {
+  const timestamp = new Date().toLocaleTimeString();
+  debugLogs.value.push(`[${timestamp}] ${message}`);
+  // 限制日志数量
+  if (debugLogs.value.length > 50) {
+    debugLogs.value = debugLogs.value.slice(-30);
+  }
+};
+
+// 清空调试日志
+const clearDebugLogs = () => {
+  debugLogs.value = [];
+};
+
+// 处理来自子组件的调试日志
+const addDebugLogFromChild = (log: any) => {
+  if (log?.message) {
+    addDebugLog(log.message);
+  }
+};
+
 const updateSize = () => {
   containerWidth.value = window.innerWidth;
   containerHeight.value = window.innerHeight - 50.8;
 };
-const { 
+const {
   trackPageView
 } = useUserAnalytics();
 
 const loadMoreData = async () => {
   currentPage = Math.floor(Math.random() * (1600 - 0 + 1)) + 0;
-  let newData:VideoItem[] = [];
-  if(ismgtv.value) {
+  let newData: VideoItem[] = [];
+  if (ismgtv.value) {
     const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
     const params = {
       PageIndex: indd + '',
@@ -53,16 +94,16 @@ const loadMoreData = async () => {
       SortType: "7"
     };
     let mgtvlist = await fetchMGTVVideoList(params);
-    if(!mgtvlist.length) {
-        mgtvlist = await fetchVideo1();
-      }
+    if (!mgtvlist.length) {
+      mgtvlist = await fetchVideo1();
+    }
     newData = [...newData, ...mgtvlist];
   } else {
     newData = await fetchApiOpenTopVideos(currentPage, pageSize);
-    if(!isContentUnlocked()) {
+    if (!isContentUnlocked()) {
       const fulfilledVideos = await fetchVideo1();
       newData = [...newData, ...fulfilledVideos];
-    }else{
+    } else {
       const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
       const params = {
         PageIndex: indd + '',
@@ -71,7 +112,7 @@ const loadMoreData = async () => {
         SortType: "7"
       };
       let mgtvlist = await fetchMGTVVideoList(params);
-      if(!mgtvlist.length) {
+      if (!mgtvlist.length) {
         mgtvlist = await fetchVideo1();
       }
       newData = [...newData, ...mgtvlist];
@@ -86,6 +127,7 @@ const loadMoreData = async () => {
       const newIndex = videoList.value.length - newDataWithAds.length + index;
       progress.value[newIndex] = 0;
     });
+    console.log('newDataWithAds', videoList.value);
   }
 };
 // 在数据加载时插入广告
@@ -117,8 +159,8 @@ onMounted(async () => {
   updateSize();
   await getConfig();
   const initialData = await fetchApiOpenTopVideos(currentPage, pageSize);
-  let mgtvlist:VideoItem[] = [];
-  if(ismgtv.value) {
+  let mgtvlist: VideoItem[] = [];
+  if (ismgtv.value) {
     const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
     const params = {
       PageIndex: indd + '',
@@ -128,24 +170,50 @@ onMounted(async () => {
     };
     mgtvlist = await fetchMGTVVideoList(params);
   }
-  videoList.value = [...initialData,...mgtvlist];
+  videoList.value = [...initialData, ...mgtvlist];
   progress.value = initialData.map(() => 0);
   await nextTick();
   await trackPageView('Tab2Page');
+
+  // 监听调试日志事件
+  onDebugLog((e: any) => {
+    if (e?.message) {
+      addDebugLog(e.message);
+    }
+  });
+
+  // 初始化广告
+  try {
+    addDebugLog('开始初始化广告...');
+    await StartioAds.init();
+    addDebugLog('✅ 广告初始化成功');
+    // 预加载插屏广告
+    addDebugLog('🚀 开始预加载插屏广告...');
+    await StartioAds.loadInterstitial();
+    addDebugLog('🎉 插屏广告预加载成功');
+    console.log('Tab2Page 插屏广告预加载成功');
+
+    // 更新全局广告加载状态
+    setAdLoaded(true);
+    addDebugLog('🔄 全局广告加载状态已更新: true');
+  } catch (error) {
+    addDebugLog('❌ 广告初始化失败: ' + error);
+  }
 });
+
 onIonViewDidEnter(async () => {
-  if(isadlook.value) {
-    const ads = await getAd();
-    if (ads.length > 0) {
-      adData = [];
-      ads.forEach((item: AdItem) => {
+  setTimeout(() => {
+    if (isadlook.value) {
+      let i = 0;
+      do {
         adData.push({
-          src: item.link,
+          src: '',
           type: 'ad'
         });
-      });
+        i++;
+      } while (i < 20);
     }
-  }
+  }, 2000);
 })
 onIonViewWillEnter(async () => {
   if (Capacitor.isNativePlatform()) {
@@ -161,6 +229,7 @@ onIonViewDidLeave(() => {
 onUnmounted(() => {
   swiperRef.value?.pauseAll();
 });
+
 
 </script>
 

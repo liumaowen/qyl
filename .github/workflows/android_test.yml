@@ -1,0 +1,194 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      buildType:
+        description: 'Build Type (debug or release)'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+  push:
+    branches: [ test ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 缓存 Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: 构建前端
+        run: ${{ github.event.inputs.buildType == 'release' && 'npm run build' || 'npm run build:debug' }}
+
+      - name: 安装 Capacitor 依赖
+        run: npx cap sync android
+
+      - name: 设置 JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: 检查 gradlew 是否存在
+        working-directory: android
+        run: ls -l gradlew
+
+      - name: 授权 gradlew
+        working-directory: android
+        run: chmod +x gradlew
+
+      # 仅在 release 构建时还原 keystore
+      - name: 还原 keystore 文件
+        if: ${{ github.event.inputs.buildType == 'release' }}
+        env:
+          SIGNING_KEY_STORE_PATH: ${{ secrets.SIGNING_KEY_STORE_PATH }} # 例如：android/app/release.keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > $SIGNING_KEY_STORE_PATH
+
+      - name: 构建 APK
+        id: build
+        working-directory: android
+        env:
+          SIGNING_KEY_STORE_PATH: ${{ secrets.SIGNING_KEY_STORE_PATH }}
+          SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          ./gradlew --stop
+          if [ "${{ github.event.inputs.buildType }}" = "release" ]; then
+            ./gradlew assembleRelease
+          else
+            ./gradlew assembleDebug
+          fi
+        continue-on-error: false  # 确保失败会终止工作流
+
+      # 上传 APK（push 和 debug 都上传 debug 包，只有 release 参数才上传 release 包）
+      - name: 上传 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.inputs.buildType == 'release' && 'app-release.apk' || 'app-debug.apk' }}
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/apk/debug/app-debug.apk
+  
+      - name: 获取版本号并重命名 APK
+        id: rename_apk
+        working-directory: android
+        run: |
+          VERSION=$(cat ../package.json | grep -E '"version":' | cut -d '"' -f 4)
+          DATE=$(date +"%Y%m%d")
+          BUILD_TYPE=${{ github.event.inputs.buildType == 'release' && 'release' || 'debug' }}
+          APK_DIR="app/build/outputs/apk/${BUILD_TYPE}"
+          ORIGINAL_APK_NAME="app-${BUILD_TYPE}.apk"
+          NEW_APK_NAME="shunle.apk"
+          echo "正在重命名文件: $APK_DIR/$ORIGINAL_APK_NAME -> $APK_DIR/$NEW_APK_NAME"
+          mv "$APK_DIR/$ORIGINAL_APK_NAME" "$APK_DIR/$NEW_APK_NAME"
+          echo "NEW_APK_NAME=$NEW_APK_NAME" >> $GITHUB_ENV
+          echo "new_apk_name=$NEW_APK_NAME" >> $GITHUB_OUTPUT  # 添加这行，设置 output
+          echo "package_version=$VERSION" >> $GITHUB_OUTPUT
+ 
+      - name: 查看构建输出
+        working-directory: android
+        run: |
+          ls -R app/build/outputs/apk/
+
+      - name: 上传 APK 到服务器（SFTP）
+        if: ${{ github.event.inputs.buildType == 'release' }}
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          key: ${{ secrets.SFTP_KEY }}
+          port: ${{ secrets.SFTP_PORT }}
+          source: android/app/build/outputs/apk/release/${{ env.NEW_APK_NAME }}
+          target: ${{ secrets.SFTP_TARGET_DIR }}
+          strip_components: 6
+
+      - name: 调用接口更新版本信息
+        if: github.event.inputs.buildType == 'release'
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d '{
+            "versionName": "${{ steps.rename_apk.outputs.package_version }}",
+            "downloadUrl": "https://www.qylapi.top/apks/${{ steps.rename_apk.outputs.new_apk_name }}"
+          }' \
+          '${{ secrets.API_URL }}/api/versions'
+      
+
+      # 邮件通知（无论成功失败都会运行）
+      - name: 发送构建成功通知
+        if: ${{ steps.build.conclusion == 'success' }}
+        uses: dawidd6/action-send-mail@v6
+        with:
+          server_address: smtp.qq.com
+          server_port: 465
+          username: ${{ secrets.QQ_EMAIL }}
+          password: ${{ secrets.QQ_EMAIL_PASSWORD }}
+          subject: ✅ 构建成功 - ${{ github.repository }}
+          html_body: |
+            <style>h2{color: 'green';}</style>
+            <h2>✅ APK构建成功</h2>
+            <p><strong>仓库:</strong> ${{ github.repository }}</p>
+            <p><strong>分支:</strong> ${{ github.ref }}</p>
+            <p><strong>提交:</strong> <a href="https://github.com/${{ github.repository }}/commit/${{ github.sha }}">${{ github.sha }}</a></p>
+            <p><strong>工作流详情:</strong> <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">点击查看</a></p>
+  
+            <p>您可以在GitHub Actions的"Artifacts"部分下载APK文件。</p>
+            <p><strong>或者通过以下链接下载：</strong></p>
+            <p><a href="https://www.qylapi.top/apks/${{ steps.rename_apk.outputs.new_apk_name }}" target="_blank">点击下载最新版本 APK</a></p>
+
+            <p>触发时间: ${{ github.event.head_commit.timestamp || github.run_started_at }}</p>
+            <hr>
+            <p style="font-size:12px;color:#999">此邮件由GitHub Actions自动发送，请勿回复。</p>
+          to: ${{ secrets.QQ_EMAIL }}
+          from: ${{ secrets.QQ_EMAIL }}
+
+      - name: 发送构建失败通知
+        if:   ${{ steps.build.conclusion != 'success' }}
+        uses: dawidd6/action-send-mail@v6
+        with:
+          server_address: smtp.qq.com
+          server_port: 465
+          username: ${{ secrets.QQ_EMAIL }}
+          password: ${{ secrets.QQ_EMAIL_PASSWORD }}
+          subject: ❌ 构建失败 - ${{ github.repository }}
+          html_body: |
+            <style>h2{color: 'red';}</style>
+            <h2>❌ APK构建失败</h2>
+            <p><strong>仓库:</strong> ${{ github.repository }}</p>
+            <p><strong>分支:</strong> ${{ github.ref }}</p>
+            <p><strong>提交:</strong> <a href="https://github.com/${{ github.repository }}/commit/${{ github.sha }}">${{ github.sha }}</a></p>
+            <p><strong>工作流详情:</strong> <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">点击查看</a></p>
+  
+            <p style="color:red">构建过程出现错误，请检查日志。</p>
+
+            <p>触发时间: ${{ github.event.head_commit.timestamp || github.run_started_at }}</p>
+            <hr>
+            <p style="font-size:12px;color:#999">此邮件由GitHub Actions自动发送，请勿回复。</p>
+          to: ${{ secrets.QQ_EMAIL }}
+          from: ${{ secrets.QQ_EMAIL }}
+
+        

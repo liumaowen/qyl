@@ -13,6 +13,9 @@ const config: CapacitorConfig = {
     },
     "FileOpener": {
       "enable": true
+    },
+    "StartioAds": {
+      "enable": true
     }
   }
 };

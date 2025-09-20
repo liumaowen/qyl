@@ -174,14 +174,6 @@ export const getConfig = async (): Promise<ConfigItem[]> => {
     const response = await mmpRequest.get(`/api/configs`);
     if (response.data) {
       list = response.data;
-      const adConfig = list.find((item: any) => item.key === 'isadlook');
-      if (adConfig) {
-        isadlook.value = JSON.parse(adConfig.value);
-      }
-      const mgConfig = list.find((item: any) => item.key === 'ismgtv');
-      if (mgConfig) {
-        ismgtv.value = JSON.parse(mgConfig.value);
-      }
     }
     return list;
   } catch (error) {
