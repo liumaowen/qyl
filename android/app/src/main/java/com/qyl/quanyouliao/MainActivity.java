@@ -23,6 +23,5 @@ public class MainActivity extends BridgeActivity {
         StartAppSDK.setTestAdsEnabled(true);
         // Set user consent (required for GDPR compliance)
         StartAppSDK.setUserConsent(this, "pas", System.currentTimeMillis(), true);
-        StartAppSDK.setLanguage(this, "zh"); // 设置为中文
     }
 }
