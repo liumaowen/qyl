@@ -37,9 +37,7 @@
         </provider>
 
         <!-- Start.io APP ID -->
-        <meta-data
-            android:name="com.startapp.sdk.APPLICATION_ID"
-            android:value="208466650" />
+        <meta-data android:name="com.startapp.sdk.APPLICATION_ID" android:value="208466650" />
     </application>
 
     <!-- Permissions -->
