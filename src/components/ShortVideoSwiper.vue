@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import { ref, nextTick, onMounted, onUnmounted } from 'vue';
-import { onIonViewWillLeave, onIonViewDidLeave } from '@ionic/vue';
+import { onIonViewWillLeave, onIonViewDidLeave, toastController } from '@ionic/vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Virtual } from 'swiper/modules';
 import 'swiper/css';
@@ -221,7 +221,7 @@ onMounted(async () => {
   onDebugLog((e: any) => {
     console.log('ShortVideoSwiper 广告调试日志:', e);
   });
-
+  await toast('ShortVideoSwiper 广告调试日志:', 'success')
   // 初始化广告
   await initAds();
 });
@@ -232,6 +232,7 @@ const initAds = async () => {
     const initLog = {
       message: '🎬 开始初始化 StartioAds...'
     };
+    await toast(initLog.message, 'success')
     // @ts-ignore
     StartioAds.notifyListeners?.('debugLog', initLog);
 
@@ -241,6 +242,7 @@ const initAds = async () => {
     const successLog = {
       message: '✅ StartioAds 初始化成功'
     };
+    await toast(successLog.message, 'success')
     // @ts-ignore
     StartioAds.notifyListeners?.('debugLog', successLog);
 
@@ -248,6 +250,7 @@ const initAds = async () => {
     const loadLog = {
       message: '🚀 开始预加载插屏广告...'
     };
+    await toast(loadLog.message, 'success')
     // @ts-ignore
     StartioAds.notifyListeners?.('debugLog', loadLog);
 
@@ -257,6 +260,7 @@ const initAds = async () => {
     const loadSuccessLog = {
       message: '🎉 插屏广告预加载成功'
     };
+    await toast(loadSuccessLog.message, 'success')
     // @ts-ignore
     StartioAds.notifyListeners?.('debugLog', loadSuccessLog);
   } catch (error) {
@@ -264,6 +268,7 @@ const initAds = async () => {
     const errorLog = {
       message: '❌ StartioAds 初始化失败: ' + error
     };
+    await toast(errorLog.message, 'danger')
     // @ts-ignore
     StartioAds.notifyListeners?.('debugLog', errorLog);
   }
@@ -319,6 +324,10 @@ const showFullscreenAd = async () => {
     StartioAds.notifyListeners?.('debugLog', errorLog);
   }
 };
+const toast = async (message: string, color: any = 'primary') => {
+  const t = await toastController.create({ message, duration: 1000, position: 'top', color })
+  await t.present()
+}
 
 onIonViewWillLeave(() => {
   playingIndex.value = -1;

@@ -280,11 +280,6 @@ onMounted(async () => {
     videoList.value[0].info = { count: infos.length };
   }
   await trackPageView('ShortDramas');
-  eventBus.on('fullscreen-change', (fullscreen) => {
-    console.log('短', fullscreen);
-    isFullscreen.value = fullscreen as boolean;
-    updateSize();
-  });
 });
 onIonViewWillEnter(async () => {
   if (Capacitor.isNativePlatform()) {
