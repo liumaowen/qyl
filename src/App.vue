@@ -27,6 +27,7 @@ const { showDownloadAlert, progress, checkUpdate } = useAppUpdate();
 const { initialize: initializeAnalytics } = useUserAnalytics();
 
 onMounted(async () => {
+  console.log('广告开关状态1:', isadlook.value);
   // 初始化用户分析
   await initializeAnalytics();
   
@@ -37,6 +38,7 @@ onMounted(async () => {
   const adConfig = configs.find((item: any) => item.key === 'isadlook');
   if (adConfig) {
     isadlook.value = JSON.parse(adConfig.value);
+    console.log('广告开关状态:', isadlook.value);
   }
   const mgConfig = configs.find((item: any) => item.key === 'ismgtv');
   if (mgConfig) {
