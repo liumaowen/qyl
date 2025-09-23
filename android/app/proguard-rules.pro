@@ -39,3 +39,8 @@ LineNumberTable, *Annotation*, EnclosingMethod
 -dontwarn com.startapp.**
 
 -dontwarn org.jetbrains.annotations.**
+
+# Google Play Services keep rules
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.android.gms.**
+-keep class com.google.android.gms.ads.identifier.** { *; }

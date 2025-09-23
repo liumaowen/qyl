@@ -110,6 +110,7 @@ dependencies {
 
     // Google Play Services for GAID
     implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'
+    implementation 'com.google.android.gms:play-services-base:18.2.0'
     // TP Exchange CN
 }
 

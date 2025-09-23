@@ -24,6 +24,10 @@ import com.qyl.quanyouliao.utils.TradPlusConstants;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.ConnectionResult;
+import android.content.Context;
+import java.io.IOException;
 
 import java.util.HashMap;
 
@@ -451,89 +455,146 @@ public class TradPlusAdsPlugin extends Plugin {
     @PluginMethod
     public void getGAID(PluginCall call) {
         Log.d(TAG, "Getting GAID");
-        
-        // 在后台线程中获取GAID，避免在主线程执行网络请求
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    // 检查Google Play服务是否可用
-                    AdvertisingIdClient.Info advertisingIdInfo = AdvertisingIdClient.getAdvertisingIdInfo(getActivity());
-                    String gaid = advertisingIdInfo.getId();
-                    
-                    // 检查GAID是否为空
-                    if (gaid == null || gaid.isEmpty()) {
-                        JSObject ret = new JSObject();
-                        ret.put("success", false);
-                        ret.put("error", "GAID is empty or null");
-                        
-                        // 发送到调试日志
+
+        // 直接在后台线程执行，避免主线程阻塞
+        new Thread(() -> {
+            try {
+                // 检查Google Play Services可用性
+                Context context = getActivity();
+                GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
+                int resultCode = googleApiAvailability.isGooglePlayServicesAvailable(context);
+
+                if (resultCode != ConnectionResult.SUCCESS) {
+                    String errorMessage = "Google Play Services unavailable: " +
+                        googleApiAvailability.getErrorString(resultCode) + " (code: " + resultCode + ")";
+
+                    JSObject ret = new JSObject();
+                    ret.put("success", false);
+                    ret.put("error", errorMessage);
+
+                    // 在主线程发送调试日志
+                    getActivity().runOnUiThread(() -> {
+                        JSObject logData = new JSObject();
+                        logData.put("message", "❌ " + errorMessage);
+                        notifyListeners("debugLog", logData);
+                    });
+
+                    call.resolve(ret);
+                    return;
+                }
+
+                // 获取广告标识符（必须在后台线程）
+                AdvertisingIdClient.Info advertisingIdInfo = AdvertisingIdClient.getAdvertisingIdInfo(context);
+                String gaid = advertisingIdInfo.getId();
+                boolean isLimitAdTrackingEnabled = advertisingIdInfo.isLimitAdTrackingEnabled();
+
+                // 检查GAID是否为空
+                if (gaid == null || gaid.isEmpty()) {
+                    JSObject ret = new JSObject();
+                    ret.put("success", false);
+                    ret.put("error", "GAID is empty or null");
+
+                    // 在主线程发送调试日志
+                    getActivity().runOnUiThread(() -> {
                         JSObject logData = new JSObject();
                         logData.put("message", "❌ GAID is empty or null");
                         notifyListeners("debugLog", logData);
-                        
-                        call.resolve(ret);
-                        return;
-                    }
-                    
-                    JSObject ret = new JSObject();
-                    ret.put("gaid", gaid);
-                    ret.put("success", true);
-                    
-                    // 同时发送到调试日志
-                    JSObject logData = new JSObject();
-                    logData.put("message", "📱 Device GAID: " + gaid);
-                    notifyListeners("debugLog", logData);
-                    
+                    });
+
                     call.resolve(ret);
-                } catch (GooglePlayServicesNotAvailableException e) {
-                    Log.e(TAG, "Google Play Services not available", e);
-                    
-                    JSObject ret = new JSObject();
-                    ret.put("success", false);
-                    ret.put("error", "Google Play Services not available: " + 
-                        (e.getMessage() != null ? e.getMessage() : "Unknown error"));
-                    
-                    // 发送到调试日志
-                    JSObject logData = new JSObject();
-                    logData.put("message", "❌ Google Play Services not available: " + 
-                        (e.getMessage() != null ? e.getMessage() : "Unknown error"));
-                    notifyListeners("debugLog", logData);
-                    
-                    call.resolve(ret);
-                } catch (GooglePlayServicesRepairableException e) {
-                    Log.e(TAG, "Google Play Services repairable error", e);
-                    
-                    JSObject ret = new JSObject();
-                    ret.put("success", false);
-                    ret.put("error", "Google Play Services needs to be repaired: " + 
-                        (e.getMessage() != null ? e.getMessage() : "Unknown error"));
-                    
-                    // 发送到调试日志
-                    JSObject logData = new JSObject();
-                    logData.put("message", "❌ Google Play Services needs to be repaired: " + 
-                        (e.getMessage() != null ? e.getMessage() : "Unknown error"));
-                    notifyListeners("debugLog", logData);
-                    
-                    call.resolve(ret);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error getting GAID", e);
-                    
-                    JSObject ret = new JSObject();
-                    ret.put("success", false);
-                    String errorMessage = (e.getMessage() != null) ? e.getMessage() : "Unknown error occurred while getting GAID";
-                    ret.put("error", errorMessage);
-                    
-                    // 同时发送到调试日志
-                    JSObject logData = new JSObject();
-                    logData.put("message", "❌ Error getting GAID: " + errorMessage);
-                    notifyListeners("debugLog", logData);
-                    
-                    call.resolve(ret);
+                    return;
                 }
+
+                JSObject ret = new JSObject();
+                ret.put("gaid", gaid);
+                ret.put("success", true);
+                ret.put("isLimitAdTrackingEnabled", isLimitAdTrackingEnabled);
+
+                // 在主线程发送调试日志
+                getActivity().runOnUiThread(() -> {
+                    JSObject logData = new JSObject();
+                    logData.put("message", "📱 Device GAID: " + gaid +
+                        " (Limited: " + isLimitAdTrackingEnabled + ")");
+                    notifyListeners("debugLog", logData);
+                });
+
+                call.resolve(ret);
+            } catch (GooglePlayServicesNotAvailableException e) {
+                Log.e(TAG, "Google Play Services not available", e);
+
+                String errorMessage = "Google Play Services not available: " +
+                    (e.getMessage() != null ? e.getMessage() : "Service unavailable");
+
+                JSObject ret = new JSObject();
+                ret.put("success", false);
+                ret.put("error", errorMessage);
+
+                // 在主线程发送调试日志
+                getActivity().runOnUiThread(() -> {
+                    JSObject logData = new JSObject();
+                    logData.put("message", "❌ " + errorMessage);
+                    notifyListeners("debugLog", logData);
+                });
+
+                call.resolve(ret);
+            } catch (GooglePlayServicesRepairableException e) {
+                Log.e(TAG, "Google Play Services repairable error", e);
+
+                String errorMessage = "Google Play Services needs repair: " +
+                    (e.getMessage() != null ? e.getMessage() : "Service needs update") +
+                    " (Error code: " + e.getConnectionStatusCode() + ")";
+
+                JSObject ret = new JSObject();
+                ret.put("success", false);
+                ret.put("error", errorMessage);
+                ret.put("isRepairable", true);
+                ret.put("errorCode", e.getConnectionStatusCode());
+
+                // 在主线程发送调试日志
+                getActivity().runOnUiThread(() -> {
+                    JSObject logData = new JSObject();
+                    logData.put("message", "❌ " + errorMessage);
+                    notifyListeners("debugLog", logData);
+                });
+
+                call.resolve(ret);
+            } catch (IOException e) {
+                Log.e(TAG, "IO Error getting GAID", e);
+
+                String errorMessage = "Network error getting GAID: " +
+                    (e.getMessage() != null ? e.getMessage() : "Connection failed");
+
+                JSObject ret = new JSObject();
+                ret.put("success", false);
+                ret.put("error", errorMessage);
+
+                getActivity().runOnUiThread(() -> {
+                    JSObject logData = new JSObject();
+                    logData.put("message", "❌ " + errorMessage);
+                    notifyListeners("debugLog", logData);
+                });
+
+                call.resolve(ret);
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting GAID", e);
+
+                String errorMessage = "Error getting GAID: " +
+                    (e.getMessage() != null ? e.getMessage() : "Unknown error occurred");
+
+                JSObject ret = new JSObject();
+                ret.put("success", false);
+                ret.put("error", errorMessage);
+
+                // 在主线程发送调试日志
+                getActivity().runOnUiThread(() -> {
+                    JSObject logData = new JSObject();
+                    logData.put("message", "❌ " + errorMessage);
+                    notifyListeners("debugLog", logData);
+                });
+
+                call.resolve(ret);
             }
-        });
-        thread.start();
+        }).start();
     }
 
     @Override
