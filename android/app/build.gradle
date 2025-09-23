@@ -93,7 +93,6 @@ dependencies {
     implementation "com.google.android.ump:user-messaging-platform:2.1.0"
     // CSJ
     implementation 'com.tradplusad:tradplus-toutiao:17.14.8.0.1'
-    implementation 'com.pangle.cn:ads-sdk-pro:7.1.0.6'
     // Sigmob
     implementation 'com.tradplusad:tradplus-sigmob:21.14.8.0.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
@@ -105,7 +104,6 @@ dependencies {
     implementation 'com.tradplusad:ksad-ads:4.7.20.1'
     // Mimo
     implementation 'com.tradplusad:tradplus-mimo:46.14.8.0.1'
-    implementation 'com.miui.zeus:mimo-ad-sdk:5.3.4'
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
