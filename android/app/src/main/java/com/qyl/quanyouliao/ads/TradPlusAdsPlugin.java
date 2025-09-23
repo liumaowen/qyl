@@ -457,8 +457,24 @@ public class TradPlusAdsPlugin extends Plugin {
             @Override
             public void run() {
                 try {
+                    // 检查Google Play服务是否可用
                     AdvertisingIdClient.Info advertisingIdInfo = AdvertisingIdClient.getAdvertisingIdInfo(getActivity());
                     String gaid = advertisingIdInfo.getId();
+                    
+                    // 检查GAID是否为空
+                    if (gaid == null || gaid.isEmpty()) {
+                        JSObject ret = new JSObject();
+                        ret.put("success", false);
+                        ret.put("error", "GAID is empty or null");
+                        
+                        // 发送到调试日志
+                        JSObject logData = new JSObject();
+                        logData.put("message", "❌ GAID is empty or null");
+                        notifyListeners("debugLog", logData);
+                        
+                        call.resolve(ret);
+                        return;
+                    }
                     
                     JSObject ret = new JSObject();
                     ret.put("gaid", gaid);
@@ -470,16 +486,47 @@ public class TradPlusAdsPlugin extends Plugin {
                     notifyListeners("debugLog", logData);
                     
                     call.resolve(ret);
+                } catch (GooglePlayServicesNotAvailableException e) {
+                    Log.e(TAG, "Google Play Services not available", e);
+                    
+                    JSObject ret = new JSObject();
+                    ret.put("success", false);
+                    ret.put("error", "Google Play Services not available: " + 
+                        (e.getMessage() != null ? e.getMessage() : "Unknown error"));
+                    
+                    // 发送到调试日志
+                    JSObject logData = new JSObject();
+                    logData.put("message", "❌ Google Play Services not available: " + 
+                        (e.getMessage() != null ? e.getMessage() : "Unknown error"));
+                    notifyListeners("debugLog", logData);
+                    
+                    call.resolve(ret);
+                } catch (GooglePlayServicesRepairableException e) {
+                    Log.e(TAG, "Google Play Services repairable error", e);
+                    
+                    JSObject ret = new JSObject();
+                    ret.put("success", false);
+                    ret.put("error", "Google Play Services needs to be repaired: " + 
+                        (e.getMessage() != null ? e.getMessage() : "Unknown error"));
+                    
+                    // 发送到调试日志
+                    JSObject logData = new JSObject();
+                    logData.put("message", "❌ Google Play Services needs to be repaired: " + 
+                        (e.getMessage() != null ? e.getMessage() : "Unknown error"));
+                    notifyListeners("debugLog", logData);
+                    
+                    call.resolve(ret);
                 } catch (Exception e) {
                     Log.e(TAG, "Error getting GAID", e);
                     
                     JSObject ret = new JSObject();
                     ret.put("success", false);
-                    ret.put("error", e.getMessage());
+                    String errorMessage = (e.getMessage() != null) ? e.getMessage() : "Unknown error occurred while getting GAID";
+                    ret.put("error", errorMessage);
                     
                     // 同时发送到调试日志
                     JSObject logData = new JSObject();
-                    logData.put("message", "❌ Error getting GAID: " + e.getMessage());
+                    logData.put("message", "❌ Error getting GAID: " + errorMessage);
                     notifyListeners("debugLog", logData);
                     
                     call.resolve(ret);

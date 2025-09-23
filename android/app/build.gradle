@@ -107,6 +107,10 @@ dependencies {
     implementation 'com.tradplusad:tradplus-crosspromotion:27.14.8.0.1'
     //国内需要同时引入
     implementation 'com.tradplusad:tradplus-china_pluginx:14.8.0.1'
+
+    // Google Play Services for GAID
+    implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'
+    // TP Exchange CN
 }
 
 apply from: 'capacitor.build.gradle'
