@@ -99,18 +99,6 @@ dependencies {
     implementation 'androidx.multidex:multidex:2.0.0'
     // Google UMP (User Messaging Platform) for GDPR compliance
     implementation "com.google.android.ump:user-messaging-platform:2.1.0"
-    // CSJ
-    implementation 'com.tradplusad:tradplus-toutiao:17.14.8.0.1'
-    // Kuaishou
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'com.tradplusad:tradplus-kwad:20.14.8.0.1'
-    implementation 'com.tradplusad:ksad-ads:4.7.20.1'
-    // Mimo
-    implementation 'com.tradplusad:tradplus-mimo:46.14.8.0.1'
-    implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'com.github.bumptech.glide:glide:4.9.0'
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
     // TP Exchange CN
     // 请注意保持与主包版本同步更新
     implementation 'com.google.code.gson:gson:2.8.6'

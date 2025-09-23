@@ -452,8 +452,8 @@ public class TradPlusAdsPlugin extends Plugin {
     public void getGAID(PluginCall call) {
         Log.d(TAG, "Getting GAID");
         
-        // 在后台线程中获取GAID
-        getActivity().runOnUiThread(new Runnable() {
+        // 在后台线程中获取GAID，避免在主线程执行网络请求
+        Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -463,27 +463,30 @@ public class TradPlusAdsPlugin extends Plugin {
                     JSObject ret = new JSObject();
                     ret.put("gaid", gaid);
                     ret.put("success", true);
-                    call.resolve(ret);
                     
                     // 同时发送到调试日志
                     JSObject logData = new JSObject();
                     logData.put("message", "📱 Device GAID: " + gaid);
                     notifyListeners("debugLog", logData);
+                    
+                    call.resolve(ret);
                 } catch (Exception e) {
                     Log.e(TAG, "Error getting GAID", e);
                     
                     JSObject ret = new JSObject();
                     ret.put("success", false);
                     ret.put("error", e.getMessage());
-                    call.resolve(ret);
                     
                     // 同时发送到调试日志
                     JSObject logData = new JSObject();
                     logData.put("message", "❌ Error getting GAID: " + e.getMessage());
                     notifyListeners("debugLog", logData);
+                    
+                    call.resolve(ret);
                 }
             }
         });
+        thread.start();
     }
 
     @Override
