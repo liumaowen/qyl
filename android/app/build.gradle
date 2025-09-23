@@ -93,11 +93,6 @@ dependencies {
     implementation "com.google.android.ump:user-messaging-platform:2.1.0"
     // CSJ
     implementation 'com.tradplusad:tradplus-toutiao:17.14.8.0.1'
-    // Sigmob
-    implementation 'com.tradplusad:tradplus-sigmob:21.14.8.0.1'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.tradplusad:sigmob-ads:4.24.4'
-    implementation 'com.tradplusad:sigmob-ads-common:1.8.5'
     // Kuaishou
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'com.tradplusad:tradplus-kwad:20.14.8.0.1'
