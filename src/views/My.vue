@@ -201,7 +201,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { InAppBrowser } from '@capacitor/inappbrowser';
 import { useAppUpdate } from '@/composables/useAppUpdate';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
-import AdsTest from '@/components/AdsTest.vue';
+import TradPlusAdsTest from '@/components/TradPlusAdsTest.vue';
 import { verifyPassword } from '@/api/video';
 import { useI18n } from 'vue-i18n';
 import { setContentUnlocked, isContentUnlocked, getRemainingUnlockTime } from '@/utils/unlock';
