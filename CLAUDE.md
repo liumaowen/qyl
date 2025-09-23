@@ -106,3 +106,10 @@ npx cap open android
 - 使用 Video.js 进行视频播放
 - 使用 Swiper 实现轮播/滑块组件
 - Capacitor 插件提供原生设备功能
+
+## 广告集成
+项目集成了多个广告平台，包括 TradPlus 和 Start.io，通过广告管理器统一管理：
+- TradPlus 作为主要广告源，优先展示
+- Start.io 作为备用广告源
+- 使用 `adManager.ts` 统一管理广告加载和展示逻辑
+- 支持插屏广告和激励广告

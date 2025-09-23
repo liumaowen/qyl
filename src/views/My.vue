@@ -52,8 +52,8 @@
             {{ $t('my.checkUpdate') }}
           </ion-button>
           
-          <!-- Start.io 广告测试按钮 -->
-          <!-- <AdsTest /> -->
+          <!-- TradPlusAds 广告测试按钮 -->
+          <TradPlusAdsTest />
 
           <!-- 联系我显示 -->
           <ion-button 

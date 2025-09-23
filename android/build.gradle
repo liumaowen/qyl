@@ -5,6 +5,22 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        flatDir {
+          dirs 'libs'
+        }
+        // CSJ
+        // 穿山甲
+        maven {
+          url 'https://artifact.bytedance.com/repository/pangle'
+        }
+        // Mimo
+        maven {
+          url "https://repos.xiaomi.com/maven"
+          credentials {
+              username 'mimo-developer'
+              password 'AKCp8ih1PFG9tV8qaLyws67dLGZi8udFM39SfsHgihN15cgsiRvHuxj8JzFmuZjaViVeNawaA'
+          }
+        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.7.2'

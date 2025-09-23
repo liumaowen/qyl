@@ -3,7 +3,7 @@
     <ion-content :fullscreen="true" class="video-container">
       <div class="tabs-wrapper" :class="{ 'hide-tab-bar': isFullscreen }">
         <ion-segment v-model="activeCategory" scrollable class="category-tabs">
-          <ion-segment-button v-for="cat in categories" :key="cat.id" :value="cat.id">
+          <ion-segment-button v-for="cat in categories" :key="cat.id" :value="cat.id" @click="changecat(cat.name)">
             {{ cat.name }}
           </ion-segment-button>
         </ion-segment>
@@ -131,8 +131,10 @@ watch(activeCategory, async (newCat: number) => {
   }
   videoList.value = [...data];
   progress.value = data.map(() => 0);
-  await trackPageView(categories.value[newCat].name);
 });
+const changecat = async (name: string) => {
+  await trackPageView(name);
+}
 
 const getmadou = async (params: FormType): Promise<VideoItem[]> => {
   return await fetchMGTVVideoList(params);

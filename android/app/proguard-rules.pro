@@ -29,6 +29,10 @@
       *;
 }
 
+# TradPlus SDK keep rules
+-keep public class com.tradplus.** { *; }
+-keep class com.tradplus.ads.** { *; }
+
 -keepattributes Exceptions, InnerClasses, Signature, Deprecated, SourceFile,
 LineNumberTable, *Annotation*, EnclosingMethod
 -dontwarn android.webkit.JavascriptInterface

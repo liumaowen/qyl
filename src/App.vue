@@ -22,6 +22,7 @@ import { useAppUpdate } from './composables/useAppUpdate';
 import { useUserAnalytics } from './composables/useUserAnalytics';
 import { fetchConfig,getConfig } from '@/api/video';
 import { isadlook,ismgtv } from '@/store/state';
+import { initializeAdSDKs, setupAdEventListeners } from '@/utils/adManager';
 
 const { showDownloadAlert, progress, checkUpdate } = useAppUpdate();
 const { initialize: initializeAnalytics } = useUserAnalytics();
@@ -29,7 +30,11 @@ const { initialize: initializeAnalytics } = useUserAnalytics();
 onMounted(async () => {
   // 初始化用户分析
   await initializeAnalytics();
-  
+
+  // 初始化广告SDK
+  setupAdEventListeners();
+  await initializeAdSDKs('CE48DA41B98CF7C37A3D02EFDAC3A011');
+
   // 获取配置和检查更新
   fetchConfig();
   checkUpdate(false);
