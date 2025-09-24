@@ -145,6 +145,7 @@ const checkingTestTools = ref(false)
 let interstitialListener: any
 let rewardedListener: any
 let debugListener: any
+let testToolsListener: any
 
 // 计算状态显示
 const sdkStatus = computed(() => {
@@ -253,8 +254,8 @@ const showTestTools = async () => {
   }
 }
 
-onMounted(() => {
-  setupEventListeners()
+onMounted(async () => {
+  await setupEventListeners()
   refreshLogs()
 
   // 自动初始化 (因为MainActivity已经处理了隐私合规)
@@ -275,13 +276,25 @@ onUnmounted(() => {
   if (interstitialListener) interstitialListener.remove?.()
   if (rewardedListener) rewardedListener.remove?.()
   if (debugListener) debugListener.remove?.()
+  if (testToolsListener) testToolsListener.remove?.()
 })
 
-function setupEventListeners() {
+async function setupEventListeners() {
   // 监听调试日志
   debugListener = onDebugLog((event) => {
     const logMessage = `${new Date().toLocaleTimeString()}: ${event.message}`
     debugLogs.value.push(logMessage)
+    // 只保留最近50条日志
+    if (debugLogs.value.length > 50) {
+      debugLogs.value = debugLogs.value.slice(-50)
+    }
+  })
+
+  // 监听 TradPlus 测试工具日志
+  testToolsListener = await TradPlusTestTools.addListener('testToolsLog', (event) => {
+    const logMessage = `${new Date().toLocaleTimeString()}: ${event.message}`
+    debugLogs.value.push(logMessage)
+    console.log('[TradPlus测试工具]', event.message)
     // 只保留最近50条日志
     if (debugLogs.value.length > 50) {
       debugLogs.value = debugLogs.value.slice(-50)
