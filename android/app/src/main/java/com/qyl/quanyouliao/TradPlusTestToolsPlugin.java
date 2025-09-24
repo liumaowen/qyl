@@ -74,11 +74,12 @@ public class TradPlusTestToolsPlugin extends Plugin {
             sendLogEvent("✅ 测试工具可用 (调试版本)");
             call.resolve(new JSObject().put("available", true));
         } catch (ClassNotFoundException e) {
-            Log.i(TAG, "ℹ️ 测试工具不可用 (可能在 release 版本中)");
-            sendLogEvent("ℹ️ 测试工具不可用 (可能在 release 版本中)");
+            String error = "测试工具类未找到 (release版本或测试工具未集成): " + e.getMessage();
+            Log.i(TAG, "ℹ️ " + error);
+            sendLogEvent("ℹ️ " + error);
             call.resolve(new JSObject().put("available", false));
         } catch (Exception e) {
-            String error = "检查测试工具可用性时发生错误: " + e.getMessage();
+            String error = "检查测试工具可用性时发生错误: " + e.getClass().getSimpleName() + " - " + e.getMessage();
             Log.e(TAG, "❌ " + error);
             sendLogEvent("❌ " + error);
             call.resolve(new JSObject().put("available", false));
