@@ -66,7 +66,7 @@
         </div>
       </div>
     </div>
-        <!-- 添加GAID显示区域 -->
+    <!-- 添加GAID显示区域 -->
     <div class="section" v-if="isInitialized">
       <h3>设备信息</h3>
       <div class="button-group">
@@ -83,6 +83,33 @@
         <span class="status-error">{{ gaidError }}</span>
       </div>
     </div>
+
+    <!-- TradPlus 官方测试工具 -->
+    <div class="section" v-if="isInitialized">
+      <h3>🔧 TradPlus 官方测试工具</h3>
+      <div class="status-info">
+        <p><strong>功能说明:</strong> TradPlus 官方提供的测试工具</p>
+        <p><strong>测试功能:</strong> 基础信息检测、用户设置、广告位测试、接入验证</p>
+        <p><strong>注意:</strong> 仅在调试版本中可用</p>
+      </div>
+      <div class="button-group">
+        <ion-button @click="checkTestToolsAvailable" expand="block" fill="outline">
+          检查测试工具可用性
+        </ion-button>
+        <ion-button
+          @click="showTestTools"
+          expand="block"
+          fill="solid"
+          color="tertiary"
+          :disabled="!testToolsAvailable">
+          {{ testToolsAvailable ? '🚀 启动测试工具' : '测试工具不可用' }}
+        </ion-button>
+      </div>
+      <div class="status-item">
+        <span>测试工具状态: </span>
+        <span :class="testToolsStatus.class">{{ testToolsStatus.text }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -90,6 +117,7 @@
 import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { IonButton, toastController } from '@ionic/vue'
 import { tradPlusManager, onInterstitialEvent, onRewardedEvent, onDebugLog } from '@/utils/tradplusAds'
+import TradPlusTestTools from '@/utils/tradplus-test-tools'
 
 // 使用官方demo的测试广告位ID
 const defaultAppId = "CE48DA41B98CF7C37A3D02EFDAC3A011"
@@ -108,6 +136,10 @@ const debugLogs = ref<string[]>([])
 // 添加GAID相关状态
 const gaid = ref('')
 const gaidError = ref('')
+
+// 添加 TradPlus 测试工具相关状态
+const testToolsAvailable = ref(false)
+const checkingTestTools = ref(false)
 
 // 事件监听器引用
 let interstitialListener: any
@@ -145,6 +177,17 @@ const rewardedStatus = computed(() => {
   return { text: '❌ 未准备好', class: 'status-error' }
 })
 
+// 测试工具状态
+const testToolsStatus = computed(() => {
+  if (checkingTestTools.value) {
+    return { text: '🔍 检查中...', class: 'status-warning' }
+  }
+  if (testToolsAvailable.value) {
+    return { text: '✅ 可用', class: 'status-success' }
+  }
+  return { text: '❌ 不可用', class: 'status-error' }
+})
+
 const toast = async (message: string, color: any = 'primary') => {
   const t = await toastController.create({
     message,
@@ -174,6 +217,42 @@ const getGAID = async () => {
   }
 }
 
+// TradPlus 测试工具相关方法
+const checkTestToolsAvailable = async () => {
+  checkingTestTools.value = true
+  try {
+    const result = await TradPlusTestTools.isTestToolsAvailable()
+    testToolsAvailable.value = result.available
+
+    if (result.available) {
+      await toast('✅ 测试工具可用', 'success')
+    } else {
+      await toast('❌ 测试工具不可用 (仅在调试版本中可用)', 'warning')
+    }
+  } catch (error) {
+    console.error('检查测试工具可用性失败:', error)
+    testToolsAvailable.value = false
+    await toast('检查测试工具失败', 'danger')
+  } finally {
+    checkingTestTools.value = false
+  }
+}
+
+const showTestTools = async () => {
+  if (!testToolsAvailable.value) {
+    await toast('测试工具不可用', 'warning')
+    return
+  }
+
+  try {
+    await TradPlusTestTools.showTestTools({ appId: defaultAppId })
+    await toast('🚀 测试工具已启动', 'success')
+  } catch (error) {
+    console.error('启动测试工具失败:', error)
+    await toast(`启动测试工具失败: ${error instanceof Error ? error.message : '未知错误'}`, 'danger')
+  }
+}
+
 onMounted(() => {
   setupEventListeners()
   refreshLogs()
@@ -184,6 +263,11 @@ onMounted(() => {
       initTradPlus()
     }
   }, 1000)
+
+  // 自动检查测试工具可用性
+  setTimeout(() => {
+    checkTestToolsAvailable()
+  }, 1500)
 })
 
 onUnmounted(() => {

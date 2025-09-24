@@ -9,6 +9,7 @@ import com.startapp.sdk.adsbase.StartAppSDK;
 import com.qyl.quanyouliao.ads.StartioAdsPlugin;
 import com.qyl.quanyouliao.ads.TradPlusAdsPlugin;
 import com.qyl.quanyouliao.utils.TradPlusConstants;
+import com.qyl.quanyouliao.TradPlusTestToolsPlugin;
 
 // TradPlus imports based on official demo
 import com.google.android.ump.ConsentForm;
@@ -29,6 +30,7 @@ public class MainActivity extends BridgeActivity {
         // Register custom plugins
         registerPlugin(StartioAdsPlugin.class);
         registerPlugin(TradPlusAdsPlugin.class);
+        registerPlugin(TradPlusTestToolsPlugin.class);
         super.onCreate(savedInstanceState);
 
         // Initialize Start.io SDK with APP ID

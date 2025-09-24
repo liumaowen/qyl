@@ -108,6 +108,9 @@ dependencies {
     //国内需要同时引入
     implementation 'com.tradplusad:tradplus-china_pluginx:14.8.0.1'
 
+    // TradPlus 测试工具 (仅在调试构建时使用)
+    debugImplementation 'com.tradplusad:tradplus-tool:1.1.4'
+
     // Google Play Services for GAID
     implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'
     implementation 'com.google.android.gms:play-services-base:18.2.0'
