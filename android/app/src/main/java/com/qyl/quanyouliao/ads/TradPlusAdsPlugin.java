@@ -97,12 +97,12 @@ public class TradPlusAdsPlugin extends Plugin {
             mTPInterstitial = new TPInterstitial(activity, unitId);
 
             //进入广告场景，广告场景ID后台创建
-            mTPInterstitial.entryAdScenario(TradPlusConstants.ENTRY_AD_INTERSTITIAL);
+            // mTPInterstitial.entryAdScenario(TradPlusConstants.ENTRY_AD_INTERSTITIAL);
 
             // 流量分组
             HashMap<String, String> customMap = new HashMap<>();
-            customMap.put("user_gender", "male");
-            customMap.put("user_level", "10");
+            // customMap.put("user_gender", "male");
+            // customMap.put("user_level", "10");
             SegmentUtils.initPlacementCustomMap(unitId, customMap);
 
             // 监听广告的不同状态
@@ -265,12 +265,12 @@ public class TradPlusAdsPlugin extends Plugin {
             mTPReward = new TPReward(activity, unitId);
 
             //进入广告场景
-            mTPReward.entryAdScenario(TradPlusConstants.ENTRY_AD_REWARD);
+            // mTPReward.entryAdScenario(TradPlusConstants.ENTRY_AD_REWARD);
 
             // 流量分组
             HashMap<String, String> customMap = new HashMap<>();
-            customMap.put("user_gender", "male");
-            customMap.put("user_level", "10");
+            // customMap.put("user_gender", "male");
+            // customMap.put("user_level", "10");
             SegmentUtils.initPlacementCustomMap(unitId, customMap);
 
             // 监听广告的不同状态
