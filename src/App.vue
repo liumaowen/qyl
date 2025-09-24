@@ -33,7 +33,7 @@ onMounted(async () => {
 
   // 初始化广告SDK
   setupAdEventListeners();
-  await initializeAdSDKs('CE48DA41B98CF7C37A3D02EFDAC3A011');
+  await initializeAdSDKs('44273068BFF4D8A8AFF3D5B11CBA3ADE');
 
   // 获取配置和检查更新
   fetchConfig();

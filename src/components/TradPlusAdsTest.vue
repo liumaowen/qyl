@@ -92,9 +92,9 @@ import { IonButton, toastController } from '@ionic/vue'
 import { tradPlusManager, onInterstitialEvent, onRewardedEvent, onDebugLog } from '@/utils/tradplusAds'
 
 // 使用官方demo的测试广告位ID
-const defaultAppId = "CE48DA41B98CF7C37A3D02EFDAC3A011"
-const defaultInterstitialId = "38FF0240F0D7460BA7953AD828F44512"
-const defaultRewardedId = "7B35AB6673DC0B0AB745291343296912"
+const defaultAppId = "44273068BFF4D8A8AFF3D5B11CBA3ADE"
+const defaultInterstitialId = "E609A0A67AF53299F2176C3A7783C46D"
+const defaultRewardedId = "39DAC7EAC046676C5404004A311D1DB1"
 
 // 状态管理
 const isInitialized = ref(false)
