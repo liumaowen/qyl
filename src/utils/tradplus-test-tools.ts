@@ -1,7 +1,5 @@
 // src/utils/tradplus-test-tools.ts
-import { CapacitorPlugin } from '@capacitor/core'
-
-export interface TradPlusTestToolsPlugin extends CapacitorPlugin {
+export interface TradPlusTestToolsPlugin {
   showTestTools(options: { appId: string }): Promise<void>
   isTestToolsAvailable(): Promise<{ available: boolean }>
 }
