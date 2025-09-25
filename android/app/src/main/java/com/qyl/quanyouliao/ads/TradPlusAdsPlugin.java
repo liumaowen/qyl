@@ -191,6 +191,9 @@ public class TradPlusAdsPlugin extends Plugin {
                 @Override
                 public void oneLayerLoadFailed(TPAdError tpAdError, TPAdInfo tpAdInfo) {
                     Log.d(TAG, "Interstitial layer failed: " + tpAdInfo.adSourceName + " - " + tpAdError.getErrorMsg());
+                    JSObject logData = new JSObject();
+                    logData.put("message", "oneLayerLoadFailed: 错误码为" + tpAdError.getErrorCode() + "，错误信息为 " + tpAdError.getErrorMsg());
+                    notifyListeners("debugLog", logData);
                 }
 
                 @Override
@@ -216,6 +219,9 @@ public class TradPlusAdsPlugin extends Plugin {
                 @Override
                 public void onBiddingEnd(TPAdInfo tpAdInfo, TPAdError tpAdError) {
                     Log.d(TAG, "Interstitial bidding end: " + tpAdInfo.adSourceName);
+                    JSObject logData = new JSObject();
+                    logData.put("message", "onBiddingEnd: 错误码为" + tpAdError.getErrorCode() + "，错误信息为 " + tpAdError.getErrorMsg());
+                    notifyListeners("debugLog", logData);
                 }
 
                 @Override
