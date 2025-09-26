@@ -33,6 +33,7 @@ public class TradPlusTestToolsPlugin extends Plugin {
             call.reject(error);
             return;
         }
+        Exception lastException = null;
         for (String className : TOOL_CLASS_NAMES) {
             // 使用反射来避免在 release 版本中引用测试工具
             try {
