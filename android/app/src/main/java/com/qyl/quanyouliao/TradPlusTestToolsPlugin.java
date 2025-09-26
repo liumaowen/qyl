@@ -11,6 +11,14 @@ import com.getcapacitor.JSObject;
 public class TradPlusTestToolsPlugin extends Plugin {
     private static final String TAG = "TradPlusTestTools";
 
+    // 尝试多个可能的类名
+    private static final String[] TOOL_CLASS_NAMES = {
+        "com.tradplusad.importSDK.util.ImportSDKUtil",
+        "com.tradplus.tool.ImportSDKUtil",
+        "com.tradplus.importsdk.util.ImportSDKUtil",
+        "com.tradplusad.tool.ImportSDKUtil"
+    };
+
     @PluginMethod
     public void showTestTools(PluginCall call) {
         String appId = call.getString("appId");
@@ -25,42 +33,52 @@ public class TradPlusTestToolsPlugin extends Plugin {
             call.reject(error);
             return;
         }
-
-        // 使用反射来避免在 release 版本中引用测试工具
-        try {
-            Log.d(TAG, "🔍 尝试通过反射加载测试工具类...");
-            sendLogEvent("🔍 尝试通过反射加载测试工具类...");
-
-            Class<?> importSDKUtil = Class.forName("com.tradplusad.importSDK.util.ImportSDKUtil");
-            Log.d(TAG, "✅ 成功加载 ImportSDKUtil 类");
-            sendLogEvent("✅ 成功加载 ImportSDKUtil 类");
-
-            Object instance = importSDKUtil.getMethod("getInstance").invoke(null);
-            Log.d(TAG, "✅ 成功获取 ImportSDKUtil 实例");
-            sendLogEvent("✅ 成功获取 ImportSDKUtil 实例");
-
-            importSDKUtil.getMethod("showTestTools", android.content.Context.class, String.class)
-                        .invoke(instance, getActivity(), appId);
-
-            Log.i(TAG, "🚀 测试工具启动成功！");
-            sendLogEvent("🚀 测试工具启动成功！");
-            call.resolve();
-        } catch (ClassNotFoundException e) {
-            String error = "测试工具类未找到 (可能在 release 版本中): " + e.getMessage();
-            Log.w(TAG, "⚠️ " + error);
-            sendLogEvent("⚠️ " + error);
-            call.reject(error);
-        } catch (NoSuchMethodException e) {
-            String error = "测试工具方法未找到: " + e.getMessage();
-            Log.e(TAG, "❌ " + error);
-            sendLogEvent("❌ " + error);
-            call.reject(error);
-        } catch (Exception e) {
-            String error = "启动测试工具时发生未知错误: " + e.getClass().getSimpleName() + " - " + e.getMessage();
-            Log.e(TAG, "❌ " + error, e);
-            sendLogEvent("❌ " + error);
-            call.reject(error);
+        for (String className : TOOL_CLASS_NAMES) {
+            // 使用反射来避免在 release 版本中引用测试工具
+            try {
+                Log.d(TAG, "🔍 尝试通过反射加载测试工具类..." + className);
+                sendLogEvent("🔍 尝试通过反射加载测试工具类..." + className);
+    
+                Class<?> importSDKUtil = Class.forName(className);
+                Log.d(TAG, "✅ 成功加载 ImportSDKUtil 类");
+                sendLogEvent("✅ 成功加载 ImportSDKUtil 类" + className);
+    
+                Object instance = importSDKUtil.getMethod("getInstance").invoke(null);
+                Log.d(TAG, "✅ 成功获取 ImportSDKUtil 实例");
+                sendLogEvent("✅ 成功获取 ImportSDKUtil 实例");
+    
+                importSDKUtil.getMethod("showTestTools", android.content.Context.class, String.class)
+                            .invoke(instance, getActivity(), appId);
+    
+                Log.i(TAG, "🚀 测试工具启动成功！");
+                sendLogEvent("🚀 测试工具启动成功！");
+                call.resolve();
+                return;
+            } catch (ClassNotFoundException e) {
+                    lastException = e;
+                    Log.w(TAG, "⚠️ 类未找到: " + className);
+                    sendLogEvent("⚠️ 类未找到: " + className);
+            } catch (NoSuchMethodException e) {
+                    lastException = e;
+                    String error = "测试工具方法未找到: " + e.getMessage();
+                    Log.e(TAG, "❌ " + error);
+                    sendLogEvent("❌ " + error);
+                    call.reject(error);
+                    return;
+            } catch (Exception e) {
+                    lastException = e;
+                    String error = "启动测试工具时发生未知错误: " + e.getClass().getSimpleName() + " - " + e.getMessage();
+                    Log.e(TAG, "❌ " + error, e);
+                    sendLogEvent("❌ " + error);
+                    call.reject(error);
+                    return;
+            }
         }
+        // 如果所有类名都尝试过仍未成功
+        String error = "测试工具类未找到 (可能在 release 版本中或类名不正确): " + lastException.getMessage();
+        Log.w(TAG, "⚠️ " + error);
+        sendLogEvent("⚠️ " + error);
+        call.reject(error);
     }
 
     @PluginMethod
