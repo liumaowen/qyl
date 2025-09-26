@@ -4,6 +4,7 @@ on:
   schedule:
     # Every day at 1am
     - cron: '0 1 * * *'
+  workflow_dispatch: # 添加这一行以允许手动触发  
 
 jobs:
   remove-old-artifacts:
