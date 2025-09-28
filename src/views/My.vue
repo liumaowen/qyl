@@ -51,9 +51,6 @@
             <ion-icon :icon="refresh" slot="start"></ion-icon>
             {{ $t('my.checkUpdate') }}
           </ion-button>
-          
-          <!-- TradPlusAds 广告测试按钮 -->
-          <TradPlusAdsTest />
 
           <!-- 联系我显示 -->
           <ion-button 
