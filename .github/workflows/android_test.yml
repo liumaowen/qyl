@@ -22,6 +22,15 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
+      # 清理旧的 artifacts 以释放存储空间
+      - name: 清理旧的 artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: |
+            app-release.apk
+            app-debug.apk
+        continue-on-error: true  # 即使没有找到旧 artifacts 也继续执行
+
       - name: 设置 Node.js
         uses: actions/setup-node@v4
         with:
@@ -85,15 +94,14 @@ jobs:
           fi
         continue-on-error: false  # 确保失败会终止工作流
 
-      # 上传 APK（push 和 debug 都上传 debug 包，只有 release 参数才上传 release 包）
+      # 上传 APK（只上传对应构建类型的包，减少存储占用）
       - name: 上传 APK
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.inputs.buildType == 'release' && 'app-release.apk' || 'app-debug.apk' }}
-          path: |
-            android/app/build/outputs/apk/release/app-release.apk
-            android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 1    # <= 这里可以设置保留天数
+          path: android/app/build/outputs/apk/${{ github.event.inputs.buildType == 'release' && 'release' || 'debug' }}/app-${{ github.event.inputs.buildType == 'release' && 'release' || 'debug' }}.apk
+          retention-days: 1
+          overwrite: true    # 覆盖同名 artifact，减少存储占用
   
       - name: 获取版本号并重命名 APK
         id: rename_apk
