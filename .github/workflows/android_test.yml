@@ -94,11 +94,11 @@ jobs:
           fi
         continue-on-error: false  # 确保失败会终止工作流
 
-      # 上传 APK（只上传对应构建类型的包，减少存储占用）
+      # 上传 APK（使用时间戳避免配额缓存问题）
       - name: 上传 APK
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs.buildType == 'release' && 'app-release.apk' || 'app-debug.apk' }}
+          name: ${{ github.event.inputs.buildType == 'release' && 'app-release' || 'app-debug' }}-${{ github.run_number }}
           path: android/app/build/outputs/apk/${{ github.event.inputs.buildType == 'release' && 'release' || 'debug' }}/app-${{ github.event.inputs.buildType == 'release' && 'release' || 'debug' }}.apk
           retention-days: 1
           overwrite: true    # 覆盖同名 artifact，减少存储占用
