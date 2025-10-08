@@ -227,6 +227,10 @@ export const globalState = reactive({
 
 This project is licensed under the [MIT License](LICENSE).
 
+## 贡献
+
+[Buy Me a Coffee](https://ko-fi.com/springsunshine)
+
 ## Contact
 
 For questions or suggestions, please contact us through:

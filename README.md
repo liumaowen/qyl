@@ -7,6 +7,10 @@
 
 本项目是一个功能丰富的移动应用，支持视频播放、文件管理、多语言切换等功能。应用使用现代化的前端技术栈构建，支持 Android 平台，具有良好的用户体验和性能表现。
 
+<p align="center">
+  <img src="./screenshots/zanshang.png" alt="应用主界面" width="200"/>
+</p>
+
 ### 主要功能
 
 - 📱 响应式移动端界面设计
@@ -227,6 +231,10 @@ export const globalState = reactive({
 ## 许可证
 
 本项目采用 [MIT 许可证](LICENSE)。
+
+## 贡献
+
+[Buy Me a Coffee](https://ko-fi.com/springsunshine)
 
 ## 联系方式
 

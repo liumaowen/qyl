@@ -158,7 +158,8 @@ onMounted(async () => {
   window.addEventListener('resize', updateSize);
   updateSize();
   await getConfig();
-  const initialData = await fetchApiOpenTopVideos(currentPage, pageSize);
+  // const initialData = await fetchApiOpenTopVideos(currentPage, pageSize);
+  const initialData = await fetchVideo1();
   let mgtvlist: VideoItem[] = [];
   if (ismgtv.value) {
     const indd = Math.floor(Math.random() * (shortVideoConfig.shortVideoRandomMax - shortVideoConfig.shortVideoRandomMin + 1)) + shortVideoConfig.shortVideoRandomMin;
