@@ -240,7 +240,7 @@ export const globalState = reactive({
 ## 贡献
 
 [Buy Me a Coffee](https://ko-fi.com/springsunshine)
-[打赏开发者]<img src="./screenshots/zanshang.png" alt="打赏" width="200"/>
+<img src="./screenshots/zanshang.png" alt="打赏" width="200"/>
 
 ## 联系方式
 

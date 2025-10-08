@@ -6,6 +6,15 @@ A modern mobile application built with Vue 3, Ionic Framework, and Capacitor.
 
 This project is a feature-rich mobile application that supports video playback, file management, multi-language switching, and more. Built with modern frontend technologies, it supports Android platform with excellent user experience and performance.
 
+<p align="center">
+  <img src="./screenshots/1.jpg" alt="短视频" width="200"/>
+  <img src="./screenshots/2.jpg" alt="短视频" width="200"/>
+  <img src="./screenshots/3.jpg" alt="短视频" width="200"/>
+  <img src="./screenshots/4.jpg" alt="短剧" width="200"/>
+  <img src="./screenshots/5.jpg" alt="短剧" width="200"/>
+  <img src="./screenshots/6.jpg" alt="我的" width="200"/>
+</p>
+
 ### Key Features
 
 - 📱 Responsive mobile interface design
