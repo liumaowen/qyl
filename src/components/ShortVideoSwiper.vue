@@ -211,7 +211,9 @@ onUnmounted(() => {
 });
 onMounted(async () => {
   // 初始化广告
-  await initAds();
+  if (Capacitor.isNativePlatform()) {
+    await initAds();
+  }
 });
 // 初始化广告
 const initAds = async () => {
