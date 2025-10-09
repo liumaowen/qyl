@@ -51,7 +51,21 @@ export default defineConfig(({ mode }) => {
         sourceMap: isDebugBuild
       },
       // 调试构建时生成 sourcemap
-      sourcemap: isDebugBuild
+      sourcemap: isDebugBuild,
+              // 代码分割优化
+      rollupOptions: {
+        output: {
+          chunkFileNames: 'assets/js/[name]-[hash].js',
+          entryFileNames: 'assets/js/[name]-[hash].js',
+          assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
+          manualChunks: {
+            'video-vendor': ['video.js'],
+            'swiper-vendor': ['swiper'],
+            'ionic-vendor': ['@ionic/vue', '@ionic/vue-router'],
+            'capacitor-vendor': ['@capacitor/core', '@capacitor/app']
+          }
+        }
+      }
     },
     server: {
       proxy: {

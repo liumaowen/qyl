@@ -275,7 +275,7 @@ export const fetchConfig = async () => {
     };
   }
 };
-
+const urlCache = new Map<string, string>();
 // 芒果TV接口示例
 export const fetchMGTVVideoList = async (params: FormType): Promise<VideoItem[]> => {
   try {
@@ -306,10 +306,16 @@ export const fetchMGTVVideoList = async (params: FormType): Promise<VideoItem[]>
       // 使用 Promise.all 并行处理异步 map
       const result: VideoItem[] = await Promise.all(list100.map(async (element: any) => {
         const mm = getm3u8(state.PLAYDOMAIN, element['playUrl']);
-        const picblob = await fetchAndDecrypt(state.PLAYDOMAIN + element['imgUrl']);
+        // 检查缓存
+        let posterUrl = urlCache.get(element['imgUrl']);
+        if (!posterUrl) {
+          const picblob = await fetchAndDecrypt(state.PLAYDOMAIN + element['imgUrl']);
+          posterUrl = URL.createObjectURL(picblob);
+          urlCache.set(element['imgUrl'], posterUrl);
+        }
         return {
           src: mm,
-          poster: URL.createObjectURL(picblob),
+          poster: posterUrl,
           title: element['title'],
           type: 'application/x-mpegURL',
         };

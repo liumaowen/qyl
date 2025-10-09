@@ -27,14 +27,6 @@ import '@ionic/vue/css/core.css';
 import '@ionic/vue/css/normalize.css';
 import '@ionic/vue/css/structure.css';
 import '@ionic/vue/css/typography.css';
-
-/* Optional CSS utils that can be commented out */
-import '@ionic/vue/css/padding.css';
-import '@ionic/vue/css/float-elements.css';
-import '@ionic/vue/css/text-alignment.css';
-import '@ionic/vue/css/text-transformation.css';
-import '@ionic/vue/css/flex-utils.css';
-import '@ionic/vue/css/display.css';
 import { register } from 'swiper/element/bundle';
 register();
 /**
@@ -52,6 +44,16 @@ import '@ionic/vue/css/palettes/dark.system.css';
 import './theme/variables.css';
 import 'video.js/dist/video-js.css'
 
+// 将非关键CSS设为异步导入
+const loadOptionalCSS = async () => {
+  await import('@ionic/vue/css/padding.css');
+  await import('@ionic/vue/css/float-elements.css');
+  await import('@ionic/vue/css/text-alignment.css');
+  await import('@ionic/vue/css/text-transformation.css');
+  await import('@ionic/vue/css/flex-utils.css');
+  await import('@ionic/vue/css/display.css');
+};
+
 const app = createApp(App)
   .use(IonicVue,{innerHTMLTemplatesEnabled:true})
   .use(router)
@@ -59,4 +61,5 @@ const app = createApp(App)
 
 router.isReady().then(() => {
   app.mount('#app');
+  loadOptionalCSS(); // 异步加载非关键CSS
 });
