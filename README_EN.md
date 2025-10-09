@@ -227,7 +227,7 @@ export const globalState = reactive({
 
 ## Version History
 
-- **v3.1.0** - Current version
+- **v4.0.0** - Current version
   - Upgraded to Capacitor 7.x
   - Added multi-language support
   - Optimized video playback features

@@ -228,7 +228,7 @@ export const globalState = reactive({
 
 ## 版本历史
 
-- **v3.1.0** - 当前版本
+- **v4.0.0** - 当前版本
   - 升级到 Capacitor 7.x
   - 新增多语言支持
   - 优化视频播放功能
